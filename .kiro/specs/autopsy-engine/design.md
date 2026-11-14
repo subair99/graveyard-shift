@@ -9,7 +9,7 @@ The design separates the engine into a pure core and a thin I/O shell:
 - **Pure core**: input parsing, version resolution, successor extraction, cause detection, status assignment, risk scoring, certificate assembly, canonical serialization. These are plain functions of their arguments. They never read the clock, environment, or random numbers. Property-based tests target this layer.
 - **I/O shell**: source clients, the cache, the HTTP wrapper. They take an injected `fetch`, an injected `Clock` (used only for Fetch_Date and cache age), and a config object. Tests inject recorded responses.
 
-The Analysis_Date is an explicit input. The clock is used only to stamp `fetchedAt` on responses that are actually fetched, and to decide cache freshness. Neither affects Status, causes, Time_Of_Death or Risk_Score (Requirement 10.2). Those come from upstream data and the Analysis_Date.
+The Analysis_Date is an optional input of `runAutopsy`. When the caller supplies it, it is used as is and the orchestrator does not read the clock for it. When the caller omits it, the orchestrator reads the injected clock exactly once, after all source fetches for the run have completed (including successor lookups), and passes that value to the pure core. Apart from that single read, the clock is used only to stamp `fetchedAt` on responses that are actually fetched and to decide cache freshness. The pure core never reads the clock: it receives the Analysis_Date as an argument. Status, causes, Time_Of_Death and Risk_Score depend only on upstream data and the Analysis_Date (Requirement 10.2).
 
 ### Key design decisions
 
@@ -28,7 +28,10 @@ The Analysis_Date is an explicit input. The clock is used only to stamp `fetched
 - **npm registry packument** (`https://registry.npmjs.org/{name}`): provides `maintainers`, `time` (includes `created` and `modified` keys that must be excluded), `dist-tags.latest`, `versions[v].deprecated`, and `repository.url`. Per-version deprecation lives on the version object.
 - **npm downloads API** (`https://api.npmjs.org/downloads/point/last-week/{name}`): returns `{ downloads }`.
 - **OSV** (`POST https://api.osv.dev/v1/query` with `{package:{name,ecosystem:"npm"},version}`): returns `vulns[]` with `id`, `aliases`, `summary`, `severity`, and `affected[].ranges[].events[].fixed`.
-- **deps.dev v3** (`https://api.deps.dev/v3/systems/npm/packages/{name}/versions/{version}` and the `:dependents` endpoint for dependent counts, plus `/v3/projects/{projectKey}` for the OpenSSF Scorecard): the Scorecard score is on a 0 to 10 scale.
+- **deps.dev** (checked against the API docs at https://docs.deps.dev/api/v3/ and https://docs.deps.dev/api/v3alpha/ on 14 Nov 2026):
+  - **Scorecard, v3 `GetProject`**: `GET https://api.deps.dev/v3/projects/{projectKey.id}`, for example `github.com%2Ffacebook%2Freact` (the project key is percent-encoded). The response field `scorecard.overallScore` is on a 0 to 10 scale. `scorecard` is present only when deps.dev holds a Scorecard for the project.
+  - **Dependents, v3alpha `GetDependents`**: `GET https://api.deps.dev/v3alpha/systems/npm/packages/{name}/versions/{version}:dependents`, with the package name percent-encoded in the path. The response field `dependentCount` is used (the response also has `directDependentCount` and `indirectDependentCount`). The v3 API reference has no GetDependents method, so the earlier assumption that v3 offers `:dependents` was wrong. The docs state that dependent counts are available for npm and are indicative of relative popularity, because only public dependents are counted.
+  - The dependents endpoint is an alpha API and may change. The Source_URL recorded for the dependents Fact is the v3alpha URL. If the v3alpha call fails or the response has no `dependentCount`, the dependent count is reported as unavailable with the reason and the attempted URL (R7.10).
 - **GitHub REST** (`GET /repos/{owner}/{repo}`): provides `archived` and `pushed_at`. Unauthenticated requests are limited to 60 per hour, so the token is optional and the cache matters.
 
 These endpoint shapes are from the public API documentation of each service. Exact response schemas will be pinned by the recorded fixtures, and each client validates responses with a schema (zod) so that an unparseable response becomes a typed failure instead of an exception (R11.6).
@@ -86,8 +89,12 @@ sequenceDiagram
     Note over O: NotFound stops the autopsy, no other source is called (R2.10)
     O->>S: OSV, deps.dev, downloads, GitHub (if github.com repo)
     S-->>O: signals or unavailable
+    O->>O: all fetches and successor lookups done
+    O->>O: read Clock once (only if no analysisDate was supplied)
     O->>O: pure core builds the Death_Certificate
 ```
+
+**Orchestrator.** `runAutopsy` first collects all signals for all package references: packuments, OSV, deps.dev, downloads, GitHub and successor lookups. Only when every fetch for the run has completed does it determine the Analysis_Date. If the caller passed `analysisDate`, that value is used unchanged and the clock is not read for it. Otherwise the orchestrator calls `clock.now()` exactly once for the whole run and uses that value for every certificate. The pure core then builds the certificates from the signals and the Analysis_Date. Because the read comes after all fetches, in live runs every Fetch_Date is at or before the Analysis_Date. Cached responses have even earlier Fetch_Dates, so they also stay at or before it.
 
 Different packages are analyzed independently. A failure for one package reference never aborts the others (R1.7, R1.11, R9.4, R11.6). The orchestrator deduplicates in-flight requests by Cache key, so a lockfile with up to 1,000 packages sends at most one upstream request per unique key (R9.9). Concurrency is bounded (default 8) to respect rate limits. Output order is determined by the sorted reference list, not by completion order.
 
@@ -103,15 +110,16 @@ src/engine/
   core/               // successor.ts, causes.ts, timeOfDeath.ts, risk.ts, status.ts, certificate.ts
   serialize/          // canonicalJson.ts, deserialize.ts
   autopsy.ts          // orchestrator
+scripts/recordFixtures.ts  // manual fixture recorder, run with `npm run fixtures:record` (needs network)
 docs/engine-ordering.md  // documented ordering rules (R10.4)
-tests/engine/{unit,property,fixtures}/
+tests/engine/{unit,property,fixtures,helpers}/   // helpers/replayFetch.ts serves the recorded fixtures
 ```
 
 ## Components and Interfaces
 
 ```ts
 // Injected dependencies
-interface Clock { now(): Date }                       // used only for fetchedAt and cache age
+interface Clock { now(): Date }                       // fetchedAt, cache age, and one read for the default Analysis_Date (orchestrator only, never the pure core)
 interface EngineConfig {
   cacheTtlMs?: number;          // default 86_400_000; non-positive rejected, default used (R9.7, R9.8)
   githubToken?: string;         // from GITHUB_TOKEN
@@ -123,9 +131,9 @@ interface EngineDeps { fetch: typeof fetch; clock: Clock; cache: Cache }
 // Entry point
 function runAutopsy(
   input: EngineInput,           // { kind: 'name', name, version? } | { kind: 'package.json', text } | { kind: 'package-lock.json', text } | { kind: 'other', filename, text }
-  analysisDate: Date,
   config: EngineConfig,
   deps: EngineDeps,
+  analysisDate?: Date,          // optional. If omitted, read once from deps.clock after all fetches complete (R3.1, R10.2)
 ): Promise<AutopsyRun>;
 
 interface AutopsyRun {
@@ -180,7 +188,7 @@ interface Provenance { sourceUrl: string; fetchedAt: string }  // fetchedAt: UTC
 |---|---|---|
 | npm | packument, downloads (last-week), existence lookup for successor candidates | Maintainers keep registry order. The `time` map drops `created`/`modified`. |
 | OSV | vulnerabilities for `name@version` | Normalizes id, aliases, summary, severity, fixed versions. |
-| deps.dev | dependent count, Scorecard | Scorecard only when the repository has one. Score 0 to 10. |
+| deps.dev | Scorecard (v3 `GET /v3/projects/{projectKey.id}`, `scorecard.overallScore`), dependent count (v3alpha `GET /v3alpha/systems/npm/packages/{name}/versions/{version}:dependents`, `dependentCount`) | Scorecard only when the repository has one, score 0 to 10. The project key comes from the npm repository URL. Package names are percent-encoded in the path. The dependents Source_URL is the v3alpha URL. A failed v3alpha call or a missing `dependentCount` gives unavailable with the reason and attempted URL (R7.10). Docs: https://docs.deps.dev/api/v3/ and https://docs.deps.dev/api/v3alpha/ (verified 14 Nov 2026). |
 | GitHub | `archived`, `pushed_at` | Only for `github.com` repository URLs, else skipped with a note (R2.12). Sends `Authorization: Bearer` only when a token is set. Otherwise it records "fetched without a token" (R2.6, R2.7). |
 
 The token is passed only to the GitHub request headers. The HTTP wrapper redacts any occurrence of the token value from error messages and log lines. Cache keys and entries never contain headers (R2.8, R9.6).
@@ -357,7 +365,10 @@ interface AutopsyError {
 Notes on the model:
 - Fetch_Date strings are `YYYY-MM-DDTHH:mm:ssZ` (second precision). The serializer truncates milliseconds.
 - `scorecard` follows R7.9: when deps.dev has no Scorecard, the value is `available: false` with the reason "no scorecard".
-- Fixture mode (R11) uses a `fetch` that serves recorded files and throws a typed error on a miss. A missing or unparseable recording becomes an `AutopsyError` for that package, with no network fallback.
+- In live runs without an explicit `analysisDate`, the Analysis_Date is read after all fetches, so every Fetch_Date is at or before it. Fetch_Dates and the Analysis_Date are truncated to whole seconds the same way, and truncation is monotonic, so it cannot break the ordering. Cached facts have earlier Fetch_Dates and also stay at or before it.
+- Fixture mode (R11) uses a `fetch` (`tests/engine/helpers/replayFetch.ts`) that serves only the recorded files and throws a typed error on any unrecorded URL. A missing or unparseable recording becomes an `AutopsyError` for that package, with no network fallback. Fixture tests inject a fixed Clock and a fixed `analysisDate`.
+- A recorded fixture file is one JSON object with `cacheKey`, `sourceUrl`, `body`, `status` and `fetchedAt`. It is written from the Cache entry (`{ body, status, fetchedAt }`) and its key, never from a raw request object, so it holds no request headers, no Authorization header and no token. The Source_URL is the URL element of the cache key.
+- The deps.dev dependents Fact has the v3alpha URL as its Source_URL (alpha API, may change). The Scorecard Fact has the v3 `GetProject` URL.
 
 ## Correctness Properties
 
@@ -416,6 +427,8 @@ Reflection results: the prework identified more than fifty testable criteria. Th
 ### Property 9: Every fact carries valid provenance
 
 *For any* Death_Certificate produced from generated source responses and Analysis_Date, every Fact has between 1 and 20 provenance entries. Each entry has an absolute Source_URL of 1 to 2,048 characters that is not whitespace-only and a Fetch_Date in UTC ISO 8601 format with second precision that is a valid calendar date and not later than the Analysis_Date. Any value lacking provenance is absent from the facts and listed in `omittedFacts`.
+
+In live runs the same ordering holds by construction: the orchestrator reads the Analysis_Date after all fetches, so Fetch_Date <= Analysis_Date. Timestamps are truncated to whole seconds consistently, so truncation cannot break the ordering, and cached facts have earlier Fetch_Dates, so they remain <= Analysis_Date. The property test generates Fetch_Dates at or before the Analysis_Date, and the orchestrator unit test checks the live ordering with a fake Clock.
 
 **Validates: Requirements 3.1, 3.4, 3.6, 12.4**
 
@@ -560,14 +573,15 @@ The pure core (parser, resolver, successor extraction, causes, status, risk, tim
 - Source responses are generated by arbitraries that build valid packuments, OSV records, deps.dev and GitHub payloads, with injected failure modes. The in-memory `fetch` fake and a fixed `Clock` keep each case fast. The full property suite must complete within 120 s (R12.7). Parser properties with large inputs use a reduced run count for the 5 MB and 50 MB size cases, with at least 100 runs for the rest.
 
 **Unit and example tests**:
-- Fixture verdicts from recorded responses, with a `fetch` that throws on any unrecorded URL (R11.1 to R11.7):
+- Default Analysis_Date, with a fake Clock that counts reads and advances on each read: without `analysisDate` the clock is read exactly once for it, after the last fetch call completes, and every Fact Fetch_Date is at or before it. With an explicit `analysisDate` it is used unchanged and the clock is not read for it (R3.1, R10.2, R12.5).
+- Fixture verdicts from recorded responses, with the replay `fetch` (`tests/engine/helpers/replayFetch.ts`) that serves only recorded files and throws a typed error on any unrecorded URL, plus a fixed Clock and a fixed `analysisDate` (R11.1 to R11.7):
   - ip@2.0.1 is `dead`, with `unpatched-cve` and CVE-2024-29415.
   - lodash.set@4.3.2 is `dead`, with `unpatched-cve` and CVE-2020-8203.
   - inflight@1.0.6 is `retired-with-successor` with Successor `lru-cache`, and `it` is never the Successor (R4.8).
   - A list of the three yields certificates ordered `inflight`, `ip`, `lodash.set`.
   - A missing recording fails only that package.
 - Latest-version resolution when no version is given (R1.4), and empty manifests (R1.10).
-- Source client examples: endpoint construction, bearer header only with a token, unauthenticated note without one, registry 404 stops the autopsy, rate-limit reset time, redirect does not change the Source_URL (R2.1 to R2.7, R2.10, R2.11, R3.2).
+- Source client examples: endpoint construction (including deps.dev: v3 `GetProject` for the Scorecard, v3alpha `:dependents` for dependents, percent-encoded scoped names), bearer header only with a token, unauthenticated note without one, registry 404 stops the autopsy, rate-limit reset time, redirect does not change the Source_URL (R2.1 to R2.7, R2.10, R2.11, R3.2).
 - Successor lookup is recorded as a Fact (R4.2). Certificate includes the formula (R8.9).
 
 **Smoke tests**:
@@ -575,4 +589,6 @@ The pure core (parser, resolver, successor extraction, causes, status, risk, tim
 - A lint rule banning `Date.now`, `new Date()` without arguments and `Math.random` in `src/engine/core` and `src/engine/serialize` (R10.2).
 - Test-suite meta checks for R12 (property tests exist, minimum run count configured, seed reporting enabled).
 
-**Fixtures**: recorded responses live in `tests/engine/fixtures/{ip,lodash.set,inflight}/`, captured once from the sources listed in `docs/demo-packages.md` and keyed by cache key. Figures in that document should be re-checked before the demo.
+**Fixtures**: recorded responses live in `tests/engine/fixtures/{ip,lodash.set,inflight}/` and are keyed by cache key. A human records them with `npm run fixtures:record` (`scripts/recordFixtures.ts`, run through `tsx` with `node --env-file=.env` semantics so `GITHUB_TOKEN` is read from `.env`). The script runs the engine once against the live APIs with the real `fetch` and real clock for ip@2.0.1, lodash.set@4.3.2 and inflight@1.0.6 (including the `lru-cache` existence lookup for inflight). It then writes every cache entry to a file holding only `cacheKey`, `sourceUrl`, `body`, `status` and `fetchedAt`. It uses `GITHUB_TOKEN` when set, never prints it, and never writes it, an Authorization header or any request header into a fixture, because it writes from cache entries, which hold no credentials by design. The script needs network, so it is run manually and never as part of the test run. Fixture tests use only the recorded files through the replay `fetch`.
+
+A required credential scan test reads every file under `tests/engine/fixtures/` and fails if a file contains the value of `GITHUB_TOKEN` (when set in the environment) or the strings `Authorization` or `Bearer`. Figures in `docs/demo-packages.md` should be re-checked before the demo.
