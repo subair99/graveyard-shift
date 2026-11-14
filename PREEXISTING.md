@@ -4,3 +4,4 @@ Third-party libraries and data sources used are listed here as they are added.
 
 ## Libraries
 - Next.js (MIT), React and React DOM (MIT), TypeScript (Apache-2.0)
+- vitest (MIT), fast-check (MIT), zod (MIT), semver (ISC), @types/semver (MIT)

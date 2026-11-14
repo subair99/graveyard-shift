@@ -23,7 +23,7 @@
 - Dev server: `npm run dev`
 - Build: `npm run build`
 - Typecheck: `npm run typecheck`
-- Test: not defined yet (added with vitest in the autopsy-engine spec, task 1.2)
+- Test: `npm test` (vitest --run; tests in `tests/**/*.test.ts`; set `FC_SEED` to replay a fast-check seed)
 
 ## Conventions
 - License is MIT. Keep dependencies MIT-compatible.

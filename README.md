@@ -26,6 +26,7 @@ Requires Node.js LTS and npm.
 npm install
 npm run dev     # http://localhost:3000
 npm run build
+npm test        # vitest; set FC_SEED to replay a property-test seed
 ```
 
 Copy `.env.example` to `.env` and fill in `GITHUB_TOKEN` (and `KIRO_API_KEY` for resurrections).

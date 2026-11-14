@@ -12,6 +12,18 @@
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794671207158
       }
+    ],
+    "1.2 Add test and runtime dependencies and configure vitest": [
+      {
+        "executionId": "02fcd7a8-e5a3-4e5e-abd6-dfb408a0f928",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794671414285
+      },
+      {
+        "executionId": "02fcd7a8-e5a3-4e5e-abd6-dfb408a0f928",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794671933095
+      }
     ]
   }
 }

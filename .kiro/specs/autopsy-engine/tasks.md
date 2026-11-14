@@ -15,7 +15,7 @@ Each property-based test goes in its own file, `tests/engine/property/pN-<name>.
     - Confirm `.env` is listed in `.gitignore`
     - _Requirements: 2.6, 2.8_
 
-  - [ ] 1.2 Add test and runtime dependencies and configure vitest
+  - [x] 1.2 Add test and runtime dependencies and configure vitest
     - Add `vitest`, `fast-check`, `zod`, `semver`, `@types/semver`
     - Create `vitest.config.ts` including `tests/**/*.test.ts`, and a `test` script using `vitest --run`
     - Create `tests/engine/helpers/fc.ts` exporting shared config: `numRuns: 100`, seed from `FC_SEED`, and verbose failure reporting that prints the shrunk counterexample and the seed
