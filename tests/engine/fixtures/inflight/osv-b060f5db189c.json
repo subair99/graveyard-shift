@@ -1,0 +1,7 @@
+{
+  "cacheKey": "[\"osv\",\"https://api.osv.dev/v1/query\",[[\"__bodySha256\",\"a1f11ea9a450fe88470009e9ae5c93b0bd362fdc41d4a0b4bd1b773474a05424\"],[\"__method\",\"POST\"]]]",
+  "sourceUrl": "https://api.osv.dev/v1/query",
+  "body": "{}",
+  "status": 200,
+  "fetchedAt": "2026-11-14T18:29:32Z"
+}

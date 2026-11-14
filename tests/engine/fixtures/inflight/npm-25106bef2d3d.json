@@ -1,0 +1,7 @@
+{
+  "cacheKey": "[\"npm\",\"https://api.npmjs.org/downloads/point/last-week/inflight\",[]]",
+  "sourceUrl": "https://api.npmjs.org/downloads/point/last-week/inflight",
+  "body": "{\"downloads\":124503079,\"start\":\"2026-11-07\",\"end\":\"2026-11-13\",\"package\":\"inflight\"}",
+  "status": 200,
+  "fetchedAt": "2026-11-14T18:29:33Z"
+}

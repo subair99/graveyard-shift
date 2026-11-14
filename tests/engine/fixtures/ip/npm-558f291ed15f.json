@@ -1,0 +1,7 @@
+{
+  "cacheKey": "[\"npm\",\"https://api.npmjs.org/downloads/point/last-week/ip\",[]]",
+  "sourceUrl": "https://api.npmjs.org/downloads/point/last-week/ip",
+  "body": "{\"downloads\":8475341,\"start\":\"2026-11-07\",\"end\":\"2026-11-13\",\"package\":\"ip\"}",
+  "status": 200,
+  "fetchedAt": "2026-11-14T18:29:34Z"
+}

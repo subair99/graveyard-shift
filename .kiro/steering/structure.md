@@ -17,7 +17,7 @@ tests/engine/unit/  Engine unit tests (types.test.ts, http.test.ts, ...)
 package.json      Scripts and dependencies (npm)
 tsconfig.json     TypeScript config (strict)
 next.config.mjs   Next.js config
-docs/             Project docs (demo-packages.md)
+docs/             Project docs (demo-packages.md, engine-ordering.md, kiro-journal.md)
 .env.example      Documented environment variables (committed)
 .env              Local secrets (gitignored, never commit)
 README.md         Project overview and flow

@@ -260,7 +260,7 @@ Each property-based test goes in its own file, `tests/engine/property/pN-<name>.
     - Latest version when none is given, empty manifest note, successor lookup recorded as a Fact, certificate contains the formula, a failing package does not stop the others
     - _Requirements: 1.4, 1.10, 1.11, 4.2, 8.9_
 
-- [ ] 9. Add fixtures and guard checks
+- [x] 9. Add fixtures and guard checks
   - [x] 9.1 Write the fixture recording script `scripts/recordFixtures.ts`
     - Expose it as `npm run fixtures:record` (add the `fixtures:record` entry to `package.json` scripts). Run it with `tsx` (`tsx --env-file=.env scripts/recordFixtures.ts`) or `node --env-file=.env`, so `GITHUB_TOKEN` is read from `.env`. Add `tsx` as a dev dependency if used, and note it for `PREEXISTING.md` in task 10.1
     - Run the engine ONCE against the live APIs (real `fetch`, real clock) for ip@2.0.1, lodash.set@4.3.2 and inflight@1.0.6, including the `lru-cache` existence lookup for inflight
@@ -275,12 +275,12 @@ Each property-based test goes in its own file, `tests/engine/property/pN-<name>.
     - Check figures against `docs/demo-packages.md`
     - _Requirements: 11.4, 11.6_
 
-  - [~] 9.3 Write the fixture credential scan test in `tests/engine/unit/fixtureSecrets.test.ts`
+  - [x] 9.3 Write the fixture credential scan test in `tests/engine/unit/fixtureSecrets.test.ts`
     - Scan every file in `tests/engine/fixtures/` and fail if it contains the value of `GITHUB_TOKEN` (when set in the environment) or the strings `Authorization` or `Bearer`
     - Never print the token value in the failure message
     - _Requirements: 2.8, 9.6_
 
-  - [~] 9.4 Write fixture verdict tests in `tests/engine/unit/fixtures.test.ts`
+  - [x] 9.4 Write fixture verdict tests in `tests/engine/unit/fixtures.test.ts`
     - ip@2.0.1: `dead`, cause `unpatched-cve`, vulnerability id or alias CVE-2024-29415
     - lodash.set@4.3.2: `dead`, cause `unpatched-cve`, vulnerability id or alias CVE-2020-8203
     - inflight@1.0.6: status `retired-with-successor`
@@ -289,7 +289,7 @@ Each property-based test goes in its own file, `tests/engine/property/pN-<name>.
     - Two runs give identical status, cause, Successor and vulnerability values
     - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.7_
 
-  - [~] 9.5 Write inflight successor test in `tests/engine/unit/inflightSuccessor.test.ts`
+  - [x] 9.5 Write inflight successor test in `tests/engine/unit/inflightSuccessor.test.ts`
     - Using the recorded inflight@1.0.6 fixtures, the Successor is `lru-cache` and `it` is never the Successor
     - _Requirements: 4.8, 11.3_
   - [x] 9.6 Add the network guard and determinism lint rule
@@ -307,7 +307,7 @@ Each property-based test goes in its own file, `tests/engine/property/pN-<name>.
     - List new libraries added: Next.js, TypeScript, vitest, fast-check, zod, semver, and `tsx` (dev dependency for `scripts/recordFixtures.ts`, if used)
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 
-- [~] 11. Final checkpoint - Ensure all tests pass
+- [x] 11. Final checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes

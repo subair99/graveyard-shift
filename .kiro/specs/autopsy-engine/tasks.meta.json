@@ -163,6 +163,16 @@
         "executionId": "763bae67-2d88-4402-a52e-291c41168eee",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794677741567
+      },
+      {
+        "executionId": "05665549-f843-4dae-9641-38d46822fb0a",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794681169416
+      },
+      {
+        "executionId": "05665549-f843-4dae-9641-38d46822fb0a",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794681284859
       }
     ],
     "4.3 Implement the deps.dev Source_Client in `src/engine/sources/depsdev.ts`": [
@@ -530,6 +540,16 @@
         "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794672672909
+      },
+      {
+        "executionId": "05665549-f843-4dae-9641-38d46822fb0a",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794681285946
+      },
+      {
+        "executionId": "05665549-f843-4dae-9641-38d46822fb0a",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794681434150
       }
     ],
     "9.4 Write fixture verdict tests in `tests/engine/unit/fixtures.test.ts`": [
@@ -537,6 +557,16 @@
         "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794672673085
+      },
+      {
+        "executionId": "05665549-f843-4dae-9641-38d46822fb0a",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794681286663
+      },
+      {
+        "executionId": "05665549-f843-4dae-9641-38d46822fb0a",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794681434316
       }
     ],
     "9.5 Write inflight successor test in `tests/engine/unit/inflightSuccessor.test.ts`": [
@@ -544,6 +574,16 @@
         "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794672673378
+      },
+      {
+        "executionId": "05665549-f843-4dae-9641-38d46822fb0a",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794681287372
+      },
+      {
+        "executionId": "05665549-f843-4dae-9641-38d46822fb0a",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794681434668
       }
     ],
     "9.6 Add the network guard and determinism lint rule": [
@@ -578,6 +618,16 @@
         "executionId": "01ae7f28-8955-401c-b250-5ff3e40be667",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794675921954
+      },
+      {
+        "executionId": "60165746-c8a3-4d08-86aa-176d82ba3357",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794682276499
+      },
+      {
+        "executionId": "60165746-c8a3-4d08-86aa-176d82ba3357",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794682397833
       }
     ],
     "11. Final checkpoint - Ensure all tests pass": [
@@ -585,6 +635,16 @@
         "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794672673892
+      },
+      {
+        "executionId": "05665549-f843-4dae-9641-38d46822fb0a",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794681435189
+      },
+      {
+        "executionId": "05665549-f843-4dae-9641-38d46822fb0a",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794682160186
       }
     ],
     "2. Implement input parsing and version resolution": [
@@ -634,6 +694,13 @@
         "executionId": "de8f3e24-5f7f-4985-ba0a-ac220c66d61e",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794680538348
+      }
+    ],
+    "9. Add fixtures and guard checks": [
+      {
+        "executionId": "05665549-f843-4dae-9641-38d46822fb0a",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794681434737
       }
     ]
   }

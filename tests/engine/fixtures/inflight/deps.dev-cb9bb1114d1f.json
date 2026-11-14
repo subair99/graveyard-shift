@@ -1,0 +1,7 @@
+{
+  "cacheKey": "[\"deps.dev\",\"https://api.deps.dev/v3alpha/systems/npm/packages/inflight/versions/1.0.6:dependents\",[]]",
+  "sourceUrl": "https://api.deps.dev/v3alpha/systems/npm/packages/inflight/versions/1.0.6:dependents",
+  "body": "{\"dependentCount\":560887,\"directDependentCount\":24225,\"indirectDependentCount\":536833}",
+  "status": 200,
+  "fetchedAt": "2026-11-14T18:29:32Z"
+}

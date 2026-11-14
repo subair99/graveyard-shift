@@ -73,7 +73,8 @@ describe("OSV source client", () => {
                 package: { name: "a", ecosystem: "PyPI" },
                 ranges: [{ events: [{ fixed: "8.8.8" }] }],
               },
-              { ranges: [{ events: [{ fixed: "1.2.0" }] }] },
+              // No package field: must not contribute (was kept before the filter was tightened).
+              { ranges: [{ events: [{ fixed: "7.7.7" }] }] },
             ],
           },
           {

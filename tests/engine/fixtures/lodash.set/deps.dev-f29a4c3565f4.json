@@ -1,0 +1,7 @@
+{
+  "cacheKey": "[\"deps.dev\",\"https://api.deps.dev/v3alpha/systems/npm/packages/lodash.set/versions/4.3.2:dependents\",[]]",
+  "sourceUrl": "https://api.deps.dev/v3alpha/systems/npm/packages/lodash.set/versions/4.3.2:dependents",
+  "body": "{\"dependentCount\":10593,\"directDependentCount\":2048,\"indirectDependentCount\":8654}",
+  "status": 200,
+  "fetchedAt": "2026-11-14T18:29:35Z"
+}

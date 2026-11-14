@@ -1,0 +1,7 @@
+{
+  "cacheKey": "[\"npm\",\"https://api.npmjs.org/downloads/point/last-week/lodash.set\",[]]",
+  "sourceUrl": "https://api.npmjs.org/downloads/point/last-week/lodash.set",
+  "body": "{\"downloads\":2048320,\"start\":\"2026-11-07\",\"end\":\"2026-11-13\",\"package\":\"lodash.set\"}",
+  "status": 200,
+  "fetchedAt": "2026-11-14T18:29:35Z"
+}

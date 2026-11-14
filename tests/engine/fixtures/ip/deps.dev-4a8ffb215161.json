@@ -1,0 +1,7 @@
+{
+  "cacheKey": "[\"deps.dev\",\"https://api.deps.dev/v3alpha/systems/npm/packages/ip/versions/2.0.1:dependents\",[]]",
+  "sourceUrl": "https://api.deps.dev/v3alpha/systems/npm/packages/ip/versions/2.0.1:dependents",
+  "body": "{\"dependentCount\":6862,\"directDependentCount\":694,\"indirectDependentCount\":6176}",
+  "status": 200,
+  "fetchedAt": "2026-11-14T18:29:33Z"
+}

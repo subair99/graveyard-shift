@@ -44,7 +44,10 @@ npm run fixtures:record -- --dry-run # no network, prints the plan
 
 Fixture files hold only `{ cacheKey, sourceUrl, body, status, fetchedAt }`. The script aborts
 without writing if any file would contain the token, `Authorization` or `Bearer`. The fixture
-tests (9.3 to 9.5) cannot pass until the script has been run once. Review and commit the files.
+tests (9.3 to 9.5) use only the recorded files and make no network calls. The fixtures are
+committed, so there is nothing to run for a normal checkout. Re-run the script (with `--force`
+to overwrite) only to refresh them. The files contain no credentials, which
+`tests/engine/unit/fixtureSecrets.test.ts` checks.
 
 ## How Kiro is used
 See [`.kiro/`](.kiro/) for specs, steering, hooks and agents. A full write-up will follow.

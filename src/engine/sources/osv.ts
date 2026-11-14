@@ -84,8 +84,11 @@ function fixedVersionsOf(v: RawVuln, name: string): string[] {
   const fixed: string[] = [];
   for (const affected of v.affected ?? []) {
     const pkg = affected.package;
-    // Only the queried npm package counts. Entries without a package are kept.
-    if (pkg !== undefined && (pkg.ecosystem !== "npm" || pkg.name !== name)) continue;
+    // Only entries for the analyzed package in the npm ecosystem count. The name is
+    // compared exactly (npm names are case-sensitive); the ecosystem ignores case.
+    // Entries without a package, or listing sibling packages, are skipped.
+    if (pkg === undefined || pkg.name !== name) continue;
+    if (pkg.ecosystem === undefined || pkg.ecosystem.toLowerCase() !== "npm") continue;
     for (const range of affected.ranges ?? []) {
       for (const event of range.events) {
         if (event.fixed !== undefined && event.fixed.length > 0) fixed.push(event.fixed);
