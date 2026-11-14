@@ -1,0 +1,10 @@
+node_modules/
+.next/
+dist/
+coverage/
+.env
+.env.*
+!.env.example
+.DS_Store
+*.log
+# .kiro/ must stay committed — never add it here
