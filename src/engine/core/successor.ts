@@ -28,7 +28,15 @@ export const SUCCESSOR_STOPLIST: readonly string[] = [
   "instead",
 ];
 
-/** ok = package exists on the registry; not-found / unavailable = cannot be a Successor. */
+/**
+ * ok = package exists on the registry; not-found / unavailable = cannot be a Successor.
+ *
+ * Contract: the injected lookup never throws. The orchestrator wraps any thrown error
+ * into an `unavailable` result carrying the attempted URL and the attempt time from the
+ * lookup's own clock reading (the pure core reads no clock). `npm.lookupPackage` already
+ * behaves this way. The `threw` record below is only a defensive path; it has no URL or
+ * time, so the certificate reports it in `notes.omittedFacts`.
+ */
 export type LookupResult = SourceResult<unknown>;
 
 export type LookupRecord =

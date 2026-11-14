@@ -316,4 +316,11 @@ export type SourceResult<T> =
       reason: string;
       rateLimitResetAt?: string;
     }
-  | { status: "not-found"; source: SourceName; url: string };
+  | {
+      status: "not-found";
+      source: SourceName;
+      /** The requested URL (Source_URL). */
+      url: string;
+      /** When the 404 response was received, `YYYY-MM-DDTHH:mm:ssZ`. */
+      fetchedAt: string;
+    };

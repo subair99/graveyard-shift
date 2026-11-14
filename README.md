@@ -31,6 +31,21 @@ npm test        # vitest; set FC_SEED to replay a property-test seed
 
 Copy `.env.example` to `.env` and fill in `GITHUB_TOKEN` (and `KIRO_API_KEY` for resurrections).
 
+## Recording fixtures
+The engine's fixture tests replay recorded upstream responses from `tests/engine/fixtures/`.
+Recording is a manual step: it calls the live npm, OSV, deps.dev and GitHub APIs, so it needs
+network and `GITHUB_TOKEN` in `.env` (it also runs unauthenticated, with a low GitHub rate limit).
+
+```
+npm run fixtures:record              # records ip@2.0.1, lodash.set@4.3.2, inflight@1.0.6
+npm run fixtures:record -- --force   # overwrite existing fixtures
+npm run fixtures:record -- --dry-run # no network, prints the plan
+```
+
+Fixture files hold only `{ cacheKey, sourceUrl, body, status, fetchedAt }`. The script aborts
+without writing if any file would contain the token, `Authorization` or `Bearer`. The fixture
+tests (9.3 to 9.5) cannot pass until the script has been run once. Review and commit the files.
+
 ## How Kiro is used
 See [`.kiro/`](.kiro/) for specs, steering, hooks and agents. A full write-up will follow.
 

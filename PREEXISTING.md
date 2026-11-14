@@ -7,7 +7,7 @@ Third-party libraries and data sources used are listed here as they are added.
 - vitest (MIT), fast-check (MIT), zod (MIT), semver (ISC), @types/semver (MIT)
 - ESLint, @eslint/js (MIT), dev dependencies for the determinism lint rule (task 9.6)
 - @babel/eslint-parser, @babel/core, @babel/preset-typescript (MIT), dev dependencies that parse TypeScript in ESLint. typescript-eslint (MIT) was not used because its peer range is typescript <6.1.0 and this project uses TypeScript 7.
-- tsx (MIT), planned as a dev dependency to run the fixture recording script (task 9.1). Not installed yet.
+- tsx (MIT), dev dependency that runs the fixture recording script `scripts/recordFixtures.ts` (task 9.1).
 
 ## Data sources
 The autopsy engine reads these public services. Every fact taken from them is stored with its source URL and fetch date.

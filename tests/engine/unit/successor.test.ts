@@ -19,6 +19,7 @@ const notFound = (name: string): LookupResult => ({
   status: "not-found",
   source: "npm",
   url: `https://registry.npmjs.org/${name}`,
+  fetchedAt: "2026-01-01T00:00:00Z",
 });
 const unavailable = (name: string, reason: string): LookupResult => ({
   status: "unavailable",

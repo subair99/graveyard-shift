@@ -10,7 +10,8 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "vitest --run",
-    "lint": "eslint src tests"
+    "lint": "eslint src tests",
+    "fixtures:record": "tsx --env-file=.env scripts/recordFixtures.ts"
   },
   "dependencies": {
     "next": "^16.4.6",
@@ -30,6 +31,7 @@
     "@types/semver": "^7.8.0",
     "eslint": "^10.15.0",
     "fast-check": "^4.10.2",
+    "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vitest": "^5.1.0"
   }

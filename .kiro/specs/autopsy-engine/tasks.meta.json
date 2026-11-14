@@ -1,5 +1,14 @@
 {
-  "pbtResults": {},
+  "pbtResults": {
+    "7.4 Write property test for fact provenance": {
+      "status": "passed",
+      "lastRunTimestamp": 1794679694482
+    },
+    "8.7 Write property test for idempotent, byte-identical analysis": {
+      "status": "passed",
+      "lastRunTimestamp": 1794680464985
+    }
+  },
   "executionHistory": {
     "1.1 Scaffold the Next.js + TypeScript project in the workspace root": [
       {
@@ -100,6 +109,16 @@
         "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794672667930
+      },
+      {
+        "executionId": "763bae67-2d88-4402-a52e-291c41168eee",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794676627160
+      },
+      {
+        "executionId": "763bae67-2d88-4402-a52e-291c41168eee",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794676910815
       }
     ],
     "4.1 Implement the npm Source_Client in `src/engine/sources/npm.ts`": [
@@ -107,6 +126,26 @@
         "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794672668046
+      },
+      {
+        "executionId": "763bae67-2d88-4402-a52e-291c41168eee",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794677601713
+      },
+      {
+        "executionId": "763bae67-2d88-4402-a52e-291c41168eee",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794677741353
+      },
+      {
+        "executionId": "de8f3e24-5f7f-4985-ba0a-ac220c66d61e",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794679552296
+      },
+      {
+        "executionId": "de8f3e24-5f7f-4985-ba0a-ac220c66d61e",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794679600655
       }
     ],
     "4.2 Implement the OSV Source_Client in `src/engine/sources/osv.ts`": [
@@ -114,6 +153,16 @@
         "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794672668177
+      },
+      {
+        "executionId": "763bae67-2d88-4402-a52e-291c41168eee",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794677601839
+      },
+      {
+        "executionId": "763bae67-2d88-4402-a52e-291c41168eee",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794677741567
       }
     ],
     "4.3 Implement the deps.dev Source_Client in `src/engine/sources/depsdev.ts`": [
@@ -121,6 +170,16 @@
         "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794672668313
+      },
+      {
+        "executionId": "763bae67-2d88-4402-a52e-291c41168eee",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794677601916
+      },
+      {
+        "executionId": "763bae67-2d88-4402-a52e-291c41168eee",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794677741947
       }
     ],
     "4.4 Implement the GitHub Source_Client in `src/engine/sources/github.ts`": [
@@ -128,6 +187,16 @@
         "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794672668502
+      },
+      {
+        "executionId": "763bae67-2d88-4402-a52e-291c41168eee",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794677602415
+      },
+      {
+        "executionId": "763bae67-2d88-4402-a52e-291c41168eee",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794677742720
       }
     ],
     "5. Checkpoint - Ensure all tests pass": [
@@ -135,6 +204,16 @@
         "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794672668732
+      },
+      {
+        "executionId": "763bae67-2d88-4402-a52e-291c41168eee",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794677759481
+      },
+      {
+        "executionId": "763bae67-2d88-4402-a52e-291c41168eee",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794677999122
       }
     ],
     "6.1 Implement time of death in `src/engine/core/timeOfDeath.ts`": [
@@ -227,6 +306,16 @@
         "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794672670572
+      },
+      {
+        "executionId": "763bae67-2d88-4402-a52e-291c41168eee",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794676930598
+      },
+      {
+        "executionId": "763bae67-2d88-4402-a52e-291c41168eee",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794677591663
       }
     ],
     "7.1 Implement certificate assembly in `src/engine/core/certificate.ts`": [
@@ -234,6 +323,26 @@
         "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794672670809
+      },
+      {
+        "executionId": "763bae67-2d88-4402-a52e-291c41168eee",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794676930786
+      },
+      {
+        "executionId": "763bae67-2d88-4402-a52e-291c41168eee",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794677591869
+      },
+      {
+        "executionId": "de8f3e24-5f7f-4985-ba0a-ac220c66d61e",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794679421281
+      },
+      {
+        "executionId": "de8f3e24-5f7f-4985-ba0a-ac220c66d61e",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794679552175
       }
     ],
     "7.2 Implement the canonical serializer and deserializer in `src/engine/serialize/`": [
@@ -241,6 +350,16 @@
         "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794672670991
+      },
+      {
+        "executionId": "763bae67-2d88-4402-a52e-291c41168eee",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794676930886
+      },
+      {
+        "executionId": "763bae67-2d88-4402-a52e-291c41168eee",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794677592001
       }
     ],
     "7.3 Write `docs/engine-ordering.md`": [
@@ -248,6 +367,26 @@
         "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794672671130
+      },
+      {
+        "executionId": "763bae67-2d88-4402-a52e-291c41168eee",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794676931085
+      },
+      {
+        "executionId": "763bae67-2d88-4402-a52e-291c41168eee",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794677592391
+      },
+      {
+        "executionId": "763bae67-2d88-4402-a52e-291c41168eee",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794677602929
+      },
+      {
+        "executionId": "763bae67-2d88-4402-a52e-291c41168eee",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794677743279
       }
     ],
     "7.4 Write property test for fact provenance": [
@@ -255,6 +394,16 @@
         "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794672671266
+      },
+      {
+        "executionId": "de8f3e24-5f7f-4985-ba0a-ac220c66d61e",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794679601469
+      },
+      {
+        "executionId": "de8f3e24-5f7f-4985-ba0a-ac220c66d61e",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794679949170
       }
     ],
     "7.7 Write property test for serialization round trip": [
@@ -262,6 +411,16 @@
         "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794672671524
+      },
+      {
+        "executionId": "de8f3e24-5f7f-4985-ba0a-ac220c66d61e",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794679602100
+      },
+      {
+        "executionId": "de8f3e24-5f7f-4985-ba0a-ac220c66d61e",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794679949399
       }
     ],
     "8.1 Implement `runAutopsy` in `src/engine/autopsy.ts`": [
@@ -269,6 +428,16 @@
         "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794672671762
+      },
+      {
+        "executionId": "de8f3e24-5f7f-4985-ba0a-ac220c66d61e",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794679957320
+      },
+      {
+        "executionId": "de8f3e24-5f7f-4985-ba0a-ac220c66d61e",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794680185347
       }
     ],
     "8.2 Write unit test for default Analysis_Date in `tests/engine/unit/defaultAnalysisDate.test.ts`": [
@@ -276,6 +445,16 @@
         "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794672671918
+      },
+      {
+        "executionId": "de8f3e24-5f7f-4985-ba0a-ac220c66d61e",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794680190710
+      },
+      {
+        "executionId": "de8f3e24-5f7f-4985-ba0a-ac220c66d61e",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794680320890
       }
     ],
     "8.3 Expose the public engine API in `src/engine/index.ts`": [
@@ -283,6 +462,16 @@
         "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794672672091
+      },
+      {
+        "executionId": "de8f3e24-5f7f-4985-ba0a-ac220c66d61e",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794680191010
+      },
+      {
+        "executionId": "de8f3e24-5f7f-4985-ba0a-ac220c66d61e",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794680321073
       }
     ],
     "8.7 Write property test for idempotent, byte-identical analysis": [
@@ -290,6 +479,16 @@
         "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794672672273
+      },
+      {
+        "executionId": "de8f3e24-5f7f-4985-ba0a-ac220c66d61e",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794680330967
+      },
+      {
+        "executionId": "de8f3e24-5f7f-4985-ba0a-ac220c66d61e",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794680538259
       }
     ],
     "9.1 Write the fixture recording script `scripts/recordFixtures.ts`": [
@@ -297,6 +496,16 @@
         "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794672672495
+      },
+      {
+        "executionId": "de8f3e24-5f7f-4985-ba0a-ac220c66d61e",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794680331155
+      },
+      {
+        "executionId": "de8f3e24-5f7f-4985-ba0a-ac220c66d61e",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794680538464
       }
     ],
     "9.2 Add the replay `fetch` in `tests/engine/helpers/replayFetch.ts`": [
@@ -304,6 +513,16 @@
         "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794672672722
+      },
+      {
+        "executionId": "de8f3e24-5f7f-4985-ba0a-ac220c66d61e",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794680191611
+      },
+      {
+        "executionId": "de8f3e24-5f7f-4985-ba0a-ac220c66d61e",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794680321179
       }
     ],
     "9.3 Write the fixture credential scan test in `tests/engine/unit/fixtureSecrets.test.ts`": [
@@ -380,6 +599,41 @@
         "executionId": "01ae7f28-8955-401c-b250-5ff3e40be667",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794675922215
+      }
+    ],
+    "3. Implement cache and HTTP wrapper": [
+      {
+        "executionId": "763bae67-2d88-4402-a52e-291c41168eee",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794676911007
+      }
+    ],
+    "6. Implement the pure core": [
+      {
+        "executionId": "763bae67-2d88-4402-a52e-291c41168eee",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794677591781
+      }
+    ],
+    "4. Implement source clients": [
+      {
+        "executionId": "763bae67-2d88-4402-a52e-291c41168eee",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794677742811
+      }
+    ],
+    "7. Implement certificate assembly and serialization": [
+      {
+        "executionId": "de8f3e24-5f7f-4985-ba0a-ac220c66d61e",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794679949478
+      }
+    ],
+    "8. Implement the orchestrator and wire everything together": [
+      {
+        "executionId": "de8f3e24-5f7f-4985-ba0a-ac220c66d61e",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794680538348
       }
     ]
   }

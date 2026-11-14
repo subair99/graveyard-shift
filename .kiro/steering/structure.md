@@ -5,7 +5,15 @@
 .kiro/steering/   Steering rules (product.md, tech.md, structure.md)
 src/app/          Next.js App Router: layout.tsx and page.tsx (minimal)
 src/engine/types.ts  Shared engine types, zod schemas (certificate, upstream responses), Result helper
-tests/engine/unit/  Engine unit tests (types.test.ts)
+src/engine/reasons.ts  Shared reason constants (NO_SCORECARD_REASON, NO_GITHUB_REPOSITORY_REASON); no imports from sources or core
+src/engine/cache/cache.ts, cacheKey.ts  Cache store, TTL resolution, Cache key
+src/engine/sources/http.ts  HTTP wrapper shared by source clients: createHttpClient (get/post/request), timeout, Cache, stale fallback, rate limit mapping, token redaction, in-flight dedupe
+src/engine/autopsy.ts  Orchestrator: runAutopsy (parse, resolve, fetch with bounded concurrency, successor lookup, single Analysis_Date read, buildCertificate) and compareCertificates
+src/engine/index.ts  Public engine API (runAutopsy, compareCertificates, canonicalJson, canonicalize, deserialize, parseInput, createMemoryCache, systemClock, public types)
+src/engine/internal.ts  Internals for scripts (fixture recording): createHttpClient and the npm/OSV/deps.dev/GitHub clients; not public API
+src/engine/clock.ts  systemClock, the only real-clock entry point; production wiring only, tests inject a fake Clock
+scripts/recordFixtures.ts, scripts/lib/recordFixtures.ts  Manual fixture recording (npm run fixtures:record); writes tests/engine/fixtures/<package>/*.json
+tests/engine/unit/  Engine unit tests (types.test.ts, http.test.ts, ...)
 package.json      Scripts and dependencies (npm)
 tsconfig.json     TypeScript config (strict)
 next.config.mjs   Next.js config
