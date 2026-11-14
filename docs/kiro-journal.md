@@ -45,16 +45,20 @@ with `Get-ChildItem <dir> -File`, and the total with `Get-ChildItem tests/engine
 | `lodash.set` | 6 |
 | Total | 19 |
 
-## Open items (not measured)
+Recorded with `npm run fixtures:record` (GitHub requests authenticated with GITHUB_TOKEN).
+Checks run on 2026-11-14 in PowerShell:
 
-Qualitative statements, not measurements:
+| Check | Command | Result |
+| --- | --- | --- |
+| No token in fixtures | `Get-ChildItem tests\engine\fixtures -Recurse -File \| Select-String -Pattern "github_pat_\|ghp_"` | no matches |
+| ip advisory present | `... fixtures\ip ... -Pattern "CVE-2024-29415" -List` | match in `osv-9e1a52ddfe4e.json` (GHSA-2p57-rm9w-gvfp, alias CVE-2024-29415, `last_affected: 2.0.1`, no fixed version) |
+| lodash.set advisory present | `... fixtures\lodash.set ... -Pattern "CVE-2020-8203" -List` | match in `osv-702cd01e9bf2.json` (GHSA-p6mc-m468-83gw, alias CVE-2020-8203, lodash.set `last_affected: 4.3.2`) |
+| inflight successor evidence | `... fixtures\inflight ... -Pattern "lru-cache" -List` | matches in `npm-1c739f1f7040.json` (lru-cache lookup) and `npm-20930bb98bd1.json` (deprecation message) |
 
-- Requirement 11.6 is checked by a wrapper in the test file and is not implemented in the engine.
-- The wording of requirements 10.1 and 10.2 differs from the orchestrator's behavior, which reads
-  the clock once for the default Analysis_Date.
-- Of the 26 design properties, only four have property tests: P9, P18, P23 and P25. This was
-  verified by listing `tests/engine/property`, which holds four files:
-  `p09-fact-provenance.test.ts`, `p18-risk-monotonicity.test.ts`, `p23-idempotence.test.ts`,
-  `p25-serialization-roundtrip.test.ts`. The other properties are optional and not written.
-- No test covers the 10 s timeout error for a package name given without a version (1.11).
-- No test uses a 1,000-package lockfile (9.9).
+## Spec process (autopsy-engine)
+
+Counts below can be checked against `.kiro/specs/autopsy-engine/`.
+
+- Workflow: requirements, then design, then tasks, each reviewed before approval. Requirements were
+  revised twice before approval (scope reduced to package.json and package-lock.json; Successor rule
+  made deterministic; vulnerability matching by identifier or alias; semver range
