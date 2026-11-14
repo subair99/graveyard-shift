@@ -43,6 +43,344 @@
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794672401874
       }
+    ],
+    "2.1 Implement the Input_Parser in `src/engine/parse/`": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672667471
+      },
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672681597
+      },
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672803942
+      }
+    ],
+    "2.2 Implement the version resolver in `src/engine/resolve/versionResolver.ts`": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672667757
+      },
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672681876
+      },
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672804204
+      }
+    ],
+    "3.1 Implement the cache in `src/engine/cache/`": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672667837
+      },
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672682597
+      },
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672804553
+      }
+    ],
+    "3.2 Implement the HTTP wrapper in `src/engine/sources/http.ts`": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672667930
+      }
+    ],
+    "4.1 Implement the npm Source_Client in `src/engine/sources/npm.ts`": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672668046
+      }
+    ],
+    "4.2 Implement the OSV Source_Client in `src/engine/sources/osv.ts`": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672668177
+      }
+    ],
+    "4.3 Implement the deps.dev Source_Client in `src/engine/sources/depsdev.ts`": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672668313
+      }
+    ],
+    "4.4 Implement the GitHub Source_Client in `src/engine/sources/github.ts`": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672668502
+      }
+    ],
+    "5. Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672668732
+      }
+    ],
+    "6.1 Implement time of death in `src/engine/core/timeOfDeath.ts`": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672668962
+      },
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672683121
+      },
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672805046
+      }
+    ],
+    "6.2 Implement cause detection and vulnerability filtering in `src/engine/core/causes.ts`": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672669767
+      },
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672683693
+      },
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672805828
+      }
+    ],
+    "6.3 Implement successor extraction in `src/engine/core/successor.ts`": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672670056
+      },
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672806470
+      },
+      {
+        "executionId": "01ae7f28-8955-401c-b250-5ff3e40be667",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794675920631
+      }
+    ],
+    "6.4 Implement the risk scorer in `src/engine/core/risk.ts`": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672670199
+      },
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672807174
+      },
+      {
+        "executionId": "01ae7f28-8955-401c-b250-5ff3e40be667",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794675920794
+      }
+    ],
+    "6.5 Implement status assignment in `src/engine/core/status.ts`": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672670393
+      },
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672807754
+      },
+      {
+        "executionId": "01ae7f28-8955-401c-b250-5ff3e40be667",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794675921379
+      }
+    ],
+    "6.11 Write property test for risk score monotonicity": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672670572
+      }
+    ],
+    "7.1 Implement certificate assembly in `src/engine/core/certificate.ts`": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672670809
+      }
+    ],
+    "7.2 Implement the canonical serializer and deserializer in `src/engine/serialize/`": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672670991
+      }
+    ],
+    "7.3 Write `docs/engine-ordering.md`": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672671130
+      }
+    ],
+    "7.4 Write property test for fact provenance": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672671266
+      }
+    ],
+    "7.7 Write property test for serialization round trip": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672671524
+      }
+    ],
+    "8.1 Implement `runAutopsy` in `src/engine/autopsy.ts`": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672671762
+      }
+    ],
+    "8.2 Write unit test for default Analysis_Date in `tests/engine/unit/defaultAnalysisDate.test.ts`": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672671918
+      }
+    ],
+    "8.3 Expose the public engine API in `src/engine/index.ts`": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672672091
+      }
+    ],
+    "8.7 Write property test for idempotent, byte-identical analysis": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672672273
+      }
+    ],
+    "9.1 Write the fixture recording script `scripts/recordFixtures.ts`": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672672495
+      }
+    ],
+    "9.2 Add the replay `fetch` in `tests/engine/helpers/replayFetch.ts`": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672672722
+      }
+    ],
+    "9.3 Write the fixture credential scan test in `tests/engine/unit/fixtureSecrets.test.ts`": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672672909
+      }
+    ],
+    "9.4 Write fixture verdict tests in `tests/engine/unit/fixtures.test.ts`": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672673085
+      }
+    ],
+    "9.5 Write inflight successor test in `tests/engine/unit/inflightSuccessor.test.ts`": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672673378
+      }
+    ],
+    "9.6 Add the network guard and determinism lint rule": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672673550
+      },
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672808552
+      },
+      {
+        "executionId": "01ae7f28-8955-401c-b250-5ff3e40be667",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794676116489
+      }
+    ],
+    "10.1 Add the new third-party data sources and libraries to `PREEXISTING.md`": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672673697
+      },
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672809074
+      },
+      {
+        "executionId": "01ae7f28-8955-401c-b250-5ff3e40be667",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794675921954
+      }
+    ],
+    "11. Final checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672673892
+      }
+    ],
+    "2. Implement input parsing and version resolution": [
+      {
+        "executionId": "17457754-b46f-458e-aa1e-d6015374789f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794672804359
+      }
+    ],
+    "10. Update project documentation": [
+      {
+        "executionId": "01ae7f28-8955-401c-b250-5ff3e40be667",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794675922215
+      }
     ]
   }
 }

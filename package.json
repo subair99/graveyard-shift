@@ -9,7 +9,8 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "vitest --run"
+    "test": "vitest --run",
+    "lint": "eslint src tests"
   },
   "dependencies": {
     "next": "^16.4.6",
@@ -19,10 +20,15 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@babel/core": "^8.1.2",
+    "@babel/eslint-parser": "^8.1.2",
+    "@babel/preset-typescript": "^8.0.7",
+    "@eslint/js": "^10.0.1",
     "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@types/semver": "^7.8.0",
+    "eslint": "^10.15.0",
     "fast-check": "^4.10.2",
     "typescript": "^7.0.2",
     "vitest": "^5.1.0"
