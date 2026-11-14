@@ -1,5 +1,6 @@
 # Pre-existing work
 This project was created during the Kiroween 2026 submission period (from 30 Oct 2026).
+No code, assets or data from projects created before 30 Oct 2026 are used.
 Third-party libraries and data sources used are listed here as they are added.
 
 ## Libraries
@@ -19,3 +20,8 @@ The autopsy engine reads these public services. Every fact taken from them is st
   - `https://api.deps.dev/v3alpha`, used for the dependents count through GetDependents (`dependentCount`). This is an alpha API and may change.
   - Both were checked against https://docs.deps.dev/api/v3/ and https://docs.deps.dev/api/v3alpha/ on 14 Nov 2026. Terms: https://deps.dev/terms
 - GitHub REST API: base URL `https://api.github.com`. Used for repository `archived` and `pushed_at`. Requests are authenticated only when `GITHUB_TOKEN` is set. Docs: https://docs.github.com/en/rest. Terms: https://docs.github.com/en/site-policy/github-terms/github-terms-of-service
+
+## Recorded data
+- `tests/engine/fixtures/` holds responses recorded on 14 Nov 2026 from the data sources above
+  for ip@2.0.1, lodash.set@4.3.2 and inflight@1.0.6 (19 files, public registry and advisory data),
+  using `npm run fixtures:record`. No credentials are stored (checked by `tests/engine/unit/fixtureSecrets.test.ts`).
