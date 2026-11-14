@@ -28,13 +28,13 @@ Per the necromancy laws and honesty rules, every number in a Proof_Report is mea
 - A9: A function flagged non-deterministic and not excluded by the Harness_Config makes the verdict `inconclusive`, because its behavior was not verified.
 - A10: Tarball fetching from the registry is a separate manual, network-gated step. The Proof_Engine never fetches.
 
-### Open questions for the user
+### Decisions
 
-- Q1: Tarball parsing: add the `tar` package (ISC, MIT-compatible, listed in PREEXISTING.md) or write a minimal ustar reader on `node:zlib`? Default if unanswered: add `tar`, extract only through the Tarball_Extractor wrapper.
-- Q2: Should `inconclusive` be a third verdict (current choice) or should harness failures use a separate `error` field with verdict `null`?
-- Q3: What time budget is acceptable for the engine-level property tests and the sandbox integration tests? It must be set after the first measurement and logged in docs/kiro-journal.md.
-- Q4: ip has runtime dependencies (jsbn, sprintf-js). Should a later spec add a read-only dependency root to the inputs, with its own hash in the report?
-- Q5: Is committing the lodash.set@4.3.2 tarball (MIT, listed in PREEXISTING.md) acceptable, or should tests rebuild it from a locally stored copy?
+- D1 (was Q1): Add the `tar` npm package for extraction. `npm view tar` on this machine reports version 7.5.23 and license BlueOak-1.0.0 (a permissive license, not ISC), so the license must be re-checked against the MIT-compatibility rule when the dependency is added. Only the Tarball_Extractor wrapper imports `tar`, and PREEXISTING.md lists it (Requirement 3.7).
+- D2 (was Q2): `inconclusive` stays a third Verdict (`alive`, `restless`, `inconclusive`).
+- D3 (was Q3): Time budgets are set after the first measurement. The targets are at most 60 s for the engine-level property tests and at most 120 s for the sandbox integration tests, with measured values logged in docs/kiro-journal.md (Requirement 15.7).
+- D4 (was Q4): A later spec adds a read-only dependency root to the inputs, with its own hash in the Proof_Report. That is out of scope here (Requirement 16.6). The run request and Executor interface stay open to this extension, and this spec does not implement it.
+- D5 (was Q5): The lodash.set@4.3.2 tarball (MIT) is committed together with a metadata file, and tests verify the tarball against the metadata (Requirement 14.1 to 14.3).
 
 ## Glossary
 
@@ -43,15 +43,19 @@ Per the necromancy laws and honesty rules, every number in a Proof_Report is mea
 - **Resurrection**: The modified package, supplied as a local directory or a tarball.
 - **Integrity_Hash**: The registry `dist.integrity` sha512 SRI string (`sha512-<base64>`).
 - **Tree_Hash**: A `sha512-<base64>` hash over the files of a package tree, defined in Requirement 4.
-- **Tarball_Extractor**: The component that safely extracts a tarball into a temporary directory.
+- **Tarball_Extractor**: The component that safely extracts a tarball into a temporary directory. It is the only module that imports the `tar` npm package.
+- **Prototype_Snapshot**: The record, taken inside a child process, of the own properties (names including symbols, and descriptors or values) of `Object.prototype`, `Array.prototype`, `Function.prototype`, `String.prototype`, `Number.prototype` and `Boolean.prototype`.
+- **Prototype_Delta**: The set of properties added, changed or removed on those six prototypes between a Prototype_Snapshot taken before a call and one taken after it.
+- **Restart_Event**: A restart of a child process that the Sandbox_Executor performs because a prototype restoration could not be verified.
+- **Path_Redactor**: The pure component that replaces absolute paths and temporary directory names in error messages with placeholders.
 - **Haunting_Radius**: The list of exported function names that the Proof_Engine tests. The default is every exported function.
 - **Harness_Config**: The per-package configuration holding per-function generators, stubs and exclusions, case count, seed, per-call timeout and Declared_Deltas.
 - **Executor**: The interface the Proof_Engine uses to load a package side and call functions on it. It accepts an encoded call and returns an Outcome.
 - **Sandbox_Executor**: The Executor that runs one side in a separate child process under the Node permission model.
 - **InProcess_Executor**: An Executor that runs a side in the test process. It is used only by engine-level property tests.
 - **Case**: One generated set of input arguments for one function.
-- **Outcome**: The observed result of one call: one of `returned`, `threw`, `rejected`, `timeout`, `crash` or `output-too-large`, together with the encoded value and the encoded post-call state of each argument.
-- **Value_Codec**: The tagged JSON encoding that carries values between processes and into the report.
+- **Outcome**: The observed result of one call: one of `returned`, `threw`, `rejected`, `timeout`, `crash` or `output-too-large`, together with the encoded value, the encoded post-call state of each argument, and the Prototype_Delta of the call.
+- **Value_Codec**: The tagged JSON encoding that carries values between processes and into the report. It does not support cycles or shared references; a value containing either is encoded as `unencodable` with reason `cycle`.
 - **Divergence**: A difference between the Original Outcome and the Resurrection Outcome that no Declared_Delta explains, or an API-surface difference.
 - **Declared_Delta**: An allowed behavior change with a function name, an input predicate and a required new-behavior property.
 - **Demonstration**: A concrete Case for a Declared_Delta that fails the required property on the Original and passes it on the Resurrection.
@@ -101,6 +105,8 @@ Per the necromancy laws and honesty rules, every number in a Proof_Report is mea
 4. WHEN the package root is known, THE Proof_Engine SHALL resolve the entry module with the CommonJS `require` conditions applied to the `exports` field of package.json, then the `main` field, then `index.js`.
 5. IF the package.json declares `"type": "module"` or the resolved entry file fails to load as CommonJS, THEN THE Proof_Engine SHALL return Verdict `inconclusive` with a harness error of kind `unloadable-module` that includes the load error message.
 6. WHEN the run finishes or fails, THE Proof_Engine SHALL delete every temporary directory it created.
+7. THE Proof_Engine SHALL import the `tar` npm package only in the Tarball_Extractor module, and THE repository SHALL list `tar` in PREEXISTING.md with its name, license and source URL.
+8. THE test suite SHALL include a test that fails WHEN any source file under `src/proof/` other than the Tarball_Extractor module imports `tar`.
 
 ### Requirement 4: Resurrection input and Tree_Hash
 
@@ -130,6 +136,12 @@ Per the necromancy laws and honesty rules, every number in a Proof_Report is mea
 7. IF the Sandbox_Executor cannot start a child process with the permission flags (for example the Node version lacks `--permission`), THEN THE Proof_Engine SHALL return Verdict `inconclusive` with a harness error of kind `sandbox-unavailable` and SHALL NOT run the package unsandboxed.
 8. THE Sandbox_Executor SHALL exchange messages with each child process over stdin and stdout as newline-delimited JSON, and SHALL discard any child output that is not a well-formed message.
 9. THE Proof_Report SHALL record the sandbox mechanism as the string `node-permission` for the Sandbox_Executor and `in-process` for the InProcess_Executor.
+10. WHEN the sandbox runner executes a call, THE sandbox runner SHALL take a Prototype_Snapshot immediately before the call, compute the Prototype_Delta immediately after the call (including after a call that throws, rejects or times out where the child is still alive), include the Prototype_Delta in the Outcome of that same call, and then restore the six prototypes to the snapshot.
+11. THE sandbox runner SHALL apply the isolation of criterion 10 to both the Original and the Resurrection, for every call, independently of whether a Declared_Delta exists for the function.
+12. IF the restoration cannot be verified (a non-configurable property cannot be restored, a prototype is frozen or sealed, or a Prototype_Snapshot taken after restoration differs from the one taken before the call), THEN THE Sandbox_Executor SHALL restart the child process before the next call on that side and SHALL count a Restart_Event.
+13. THE Proof_Report `sandbox` entry SHALL contain the mechanism string of criterion 9 and the number of Restart_Events for each side, counted from restarts that occurred during the run.
+14. WHEN the Sandbox_Executor restarts a child process because of a Restart_Event, THE Sandbox_Executor SHALL count that restart toward the maximum number of restarts of Requirement 16.4.
+15. THE sandbox integration tests SHALL show that, after a call on the Original that pollutes `Object.prototype` through a `__proto__` path (lodash.set), the Prototype_Delta of that call lists the polluted property, and the next call in the same child process observes an `Object.prototype` equal to the clean snapshot and records an empty Prototype_Delta.
 
 ### Requirement 6: Value codec
 
@@ -137,11 +149,12 @@ Per the necromancy laws and honesty rules, every number in a Proof_Report is mea
 
 #### Acceptance Criteria
 
-1. THE Value_Codec SHALL encode every value as a tagged JSON node with a type tag, covering `undefined`, `null`, boolean, string, number (including `NaN`, `Infinity`, `-Infinity` and `-0`), bigint, symbol (by description), Date (by time value, including invalid dates), RegExp (source and flags), Map, Set, ArrayBuffer, typed arrays (type and bytes), Error (class name, message, own enumerable properties), arrays (including holes), plain objects and class instances (own string keys in code point order, plus the constructor name), and functions (name and arity only).
-2. WHEN a value contains a cycle or a shared reference, THE Value_Codec SHALL encode the cycle and the sharing with reference indices, so that the decoded structure preserves them.
-3. IF a value cannot be encoded (a Proxy that throws, a getter that throws, or a value deeper than 1,000 nesting levels), THEN THE Value_Codec SHALL encode a node of type `unencodable` with the reason, and THE comparison SHALL treat two `unencodable` nodes with the same reason as equal.
-4. FOR ALL encodable values, decoding the encoded form of the value SHALL produce a value that the deep-equality function of Requirement 7 reports as equal to the original value (round-trip property).
-5. FOR ALL encodable values, encoding the decoded form of an encoded value SHALL produce the same canonical JSON string as the first encoding.
+1. THE Value_Codec SHALL encode every value as a tagged JSON node with a type tag, covering `undefined`, `null`, boolean, string, number (including `NaN`, `Infinity`, `-Infinity` and `-0`), bigint, symbol (by description), Date (by time value, including invalid dates), RegExp (source and flags), Map, Set, ArrayBuffer, typed arrays (type and bytes), Error (class name, message, own enumerable properties other than `stack`), arrays (including holes), plain objects and class instances (own string keys in code point order, plus the constructor name), and functions (name and arity only).
+2. WHEN a value contains a cycle or a shared reference (the same object reachable by more than one path), THE Value_Codec SHALL encode that value as a node of type `unencodable` with the reason `cycle`. Full support for cycles and shared references is out of scope. Buffer and typed arrays keep the encodings of criterion 1.
+3. IF a value cannot be encoded for another reason (a Proxy that throws, a getter that throws, or a value deeper than 1,000 nesting levels), THEN THE Value_Codec SHALL encode a node of type `unencodable` with the reason `proxy`, `getter` or `depth` respectively.
+4. WHEN comparing two `unencodable` nodes, THE Proof_Engine SHALL treat them as equal if their reasons are equal and as a Divergence-producing difference if their reasons differ.
+5. FOR ALL encodable values (values containing no `unencodable` node), decoding the encoded form of the value SHALL produce a value that the deep-equality function of Requirement 7 reports as equal to the original value (round-trip property).
+6. FOR ALL encodable values, encoding the decoded form of an encoded value SHALL produce the same canonical JSON string as the first encoding.
 
 ### Requirement 7: Comparison semantics
 
@@ -153,7 +166,7 @@ Per the necromancy laws and honesty rules, every number in a Proof_Report is mea
 2. WHEN comparing two encoded objects, THE Proof_Engine SHALL compare the constructor name, the set of own string-keyed properties and the values of those properties, and SHALL ignore property insertion order for plain objects, Maps and Sets.
 3. WHEN comparing two Date, RegExp, typed array, ArrayBuffer or bigint values, THE Proof_Engine SHALL compare time value, source and flags, element type and bytes, or exact integer value, respectively.
 4. WHEN comparing two function values, THE Proof_Engine SHALL compare `name` and `length` only.
-5. WHEN both sides throw or reject, THE Proof_Engine SHALL compare the error class name and the message, and SHALL treat a non-Error thrown value as equal only if the two encoded thrown values are deep-equal.
+5. WHEN both sides throw or reject, THE Proof_Engine SHALL compare the error class name and the message, and SHALL treat a non-Error thrown value as equal only if the two encoded thrown values are deep-equal. The Proof_Engine SHALL perform this comparison on error text after redaction by the Path_Redactor (Requirement 13.10).
 6. WHEN the Original returns normally and the Resurrection throws, or the reverse, THE Proof_Engine SHALL record a difference between the two Outcomes.
 7. WHEN a call receives arguments, THE Proof_Engine SHALL give each side an independent decoded copy of the same encoded arguments, and SHALL compare the encoded post-call state of every argument between the two sides.
 8. WHEN an exported function returns a Promise, THE Proof_Engine SHALL await the Promise inside the child process within the per-call timeout and SHALL compare the resolved or rejected value.
@@ -212,9 +225,10 @@ Per the necromancy laws and honesty rules, every number in a Proof_Report is mea
 4. WHEN a Case does not satisfy the input predicate of any Declared_Delta for its function and the two Outcomes differ, THE Proof_Engine SHALL record a Divergence of kind `unexplained`.
 5. WHEN a Declared_Delta is evaluated, THE Proof_Engine SHALL run the required property on both the Original and the Resurrection for the explicit Cases and for generated Cases that satisfy the predicate, and SHALL record as the Demonstration the first Case, in execution order, where the property fails on the Original and passes on the Resurrection.
 6. IF no Case yields a Demonstration for a Declared_Delta, THEN THE Proof_Engine SHALL record the Declared_Delta as `not-demonstrated` and SHALL return Verdict `restless`.
-7. THE required property SHALL run inside the same child process as the call it checks, and WHERE the property alters global state (for example `Object.prototype`), THE property module SHALL snapshot that state before the call, compare it after the call, and restore it before returning.
+7. THE required property SHALL run inside the same child process as the call it checks, and THE property SHALL receive the Prototype_Delta that the sandbox runner computed for that call under Requirement 5.10, so that the property check and the Outcome use the same snapshot data. The property module SHALL NOT take its own prototype snapshot or restore prototypes, because the restoration is done by the sandbox runner under Requirement 5.10 and 5.12.
 8. THE Proof_Report SHALL contain, for each Declared_Delta, its identifier, function, the Demonstration (arguments and the property result on each side), and the number of predicate-satisfying Cases checked on the Resurrection.
 9. THE Proof_Engine SHALL evaluate input predicates only on decoded argument copies, and SHALL NOT pass package code or sandbox objects to a predicate.
+10. THE Proof_Engine SHALL compare the Prototype_Delta of the Original Outcome with that of the Resurrection Outcome like any other part of the Outcome, and WHEN a Prototype_Delta differs between the two sides, THE Proof_Engine SHALL treat the difference as a Divergence unless a Declared_Delta whose input predicate is satisfied by the Case and whose required property allows that difference accepts it under criterion 2.
 
 ### Requirement 12: Verdict and harness errors
 
@@ -244,6 +258,14 @@ Per the necromancy laws and honesty rules, every number in a Proof_Report is mea
 7. FOR ALL valid Proof_Reports, deserializing the canonical JSON of the report and serializing the result SHALL produce the identical string (round-trip property).
 8. THE ordering rules SHALL be documented in docs/proof-of-life-ordering.md, including the key-order table, the sort rules and their tie-breakers.
 9. THE Proof_Report SHALL state only counts and values observed during the run, and every count SHALL be computed from executed calls and not from configured values.
+10. THE Path_Redactor SHALL, in the parent process, process every error text before that text is compared or serialized, where error text means the message and every other string-valued own enumerable property of an encoded Error, every thrown or rejected string value, and the message of every harness error.
+11. THE Proof_Engine SHALL NOT record stack traces: the Value_Codec SHALL encode an Error with its class name, message and own enumerable properties other than `stack`, and a `stack` property SHALL never appear in an Outcome or in the Proof_Report.
+12. THE Path_Redactor SHALL replace each absolute path that lies under the package root of the Original or of the Resurrection with `<package>/<relative path>` (the relative path with forward slashes, or `<package>` alone for the root), SHALL replace every other absolute path, including the temporary root, the Node installation directory and the user's home directory, with `<redacted-path>`, and SHALL replace the name of every temporary directory created by the Proof_Engine, when it appears without its parent path, with `<redacted-path>`.
+13. THE Path_Redactor SHALL recognize POSIX absolute paths, Windows drive-letter paths with backslashes or forward slashes, `file://` URLs (with percent-decoding), extended-length `\\?\` paths including `\\?\UNC\` paths, and UNC `\\server\share` paths, and WHILE the parent process runs on Windows, THE Path_Redactor SHALL match package roots and drive letters case-insensitively.
+14. FOR ALL error texts and for any two package roots, WHEN the error text from the Original contains its package root and the error text from the Resurrection is identical except that it contains the Resurrection package root at the same positions, THE Path_Redactor SHALL produce the same redacted text for both, so that redaction neither creates nor hides a Divergence.
+15. THE Path_Redactor SHALL be a pure function of the text and the set of known roots, and SHALL be applied to the Original and the Resurrection identically.
+16. THE test suite SHALL include tests of the Path_Redactor with Windows examples (`C:\Users\x\AppData\Local\Temp\gs-1\pkg\lib\a.js`, `c:/users/x/appdata/local/temp/gs-1/pkg/lib/a.js`, `file:///C:/Users/x/pkg/a.js`, `\\?\C:\Users\x\pkg\a.js`, `\\server\share\pkg\a.js`) and POSIX examples (`/tmp/gs-1/pkg/lib/a.js`, `file:///home/x/pkg/a.js`), including mixed-case drive letters and package roots, and with a property test for criterion 14 that runs at least 100 generated cases.
+17. THE test suite SHALL include a test that fails WHEN a serialized Proof_Report produced from an error message containing the temporary root, the Node installation directory or the user's home directory contains any of those strings.
 
 ### Requirement 14: lodash.set fixtures and harness config
 
@@ -251,16 +273,17 @@ Per the necromancy laws and honesty rules, every number in a Proof_Report is mea
 
 #### Acceptance Criteria
 
-1. THE Fixture_Recorder SHALL, when run manually with network access through `npm run fixtures:record-tarball`, download the `dist.tarball` URL of lodash.set@4.3.2, verify it against the recorded `dist.integrity`, and write the tarball to tests/proof/fixtures/lodash.set-4.3.2.tgz together with a metadata file holding the source URL, the Integrity_Hash and the fetch date.
+1. THE Fixture_Recorder SHALL, when run manually with network access through `npm run fixtures:record-tarball`, download the `dist.tarball` URL of lodash.set@4.3.2, verify it against the recorded `dist.integrity`, and write the tarball to tests/proof/fixtures/lodash.set-4.3.2.tgz together with a committed metadata file tests/proof/fixtures/lodash.set-4.3.2.meta.json holding the package name, version, `dist.tarball` URL, `dist.integrity`, source URL, fetch date, license (MIT) and the author credits.
 2. THE test suite SHALL read the Original tarball from the committed fixture and SHALL make no network request.
-3. THE tests/proof/fixtures directory SHALL contain a hand-written resurrection `lodash.set-alive` that preserves the MIT license text and the original author credits, keeps the exported names and function `length` of the Original, and ignores the path segments `__proto__`, `constructor` and `prototype` as declared in docs/demo-packages.md.
-4. THE tests/proof/fixtures directory SHALL contain a deliberately broken resurrection `lodash.set-broken` that keeps the exported API surface and changes ordinary behavior, in at least one way inside no Declared_Delta predicate (for example creating objects instead of arrays for numeric intermediate path segments).
-5. THE Harness_Config for lodash.set SHALL define generators for the object argument, for the path argument (dotted strings, bracket strings and arrays of strings and integers, including segments `__proto__`, `constructor` and `prototype`), and for the value argument, and SHALL define one Declared_Delta whose input predicate selects paths containing one of those three segments and whose property module checks that `Object.prototype` has no new own property after the call.
-6. WHEN the Proof_Engine runs the Original against `lodash.set-alive` with the Sandbox_Executor, THE Proof_Engine SHALL return Verdict `alive` with a Demonstration for the lodash.set Declared_Delta in which the property fails on the Original and passes on the Resurrection.
-7. WHEN the Proof_Engine runs the Original against `lodash.set-broken` with the Sandbox_Executor, THE Proof_Engine SHALL return Verdict `restless` with at least one `unexplained` Divergence that has a shrunk counterexample and Replay_Parameters.
-8. WHEN the Proof_Engine runs the Original against itself, THE lodash.set property module SHALL leave the test process `Object.prototype` unchanged, because the pollution occurs only inside the child process.
-9. THE design SHALL keep the Harness_Config schema, the setup-module mechanism and the Executor interface independent of lodash.set so that an ip harness (with the CVE-2024-29415 explicit Cases 127.1, 01200034567, 012.1.2.3, 000:0:0000::01, ::fFFf:127.0.0.1, 0 and 017700000001) can be added without engine changes.
-10. WHEN a third-party tarball or library is added, THE repository SHALL list it in PREEXISTING.md with its license and source URL.
+3. THE test suite SHALL include a test that computes the sha512 digest of the committed tarball and compares it with the `dist.integrity` in the metadata file, and a test that compares the `dist.integrity` of version 4.3.2 in the recorded packument tests/engine/fixtures/lodash.set/npm-449996e32bd2.json with the `dist.integrity` in the metadata file.
+4. THE tests/proof/fixtures directory SHALL contain a hand-written resurrection `lodash.set-alive` that preserves the MIT license text and the original author credits, keeps the exported names and function `length` of the Original, and ignores the path segments `__proto__`, `constructor` and `prototype` as declared in docs/demo-packages.md.
+5. THE tests/proof/fixtures directory SHALL contain a deliberately broken resurrection `lodash.set-broken` that keeps the exported API surface and changes ordinary behavior, in at least one way inside no Declared_Delta predicate (for example creating objects instead of arrays for numeric intermediate path segments).
+6. THE Harness_Config for lodash.set SHALL define generators for the object argument, for the path argument (dotted strings, bracket strings and arrays of strings and integers, including segments `__proto__`, `constructor` and `prototype`), and for the value argument, and SHALL define one Declared_Delta whose input predicate selects paths containing one of those three segments and whose property module checks, from the Prototype_Delta that the sandbox runner computed for the call (Requirement 5.10), that `Object.prototype` has no added own property. THE isolation of Requirement 5.10 to 5.12 applies to every call on both sides and does not depend on this Declared_Delta.
+7. WHEN the Proof_Engine runs the Original against `lodash.set-alive` with the Sandbox_Executor, THE Proof_Engine SHALL return Verdict `alive` with a Demonstration for the lodash.set Declared_Delta in which the property fails on the Original and passes on the Resurrection.
+8. WHEN the Proof_Engine runs the Original against `lodash.set-broken` with the Sandbox_Executor, THE Proof_Engine SHALL return Verdict `restless` with at least one `unexplained` Divergence that has a shrunk counterexample and Replay_Parameters.
+9. WHEN the Proof_Engine runs the Original against itself, THE lodash.set property module SHALL leave the test process `Object.prototype` unchanged, because the pollution occurs only inside the child process.
+10. THE design SHALL keep the Harness_Config schema, the setup-module mechanism and the Executor interface independent of lodash.set so that an ip harness (with the CVE-2024-29415 explicit Cases 127.1, 01200034567, 012.1.2.3, 000:0:0000::01, ::fFFf:127.0.0.1, 0 and 017700000001) can be added without engine changes.
+11. WHEN a third-party tarball or library is added, THE repository SHALL list it in PREEXISTING.md with its name, license and source URL, and THE repository SHALL list at least the `tar` npm package and the lodash.set@4.3.2 tarball.
 
 ### Requirement 15: Engine property tests and executor separation
 
@@ -274,8 +297,9 @@ Per the necromancy laws and honesty rules, every number in a Proof_Report is mea
 4. FOR ALL generated synthetic packages and injected behavior changes (a changed return value, a changed thrown message or class, an added or removed argument mutation, a changed async outcome, a changed export name or function arity) that fall outside every Declared_Delta, running the Proof_Engine SHALL return Verdict `restless` with at least one Divergence for the changed function.
 5. EACH engine-level property test SHALL run at least 100 generated cases.
 6. WHEN the Sandbox_Executor is exercised by integration tests, THE tests SHALL show that a network connection attempt fails, a file read outside the package directory fails, a parent environment variable is absent in the child, a hung call is killed and recorded as `timeout`, and a spawn of a child process or worker thread fails.
-7. THE tests SHALL record in docs/kiro-journal.md the measured wall-clock time of the engine-level property tests and of the sandbox integration tests, and THE time budget for each suite SHALL be set from those measurements.
-8. THE tests SHALL run offline, and WHERE `FC_SEED` is set, THE tests SHALL replay that fast-check Seed.
+7. THE tests SHALL record in docs/kiro-journal.md the measured wall-clock time of the engine-level property tests and of the sandbox integration tests, THE time budget for each suite SHALL be set after the first measurement, and THE budget SHALL equal the targets of at most 60 seconds for the engine-level property tests and at most 120 seconds for the sandbox integration tests.
+8. WHEN the measured wall-clock time of a suite exceeds its target, THE test run SHALL fail or flag the overrun in its output, and THE measured value SHALL be logged in docs/kiro-journal.md.
+9. THE tests SHALL run offline, and WHERE `FC_SEED` is set, THE tests SHALL replay that fast-check Seed.
 
 ### Requirement 16: Non-functional requirements and scope
 
@@ -285,6 +309,7 @@ Per the necromancy laws and honesty rules, every number in a Proof_Report is mea
 
 1. THE Proof_Engine SHALL make no LLM call and, outside the Fixture_Recorder script, no network request.
 2. THE pure comparison, Value_Codec and Report_Serializer modules SHALL NOT import or call the system clock, and a determinism lint test SHALL verify that, as the autopsy engine does for its core.
-3. THE Proof_Engine SHALL NOT write the value of `GITHUB_TOKEN`, `KIRO_API_KEY` or any other environment variable to a Proof_Report, a log line or an error message.
+3. THE Proof_Engine SHALL NOT write the value of `GITHUB_TOKEN`, `KIRO_API_KEY` or any other environment variable to a Proof_Report, a log line or an error message. This requirement, Requirement 13.4 and the redaction of Requirement 13.10 to 13.17 apply together: redaction removes absolute paths and temporary directory names, and the minimal child environment of Requirement 5.3 keeps environment values out of the child.
 4. THE Proof_Engine SHALL bound the total run by the sum of per-call timeouts and a configurable maximum number of child process restarts, and WHEN the restart maximum is exceeded, THE Proof_Engine SHALL return Verdict `inconclusive` with a harness error of kind `too-many-crashes`.
-5. THE Proof_Engine SHALL keep the scope of this feature to the library, the thin CLI and the fixtures above, and SHALL NOT sign reports with GitHub Artifact Attestations, open pull requests, call Kiro agents, support ESM, load native addons, or run packages that need network access.
+5. THE Proof_Engine SHALL keep the scope of this feature to the library, the thin CLI and the fixtures above, and SHALL NOT sign reports with GitHub Artifact Attestations, open pull requests, call Kiro agents, support ESM, load native addons, support cycles or shared references in the Value_Codec, or run packages that need network access.
+6. THE Proof_Engine SHALL treat the following as out of scope for this feature: a read-only dependency root in the run request (planned for a later spec, with its own hash in the Proof_Report, for packages such as ip that have runtime dependencies), and the ip harness. The request schema, the Executor interface and the Harness_Config SHALL allow such an extension later, and this feature SHALL NOT implement it.
