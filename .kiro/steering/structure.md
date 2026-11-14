@@ -4,6 +4,8 @@
 ```
 .kiro/steering/   Steering rules (product.md, tech.md, structure.md)
 src/app/          Next.js App Router: layout.tsx and page.tsx (minimal)
+src/engine/types.ts  Shared engine types, zod schemas (certificate, upstream responses), Result helper
+tests/engine/unit/  Engine unit tests (types.test.ts)
 package.json      Scripts and dependencies (npm)
 tsconfig.json     TypeScript config (strict)
 next.config.mjs   Next.js config

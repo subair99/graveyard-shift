@@ -8,7 +8,7 @@ Each property-based test goes in its own file, `tests/engine/property/pN-<name>.
 
 ## Tasks
 
-- [ ] 1. Set up the project
+- [x] 1. Set up the project
   - [x] 1.1 Scaffold the Next.js + TypeScript project in the workspace root
     - Create `package.json`, `tsconfig.json` (strict), `next.config.mjs`, and `src/app` minimal layout and page
     - Keep the existing `.env`, `.env.example`, `README.md`, `LICENSE`, `docs/`; add `GITHUB_TOKEN` (empty) to `.env.example` if absent
@@ -21,7 +21,7 @@ Each property-based test goes in its own file, `tests/engine/property/pN-<name>.
     - Create `tests/engine/helpers/fc.ts` exporting shared config: `numRuns: 100`, seed from `FC_SEED`, and verbose failure reporting that prints the shrunk counterexample and the seed
     - _Requirements: 12.5, 12.6_
 
-  - [ ] 1.3 Define shared engine types and schemas in `src/engine/types.ts`
+  - [x] 1.3 Define shared engine types and schemas in `src/engine/types.ts`
     - `Status`, `CauseOfDeath`, `SourceName`, `Provenance`, `Fact`, `Maybe`, `Vulnerability`, `VitalSigns`, `RiskBreakdown`, `DeathCertificate`, `AutopsyError`, `AutopsyRun`, `PackageRef`, `EngineInput`, `EngineConfig`, `EngineDeps`, `Clock`, `Result`, `SourceResult`
     - Add zod schemas for `DeathCertificate` and for each upstream response shape (npm packument, downloads, OSV, deps.dev, GitHub)
     - _Requirements: 3.1, 7.1, 10.7_
