@@ -1,0 +1,192 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Create the spike scaffolding and the journal section": [
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794688427442
+      },
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794688509594
+      }
+    ],
+    "1.2 Risk 1: native type stripping under `--permission`": [
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794688509868
+      },
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794688608912
+      }
+    ],
+    "1.3 Risk 2: CommonJS loading of the package under `--allow-fs-read=<package dir>`": [
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794688609480
+      },
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794688702668
+      }
+    ],
+    "1.4 Risk 3: minimum Windows environment variable set (`env-minimum`)": [
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794688702067
+      },
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794688832802
+      }
+    ],
+    "1.5 Risk 4: child current directory equal to the package directory": [
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794688833047
+      },
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794688937513
+      }
+    ],
+    "1.6 Risk 5a: package path that contains spaces": [
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794688938254
+      },
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794689062103
+      }
+    ],
+    "1.7 Risk 5b: package path on another drive (manual input possible)": [
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794689062682
+      },
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794689257677
+      }
+    ],
+    "1.8 Risk 6a: fast-check 4.10 `RunDetails` field names": [
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794689258039
+      },
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794689704722
+      }
+    ],
+    "1.9 Risk 6b: `path` replay with `numRuns` smaller than the recorded run index": [
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794689704998
+      },
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794689815510
+      }
+    ],
+    "1.10 Extra risk: vitest 5 `projects` key, `globalSetup` and per-project timing": [
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794689816060
+      },
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794690361332
+      }
+    ],
+    "1.11 Extra risk: `tar` 7.5.23 API and licenses": [
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794690361849
+      },
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794690624701
+      }
+    ],
+    "1.12 Extra risk: `--allow-fs-read` argument syntax for `,` and `*` in paths": [
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794690624927
+      },
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794690761612
+      }
+    ],
+    "1.13 Extra measurement: cost of one child process start": [
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794690761950
+      },
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794690988402
+      }
+    ],
+    "1.14 Update design.md if any risk or extra item failed or differed": [
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794690988994
+      },
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794691365817
+      }
+    ],
+    "1.15 Clean up the scratch scripts": [
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794691366301
+      },
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794691474387
+      }
+    ],
+    "1. Sandbox spike: settle every item in \"Risks to verify\"": [
+      {
+        "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794691474594
+      }
+    ]
+  }
+}

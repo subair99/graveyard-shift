@@ -21,19 +21,19 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
 
 ## Tasks
 
-- [ ] 1. Sandbox spike: settle every item in "Risks to verify"
+- [x] 1. Sandbox spike: settle every item in "Risks to verify"
   - Goal: replace assumptions with observations before any sandbox code is written. Every sub-task runs a small throwaway script under `scripts/spike/`, then appends an entry to `docs/kiro-journal.md` under a new heading "Proof of Life: sandbox spike". Each entry records only observed facts: the exact command, the date, `node -v`, the OS version, the working directory, and the observed output or exit code. Do not write any number or result that was not observed. A risk that cannot be tested on this machine is logged as "not tested" with the reason, never as passed.
   - Run Node with the permission flags exactly as the design's `buildSandboxArgv` will: `process.execPath --permission --allow-fs-read=<abs path> ... <entry>`. Use `node:child_process` `spawnSync` with `shell: false` so that each path is one argv element.
   - _Requirements: 5.2, 5.3, 5.7, 5.8, 16.3_
 
-  - [ ] 1.1 Create the spike scaffolding and the journal section
+  - [x] 1.1 Create the spike scaffolding and the journal section
     - Create `scripts/spike/lib.ts` (throwaway): a helper that spawns `process.execPath` with given flags, env, cwd and returns `{ status, signal, stdout, stderr }`
     - Add the heading "Proof of Life: sandbox spike" to `docs/kiro-journal.md` with an environment block (date, `node -v`, OS version, the drive letters present, the vitest and fast-check versions read from `node_modules/<package>/package.json`)
     - Check that `scripts/spike/` does not break `npm run typecheck` or `npm run lint` (the lint script covers only `src` and `tests`); fix the `tsconfig.json` include only if typecheck fails, and log what was done
     - Disposition: `lib.ts` is deleted in 1.15 unless a later kept script needs it
     - _Requirements: 5.2_
 
-  - [ ] 1.2 Risk 1: native type stripping under `--permission`
+  - [x] 1.2 Risk 1: native type stripping under `--permission`
     - Create `scripts/spike/child/` with a `package.json` `{"type":"module"}`, an `a.ts` that imports `./b.ts`, and a `runner.ts` that prints a line, all using only erasable syntax (type annotations, `interface`, `import type`)
     - Run `node --permission --allow-fs-read=<abs scripts/spike/child dir> <abs runner.ts>` and log: exit code, output, whether Node printed an experimental warning, whether the import of a sibling `.ts` file worked, and what happens when the sibling is outside the granted directory
     - Also run the same script without the `package.json` `{"type":"module"}` and log whether it still loads (this decides whether the child `package.json` is required)
@@ -42,7 +42,7 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - Disposition: keep `child/` as the basis of the integration test `smoke` (task 18.11); the rest is deleted in 1.15
     - _Requirements: 5.2, 5.8_
 
-  - [ ] 1.3 Risk 2: CommonJS loading of the package under `--allow-fs-read=<package dir>`
+  - [x] 1.3 Risk 2: CommonJS loading of the package under `--allow-fs-read=<package dir>`
     - Create a package directory with `package.json` (`main`, no `type`), `index.js` (`module.exports`), and a second file loaded through `require('./lib/x.js')`
     - From the spike runner, load it with `createRequire(<packageDir>/package.json)(entryFile)` while only the runner directory and the package directory are granted
     - Log: whether the `package.json` scope lookup works, whether `main` resolution with and without `.js` and with `/index.js` works, and the error code when the package requires a file outside the grant, and when it requires a Node built-in such as `node:os`
@@ -51,7 +51,7 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - Disposition: deleted in 1.15 (the real coverage comes from the lodash and synthetic runs)
     - _Requirements: 3.5, 5.2_
 
-  - [ ] 1.4 Risk 3: minimum Windows environment variable set (`env-minimum`)
+  - [x] 1.4 Risk 3: minimum Windows environment variable set (`env-minimum`)
     - Start the spike runner under `--permission` with, in order: `env: {}`; `{ TZ: 'UTC' }`; `{ SystemRoot }`; `{ SystemRoot, TZ: 'UTC' }` (the design's candidate list)
     - For each, log whether the child starts, loads a package and answers a message, with the exit code and any stderr text
     - Record the smallest set that starts and loads a package, and whether `SystemRoot` is needed. Also record whether `TZ=UTC` changes `new Date().getTimezoneOffset()` (observed value only)
@@ -60,27 +60,27 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - Disposition: kept as the basis of the integration test `env-minimum` (task 18.11)
     - _Requirements: 5.3, 16.3_
 
-  - [ ] 1.5 Risk 4: child current directory equal to the package directory
+  - [x] 1.5 Risk 4: child current directory equal to the package directory
     - Spawn with `cwd: <package dir>` under `--permission --allow-fs-read=<runner dir> --allow-fs-read=<package dir>` and log: whether Node starts, `process.cwd()` seen by the child (compare with the real path), and whether a relative `require('./x.js')` from the package works
     - Also log the result when `cwd` is the package directory but the package directory is only reachable through a symbolic link or a short (8.3) name, if such a path can be created on this machine; otherwise log "not tested" with the reason
     - If this fails: record the error and the observed alternative (for example spawning with the parent's cwd and calling `process.chdir` in the runner); the design update happens in 1.14
     - Disposition: deleted in 1.15 (the check is covered by the `smoke` and `paths-spaces` integration tests)
     - _Requirements: 4.6, 5.2_
 
-  - [ ] 1.6 Risk 5a: package path that contains spaces
+  - [x] 1.6 Risk 5a: package path that contains spaces
     - Create `<tmp>/gs space/pkg/` with a CommonJS package; run the child with `--allow-fs-read=<that dir>` passed as one argv element, with `cwd` set to it
     - Log: whether the child starts and loads the package, the path of the `file://` URL in a thrown error message (to confirm the percent-encoded form the Root_Normalizer must match), and the error text of a denied read
     - Disposition: kept as the basis of the integration test `paths-spaces` (task 18.11)
     - _Requirements: 5.2, 13.19_
 
-  - [ ] 1.7 Risk 5b: package path on another drive (manual input possible)
+  - [x] 1.7 Risk 5b: package path on another drive (manual input possible)
     - List the available drive letters (`Get-PSDrive -PSProvider FileSystem`) and the drive of the repository and of `os.tmpdir()`
     - If a second writable drive exists, or the user sets `PROOF_TEST_OTHER_DRIVE` to a writable directory on another drive, run the 1.3 package from there while the runner directory stays on the repository drive; log the result
     - If no other drive is available, log exactly "other drive not available" and DO NOT claim the case as verified. Ask the user once whether they can provide a directory on another drive (for example a USB or a second partition); if they cannot, continue
     - Disposition: kept as the basis of the conditional integration test `other-drive` (task 18.11)
     - _Requirements: 5.2_
 
-  - [ ] 1.8 Risk 6a: fast-check 4.10 `RunDetails` field names
+  - [x] 1.8 Risk 6a: fast-check 4.10 `RunDetails` field names
     - Read `node_modules/fast-check/lib/types/check/runner/reporter/RunDetails.d.ts` (and the types it references) and list the actual field names and types of the failed variant: `failed`, `counterexample`, `counterexamplePath`, `numRuns`, `numShrinks`, `numSkips`, `seed`, `error`, `errorInstance` and any other field present
     - Run a tiny script with `fc.check(fc.asyncProperty(fc.integer(), async (n) => n < 10), { seed: 42, numRuns: 100 })` and log the actual keys of the returned object, the type and value of `counterexample` (a tuple), `counterexamplePath`, `numShrinks`, and the details of a passing run and of a run with `numRuns` too small to fail
     - Log what is returned when an async property throws, and when an arbitrary exhausts its `filter` (the `generator-exhausted` case: `failed`, `counterexample` null, the error text)
@@ -88,7 +88,7 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - Disposition: deleted in 1.15 (the driver tests in task 11 cover this)
     - _Requirements: 8.7, 8.8_
 
-  - [ ] 1.9 Risk 6b: `path` replay with `numRuns` smaller than the recorded run index
+  - [x] 1.9 Risk 6b: `path` replay with `numRuns` smaller than the recorded run index
     - With the property of 1.8, record `seed` and `counterexamplePath` of a shrunk failure at its original `numRuns`; then replay with `{ seed, path, numRuns: 1 }`, `{ seed, path, numRuns: 100 }`, and `{ seed, path }` without `numRuns`
     - Log, for each: whether the same counterexample is returned, and `numRuns`, `numShrinks` of the replay
     - Also replay with the same seed and a different `numRuns` than recorded and log whether the path still reproduces
@@ -96,14 +96,14 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - Disposition: deleted in 1.15
     - _Requirements: 8.8_
 
-  - [ ] 1.10 Extra risk: vitest 5 `projects` key, `globalSetup` and per-project timing
+  - [x] 1.10 Extra risk: vitest 5 `projects` key, `globalSetup` and per-project timing
     - The design says "the exact vitest 5 configuration key is confirmed when the config is written". Read `node_modules/vitest/package.json` and the vitest 5 type definitions for `test.projects` (or its renamed key), `globalSetup` and `setupFiles` per project; read the existing `vitest.config.mts`
     - Create a scratch config `scripts/spike/vitest.config.mts` with two projects selecting different folders, each with a `globalSetup` whose teardown prints elapsed wall-clock time for that project; run `npx vitest --run --config scripts/spike/vitest.config.mts`
     - Log: the key names that worked, whether a failing teardown fails the run, whether the per-project teardown time can be measured and how, and how the existing `tests/setup/networkGuard.ts` must be attached to each project
     - Disposition: the findings drive task 3.2; the scratch config is deleted in 1.15
     - _Requirements: 15.7, 15.8_
 
-  - [ ] 1.11 Extra risk: `tar` 7.5.23 API and licenses
+  - [x] 1.11 Extra risk: `tar` 7.5.23 API and licenses
     - Run `npm install --no-save tar@7.5.23` (does not change `package.json`); read the installed `tar` types for the parser (`tar.Parser` or its current name), entry event names and the entry fields `type`, `path`, `size`
     - Write a throwaway script that parses an in-memory `.tgz` (created with `tar.create` or a hand-built ustar buffer plus `zlib.gzipSync`) and logs entry type names for a file, directory, symbolic link and hard link
     - Read the `license` field of `tar` and of each transitive dependency from `node_modules` and log them; flag any that is not MIT-compatible
@@ -112,19 +112,19 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - Disposition: deleted in 1.15
     - _Requirements: 3.1, 3.2, 3.3, 14.11_
 
-  - [ ] 1.12 Extra risk: `--allow-fs-read` argument syntax for `,` and `*` in paths
+  - [x] 1.12 Extra risk: `--allow-fs-read` argument syntax for `,` and `*` in paths
     - The design refuses paths containing `*` and conservatively `,` because "the documented separator behavior is not verified". Under `--permission`, grant a directory named `a,b` and a directory with `*` in its name (if the OS allows it) and a path whose prefix equals another directory name (`pkg` and `pkg2`); log what the child can and cannot read
     - Log whether `--allow-fs-read=<dir>` also grants a sibling directory that starts with the same text
     - Disposition: the findings decide the path rules in `buildSandboxArgv` (task 17.1); the script is deleted in 1.15
     - _Requirements: 5.2_
 
-  - [ ] 1.13 Extra measurement: cost of one child process start
+  - [x] 1.13 Extra measurement: cost of one child process start
     - The design says the cost of a start is "not measured yet". Measure the elapsed time (`process.hrtime.bigint()` in the spike script, not in engine code) of starting the spike runner under `--permission` to the `ready` line, for 10 consecutive starts
     - Log the command, the number of runs, and every individual time (no averages invented; a minimum, median and maximum computed from the logged values are fine)
     - Disposition: the numbers feed the time budget discussion in task 19; the script is deleted in 1.15
     - _Requirements: 15.7_
 
-  - [ ] 1.14 Update design.md if any risk or extra item failed or differed
+  - [x] 1.14 Update design.md if any risk or extra item failed or differed
     - For every spike sub-task whose result differs from the design, edit `.kiro/specs/proof-of-life-engine/design.md` BEFORE the checkpoint, and list in the journal which sections were edited
     - Sections by risk: Risk 1 (type stripping) goes to "Key design decisions" (last row), "Module layout" (`child/package.json`) and "Sandbox_Executor / Command line", with the design's named fallback (compile `src/proof/child` to `.mjs` with esbuild, already installed as a dependency of `tsx`, and grant the build directory); Risk 2 (CommonJS loading) goes to "How files become readable"; Risk 3 (environment) goes to the "Environment" table in "Sandbox_Executor" and to the `env-minimum` test text; Risk 4 (cwd) goes to the spawn options in "Command line" and to R4.6 notes; Risk 5 (spaces, other drive) goes to the "Package directory addressing" table; Risk 6 (RunDetails and replay) goes to "Fast-check driver", "Replay (R8.8)" and the `Replay` type in "Proof_Report"; the vitest key goes to "Time budgets"; `tar` API goes to "Tarball_Extractor"; `,`/`*` rules go to "Command line"
     - Also edit the "Risks to verify" section: mark each item as verified, failed or not tested with a pointer to the journal entry
@@ -132,7 +132,7 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - If all items passed as designed, still edit "Risks to verify" to record the verification and state "no design change needed" in the journal
     - _Requirements: 5.2, 5.3, 8.8_
 
-  - [ ] 1.15 Clean up the scratch scripts
+  - [x] 1.15 Clean up the scratch scripts
     - Delete every script under `scripts/spike/` whose disposition says "deleted"; keep only those whose disposition says "kept as the basis" (`child/` for the smoke test, the env-minimum script, the spaces script, the other-drive script), and list the kept files in the journal
     - Kept files are moved into `tests/proof/integration/` by task 18.11; until then they stay in `scripts/spike/` and are not imported by any other code
     - _Requirements: 5.2_
