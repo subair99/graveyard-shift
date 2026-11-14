@@ -9,7 +9,7 @@ Each property-based test goes in its own file, `tests/engine/property/pN-<name>.
 ## Tasks
 
 - [ ] 1. Set up the project
-  - [ ] 1.1 Scaffold the Next.js + TypeScript project in the workspace root
+  - [x] 1.1 Scaffold the Next.js + TypeScript project in the workspace root
     - Create `package.json`, `tsconfig.json` (strict), `next.config.mjs`, and `src/app` minimal layout and page
     - Keep the existing `.env`, `.env.example`, `README.md`, `LICENSE`, `docs/`; add `GITHUB_TOKEN` (empty) to `.env.example` if absent
     - Confirm `.env` is listed in `.gitignore`

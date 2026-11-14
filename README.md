@@ -20,7 +20,15 @@ Built for **Kiroween 2026** · Category: **Resurrection**
 5. **Proof of Life**: a pull request with differential test results and a verifiable signature.
 
 ## Quick start
-_Setup instructions will be added as the project is built._
+Requires Node.js LTS and npm.
+
+```
+npm install
+npm run dev     # http://localhost:3000
+npm run build
+```
+
+Copy `.env.example` to `.env` and fill in `GITHUB_TOKEN` (and `KIRO_API_KEY` for resurrections).
 
 ## How Kiro is used
 See [`.kiro/`](.kiro/) for specs, steering, hooks and agents. A full write-up will follow.

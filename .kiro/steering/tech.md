@@ -19,7 +19,11 @@
 - Never commit, log, or print secret values. Add any new variable to `.env.example` with an empty value.
 
 ## Commands
-None defined yet. Add install, build, test, and run commands here once a toolchain exists.
+- Install: `npm install`
+- Dev server: `npm run dev`
+- Build: `npm run build`
+- Typecheck: `npm run typecheck`
+- Test: not defined yet (added with vitest in the autopsy-engine spec, task 1.2)
 
 ## Conventions
 - License is MIT. Keep dependencies MIT-compatible.

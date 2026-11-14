@@ -7,4 +7,6 @@ coverage/
 !.env.example
 .DS_Store
 *.log
+*.tsbuildinfo
+next-env.d.ts
 # .kiro/ must stay committed — never add it here
