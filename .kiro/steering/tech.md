@@ -26,5 +26,5 @@
 - Test: `npm test` (vitest --run; tests in `tests/**/*.test.ts`; set `FC_SEED` to replay a fast-check seed)
 
 ## Conventions
-- License is MIT. Keep dependencies MIT-compatible.
+- License is MIT. Keep dependencies permissively licensed (MIT-compatible); each is listed in `PREEXISTING.md` with its license. The MIT/ISC/BSD/Apache-2.0 list in the necromancy laws applies only to resurrected packages.
 - Environment is Windows with PowerShell. Use PowerShell-compatible commands, or cross-platform scripts.

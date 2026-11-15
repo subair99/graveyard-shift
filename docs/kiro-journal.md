@@ -532,3 +532,112 @@ Deleted from `scripts/spike/`:
 - `typeStripping.ts`, `cjsLoading.ts`, `cwdPackage.ts`, `cwdChild/`, `fcRunDetails.ts`, `fcReplay.ts`, `vitest.config.mts`, `vitestScratch/`, `tarApi.ts`, `fsReadSyntax.ts`, `fsSyntaxChild/`, `startCost.ts`.
 
 Not touched: the journal entries above, `design.md`, the `tsconfig.json` change. `package.json` and `package-lock.json` are unchanged (`git diff --stat` empty). The `tar` package is still in `node_modules` as an extraneous install (`--no-save`); it was left alone.
+
+### Spike results and design alignment (task 1.14 reopened)
+
+- Date 2026-11-15, Node v26.13.1, npm 11.20.0, Windows 11 (10.0.26300), working directory `C:\dev\graveyard-shift`. Only `design.md` was edited among the spec files (and this journal). `requirements.md`, `tasks.md`, `package.json` and `package-lock.json` were not edited (`git hash-object package.json package-lock.json` printed `549426739b34890bc94a6465b4213cc075bc06af` and `64dbba9dc8cc2c20db8f0e9d2335d4a7484fdaf8` before and after the install check below). `.env` was not read.
+- Throwaway scripts created for this entry: `scripts/spike/jxDriver.mjs` and `scripts/spike/jxChild/runner.mjs`. **Both were deleted after the run** (checked: `scripts/spike/` holds only the files kept in task 1.15). The first run of the driver failed before its `try` block (my `cmd.exe for %~sI` quoting returned `C:\"C:\...\"` as the short path), left `spike-jx-GSWucF` in the temp directory, and I deleted that directory by hand; I replaced the short-path lookup by `(New-Object -ComObject Scripting.FileSystemObject).GetFolder(<path>).ShortPath`. The second run removed its own temp directory (`cleanup exists: false`; `Test-Path $env:TEMP\spike-jx-*` printed `False`) and the junction.
+
+**Item 1: junction grant versus 8.3 short-name grant (`createRequire`).**
+- Command: `node scripts/spike/jxDriver.mjs`. It creates `<tmp>\spike-jx-rKenNn\a-long-package-directory-name` (real; `package.json` `{"main":"index.js"}`, `x.js`, `index.js` exporting `{file: __filename, x: require('./x.js')}`), a junction `link-to-package` made with `New-Item -ItemType Junction` (exit 0), and the short path `C:\Users\Owner\AppData\Local\Temp\SPIKE-~1\A-LONG~1`. The child runs `node --permission --allow-fs-read=<runner dir> [--allow-fs-read=<grant>...] runner.mjs <pkg>` with `shell: false`, `env: {}` and `cwd` equal to the package argument. The runner prints `cwd`, then each step with `ok` or `code`, `resource`, `permission`: relative read of `./x.js`, `statSync`, `realpathSync` (JS), `realpathSync.native`, `readFileSync` of `<pkg>\index.js`, `createRequire(<pkg>\package.json)(<pkg>)` and a require of a missing file.
+- Parent-side `realpath` values: `fs.realpathSync.native(junction)` and `fs.realpathSync.native(short)` both returned the long real path. `fs.realpathSync(junction)` (JS) returned the long real path (the target). `fs.realpathSync(short)` (JS) returned the short path unchanged.
+
+| Case (cwd = load path form) | Grants | Observed |
+| --- | --- | --- |
+| J1 junction | junction only | relative read, `statSync`, `realpathSync` (JS; returned the target path), `realpathSync.native` (returned the target path) and `readFileSync` ok; **`load` failed `ERR_ACCESS_DENIED` with `resource` `\\?\C:\Users\Owner\AppData\Local\Temp\spike-jx-rKenNn\a-long-package-directory-name\index.js`** (the junction target, not granted) |
+| J2 junction | real only | relative read, `stat`, both `realpath`s and `read` failed `ERR_ACCESS_DENIED` with `resource` ending `\link-to-package\...` (junction form); `load` failed with `resource` `...\link-to-package\package.json` |
+| J3 junction | junction + real | everything ok; `load` returned `file` = the real `index.js` path |
+| S1 short | short only | everything ok; `realpathSync` (JS) returned the short path; `realpathSync.native` returned the long path; `load` returned `file` = `...\SPIKE-~1\A-LONG~1\index.js` |
+| S2 short | real only | everything failed `ERR_ACCESS_DENIED` with `resource` in the short form |
+| S3 short | short + real | everything ok |
+
+- Explanation, supported by the `resource` fields and the `realpath` return values: the permission check reported the path in the form in which the access was made. A direct access used the junction or short form as given, so a grant on that form covered it. The CommonJS load of a package through a junction ended in a read of `index.js` below the junction target (the JS `realpathSync` returns the target for a junction), which was not covered by the junction-only grant. For a short path the JS `realpathSync` keeps the short form, so the load read under the granted short form. I did not read Node's loader source to confirm that it calls `fs.realpathSync`; this is the explanation for these cases only. A symbolic link was not tested (no privilege, see 1.5).
+
+**Item 2: the `esbuild@0.28.2` install-scripts warning.**
+- Commands: `npm ls esbuild`, `npm ls esbuild --all`, `npx esbuild --version`, `npm config get allow-scripts`, `npm config get allowScripts`, `npm install --no-save tar@7.5.23` (exit 0, `changed 6 packages, and audited 196 packages in 6s`, `found 0 vulnerabilities`), `npm install-scripts ls`, `npx tsx -e "console.log('tsx ok', process.version)"`, `node -e "...require('esbuild')...transformSync('let x:number=1',{loader:'ts'})..."`, and the npm documentation files `docs/content/using-npm/config.md` and `docs/content/commands/npm-install-scripts.md` under `C:\Program Files\nodejs\node_modules\npm`.
+- Exact warning text (stderr of the install, line breaks as printed): `npm warn install-scripts 1 package has install scripts not yet covered by allowScripts:`, `npm warn install-scripts   esbuild@0.28.2 (postinstall: node install.js)`, `npm warn install-scripts`, ``npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.``. `npm install-scripts ls` printed `1 package has install scripts not yet covered by allowScripts:` and `esbuild@0.28.2 (postinstall: node install.js)`.
+- `allowScripts` is a setting of this npm version (11.20.0): the config doc lists `allow-scripts` (default empty, "can be set multiple times", for one-off and global contexts), points to the `allowScripts` field of `package.json` for project policy, and the `npm install-scripts` doc says dependency install scripts are blocked by default and that install commands skip them and list the skipped packages. `npm config get allow-scripts` printed an empty line; `npm config get allowScripts` printed `undefined`. `package.json` contains no `allowScripts` (`Select-String` found nothing).
+- `npm ls esbuild` (and with `--all`): `tsx@4.23.15` -> `esbuild@0.28.2`, and `vitest@5.1.0` -> `vite@8.3.8` -> `esbuild@0.28.2 deduped`. So esbuild comes in as a dependency of `tsx` (and of vite).
+- Effect: none observed. `npx esbuild --version` printed `0.28.2`, `transformSync` printed `0.28.2 let x = 1;`, `npx tsx -e` printed `tsx ok v26.13.1`. Whether the skipped `install.js` would change anything (for example an optimization) was not examined.
+
+**Item 3: `npm ls tar --all` printed no nested tree.**
+- `npm ls tar --all`, `npm ls tar --all --depth=Infinity` and `npm ls tar` each printed `graveyard-shift@0.1.0 C:\dev\graveyard-shift` and one line `tar@7.5.23 extraneous` (exit 0). `npm ls tar --all --json` printed one `dependencies.tar` entry (`version` 7.5.23, `resolved` https://registry.npmjs.org/tar/-/tar-7.5.23.tgz, `extraneous: true`) and `problems: ["extraneous: tar@7.5.23 C:\\dev\\graveyard-shift\\node_modules\\tar"]`. (One call of `npm ls tar` in my shell hung with no output and I repeated it; the repeat gave the output above.)
+- `npm ls chownr minipass yallist minizlib @isaacs/fs-minipass --all` printed those five at the top level as `extraneous`, and under `tar@7.5.23 extraneous` it listed `@isaacs/fs-minipass@4.0.1 deduped`, `chownr@3.0.0 deduped`, `minipass@7.1.3 deduped`, `minizlib@3.1.0 deduped` and `yallist@5.0.0 deduped`. `node_modules/tar/node_modules` does not exist; `node_modules/{chownr,minipass,yallist,minizlib,@isaacs/fs-minipass}` all exist; `package-lock.json` has no entries for them (grep printed nothing). `tar`'s `dependencies` (from its `package.json`): `@isaacs/fs-minipass ^4.0.0`, `chownr ^3.0.0`, `minipass ^7.1.2`, `minizlib ^3.1.0`, `yallist ^5.0.0`.
+- Explanation, only as far as observed: `tar` is extraneous (installed with `--no-save`), its dependencies are flattened to the top level (no nested `node_modules`), and `npm ls <name>` printed only the node that matches the name. A query that names the dependencies showed them under `tar` as deduped. That `npm ls` filters this way by design was not checked in npm's source.
+
+**Item 4: always grant the `fs.realpathSync.native` path.**
+- Same driver, cases R1, R2, R3: the engine input is the junction path, the 8.3 path and the real path; `fs.realpathSync.native(input)` returned `C:\Users\Owner\AppData\Local\Temp\spike-jx-rKenNn\a-long-package-directory-name` for all three. The child was started with `cwd`, the only `--allow-fs-read` (besides the runner directory) and the load path all set to that string. For all three inputs: exit 0, empty stderr, relative read ok (25 bytes), `statSync`, both `realpath`s and `readFileSync` ok, `createRequire` load ok (`file` = the real `index.js`, `x` = `from-x`), and the missing-file error text `Cannot find module './missing.js'` with the real path in `Require stack`. The three outputs were identical in everything except the label.
+- The child never received the junction or short form, so a message containing the user-supplied form was not observed; the Root_Normalizer's matching of the created form (R13.19) stays untested by this spike.
+
+**Sections of `design.md` edited (task 1.14 reopened)**
+
+| Section | Change |
+| --- | --- |
+| Overview | Pure core never reads `process.env` (environment snapshot read once in the shell); `emit` listed in the shell |
+| Key design decisions | Two rows added: identity redaction after the comparison, one `emit` function |
+| Research summary | `tar` bullet: BlueOak-1.0.0 APPROVED (D1, D9), distinction between packages we publish and our own dependencies; spike bullet points to the new "Spike results" section |
+| Architecture (diagram) | Identity_Redactor, Identity_Scanner backstop, `ProofDeps.env` snapshot and `emit` added |
+| Module layout | `core/identity.ts`, `core/redact.ts` (Identity_Redactor, `redactionMaskedDifference`), `shell/emit.ts` |
+| Request and library API | `ProofDeps.env` and `ProofDeps.sink`, `knownPaths` without the home directory; new paragraphs "Environment snapshot" and "One output function" |
+| Sandbox_Executor | R5.16 to R5.18 wording in "Command line"; "Current directory and path form": rule to always grant the `fs.realpathSync.native` path, observed explanation of the junction/8.3 difference; "unloadable-module detection": R3.5, R3.9, R3.11, L12; "Environment": documented platform behavior (R5.19) and the link to Identity_Values |
+| Root_Normalizer and Path_Redactor | Order of operations extended (compare, then identity); Path_Redactor passes: temp root and Node directory replaced even under an Identity_Value path, paths that begin with an Identity_Value path left unchanged; `PathContext.identity` |
+| Identity redaction (new) | Identity_Values, matching rules (R13.27), order inside a run (R13.30), `redactionMaskedDifference`, backstop and `identity-leak`, key collision, counterexample and replay note, `emit` |
+| Fast-check driver | `MAX_SKIPS_PER_RUN` in every `fc.check`, delta phase by construction plus assertion, R8.12 to R8.15 and L13 references, replay compares the raw counterexample |
+| Tarball_Extractor | Boundaries of `unsafe-archive`, `archive-too-large` and `invalid-archive` (R3.10) |
+| Proof_Report, serialization | `redactionMaskedDifference` in both Divergence variants, key order, sort by the redacted counterexample, schema requirement, `identity-leak` added to the kinds |
+| Known limitations | L4 reworded; L6 extended; L12, L13, L14 added |
+| Correctness Properties | Properties 5, 14, 15 extended; optional Property 29 (idempotence and comparison before redaction) added; nothing renumbered |
+| Error Handling | Rows for identity redaction collision, `identity-leak`, `emit` |
+| Testing Strategy | Identity tests (R13.29 a to h), source scans for `process.env` and output paths |
+| Compliance notes, Risks to verify | BlueOak "pending" language replaced by APPROVED (D1, D9); item 4 and 8 updated |
+| Spike results (new) | Per-item table and the four loose ends |
+| Resolved ambiguities | R12.3 kind list updated, divergence list after an identity key collision |
+| Open disagreements with the requirements (new) | Twelve items, listed in the final report of the task |
+
+**Remaining disagreements between the design and requirements.md / tasks.md** (nothing edited there):
+1. R12.3 lacks `harness-config-error`, `property-error`, `irreproducible-divergence`, `no-functions-tested`.
+2. R5.1 and R11.7 name "run a delta property" as an Executor operation; the design runs it inside the call (`CallRequest.properties`).
+3. R8.12 names Declared_Delta Cases among the `fc.pre` regions; the design uses a constructive generator plus the R8.14 assertion for the delta phase and `fc.pre` only for `accept`.
+4. R7.5 (class and message) versus the design's comparison of own enumerable error properties (stricter).
+5. R13.19 has no escaped back-slash form for roots; the design adds it.
+6. R13.23 and R13.26 fallback omit `divergences` and `deltas`; the design also omits the cases of `nonDeterministicFunctions`.
+7. R12.4 versus R13.25: after an identity key collision the design returns the fallback report (no `divergences`).
+8. R13.12: the design replaces `os.tmpdir()` as part of the temporary root; the requirement names only the Proof_Engine's temporary root and the Node directory.
+9. tasks.md 8.10 says the identity redaction property has no property number; the design adds it as optional Property 29.
+10. tasks.md does not list the scans for `process.env` in the pure directories and for output outside `emit`.
+11. `shell/emit.ts` and `ProofDeps.sink` are design choices; tasks.md names `emit` and `ProofDeps.env` only.
+12. `ProofDeps.knownPaths` has no `homeDir` in the design (the home directory is an Identity_Value).
+
+## Proof of Life: pure core and in-process engine checkpoint (task 12)
+
+Date 2026-11-15, Node v26.13.1, Windows, working directory `C:\dev\graveyard-shift`, vitest 5.1.0. No agents were running and no network command was run. Every number below was read from the output of these runs. Per-file durations are the vitest JSON reporter's `endTime - startTime` per test file (includes import time); files run in parallel, so they do not sum to the wall-clock.
+
+**Static checks**
+- `npm run typecheck`: exit 0, no output after the script banner.
+- `npm run lint` (`eslint src tests`): exit 0, no errors, no warnings.
+- `npm run build`: exit 0, routes `/` and `/_not-found` prerendered.
+- `npx tsx scripts/recordTarball.ts --dry-run`: exit 0, printed "no network requests made, nothing written."
+
+**First three `npm test` runs (before any change; not official)**
+- Run A, run B and run C (C with `FC_SEED=12345`): each 73 files, 1 failed file, 1043 tests: 1039 passed, 1 failed, 3 skipped. The failure was `tests/proof/unit/syntheticPackage.test.ts` "extracts through the real extractor and verifies against its SRI" ("Test timed out in 5000ms"; 6709 ms and 7474 ms in two runs where the duration was shown, one 76-test file taking 22.4 s to 24.3 s). Budget lines: `proof-property: 60.9 s`, `69.0 s`, `62.3 s`.
+- These three runs were made with `PROOF_BUDGET_MODE=warn` set in the shell environment of the tool session, which I did not set and only noticed afterwards (`echo` showed `warn`). They are reported for the failure only, not as official budget numbers.
+- Each of these runs left two `gs-synth-test-*` directories in the temp directory (six directories after three runs: `gs-synth-test-CwuCqy`, `-gQChWz`, `-kH4Nam`, `-uANlAS`, `-VwgDcT`, `-ZuRp0q`). I removed those six after the runs.
+- Two further runs were started concurrently by mistake (an orphaned vitest process kept running after a tool call ended) and are discarded: they showed a 5 s timeout in another `syntheticPackage` test (mutate), a 10 s hook timeout in `p24`, and 96.2 s. They are not used anywhere else.
+
+**Change made in this task**: `tests/proof/unit/syntheticPackage.test.ts`, the "extracts through the real extractor" test now has an explicit 60 s timeout (it runs a 100-run fast-check property and the default 5 s timeout is shorter than its measured 6.7 s to 7.5 s under load).
+
+**Official runs after the change** (`PROOF_BUDGET_MODE` unset inside the command, `npx vitest --run --reporter=default --reporter=json`)
+| Run | Command env | Exit | Files | Tests | Duration (vitest) | Budget line |
+|---|---|---|---|---|---|---|
+| 1 | default seed | 0 | 73 passed | 1040 passed, 3 skipped (1043) | 55.46 s | `[budget] proof-property: 55.6 s wall-clock (target 60 s)` |
+| 2 | default seed | not recorded; tests all passed and the budget check threw | 73 passed | 1040 passed, 3 skipped | 64.21 s | `[budget] proof-property: 64.2 s wall-clock (target 60 s)` |
+| 3 | `FC_SEED=12345` | 1 (budget error only) | 73 passed | 1040 passed, 3 skipped | 62.83 s | `[budget] proof-property: 62.8 s wall-clock (target 60 s)`, then `error during close Error: [budget] proof-property took 62.8 s, over the 60 s target` |
+| 4 | `PROOF_BUDGET_MODE=warn`, default seed | 0 | 73 passed | 1040 passed, 3 skipped | 56.14 s | `[budget] proof-property: 56.1 s wall-clock (target 60 s)` (no warning, under the target) |
+- Per project from the JSON reporter (identical in runs 1 to 3): engine 32 files, 302 tests, 0 failed, 0 skipped; proof-property 41 files, 741 tests, 0 failed, 3 skipped. There is no `tests/proof/integration/` directory yet, so the proof-integration project has no files and printed no budget line.
+- Skipped tests: "real machine identity (L14) is skipped because neither a home path variable nor USERNAME is set"; "computeDirectoryTreeHash rejects a symbolic link with unsafe-archive"; "diverging sides carry identity values (cases a and c) shows <user> for the bare user name ...".
+- Slowest proof-property files, run 1 / run 2 / run 3 (ms): `p25-alive-against-itself` 49490 / 55476 / 55286; `p24-same-seed-same-bytes` 41276 / 48819 / 49223; `p26-injected-changes` 34068 / 41454 / 41915; `unit/syntheticPackage` 19082 / 23199 / 23244; `p04-tree-hash` 10588 / 14278 / 11797. Every other file took 2.5 s or less in all three runs.
+- `[p26]` lines: injected-change property 27182 / 34077 / 34175 ms; delta variant 6881 / 7370 / 7735 ms.
+
+**Temp directory (`gs-*` in the OS temp dir)**
+- Before the first run: `gs-ZUFLfO` (not created by this task; left in place).
+- After official runs 1, 3 and 4: only `gs-ZUFLfO`. The temp state after run 2 was not listed.

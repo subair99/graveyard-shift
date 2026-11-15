@@ -1,5 +1,10 @@
 {
-  "pbtResults": {},
+  "pbtResults": {
+    "5.2 Write property test for strict comparison": {
+      "status": "passed",
+      "lastRunTimestamp": 1794733696950
+    }
+  },
   "executionHistory": {
     "1.1 Create the spike scaffolding and the journal section": [
       {
@@ -167,6 +172,16 @@
         "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794691365817
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794728458734
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794729502418
       }
     ],
     "1.15 Clean up the scratch scripts": [
@@ -186,6 +201,604 @@
         "executionId": "d5183bd1-4ef3-40b2-9e62-006b138b7095",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794691474594
+      }
+    ],
+    "3.1 Add the `tar` dependency, update PREEXISTING.md and the necromancy laws": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794729822253
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794730709445
+      }
+    ],
+    "3.2 Extend the ESLint determinism scope and configure the vitest projects": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794729822580
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794730709762
+      }
+    ],
+    "4.1 Create `src/proof/child/` base files": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794729822888
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794730710317
+      }
+    ],
+    "3.3 Write the determinism lint test for the proof scope": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794730717850
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794731070294
+      }
+    ],
+    "3.4 Define shared proof types and zod schemas in `src/proof/types.ts`": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794730718117
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794731070599
+      }
+    ],
+    "3.5 Write the source scan for `process.env` in the pure directories and for output outside `emit`": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794730718325
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794731070851
+      }
+    ],
+    "4.2 Implement encode, decode and canonicalization": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794730718843
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794731071263
+      }
+    ],
+    "3. Project prerequisites for proof-of-life": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794731071036
+      }
+    ],
+    "4.3 Write property test for the codec round trip": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794731078227
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794731512026
+      }
+    ],
+    "5.1 Implement `src/proof/core/equal.ts`": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794731078444
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794731512576
+      }
+    ],
+    "5.4 Implement `src/proof/core/seeds.ts`": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794731079149
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794731512770
+      }
+    ],
+    "6.1 Implement `src/proof/core/normalize.ts`": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794731080181
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794731513426
+      }
+    ],
+    "6.6 Implement `src/proof/core/identity.ts` (Identity_Scanner)": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794731080515
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794731514174
+      }
+    ],
+    "4. Implement the Value_Codec": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794731512317
+      }
+    ],
+    "9.1 Implement `src/proof/shell/integrity.ts`": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794731526488
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794732836551
+      }
+    ],
+    "9.3 Implement `src/proof/shell/treeHash.ts`": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794731526886
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794732836847
+      }
+    ],
+    "9.5 Implement `src/proof/shell/tarball/tarballExtractor.ts`": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794731527139
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794732837032
+      }
+    ],
+    "9.7 Implement `src/proof/shell/workDir.ts` and `entry.ts`": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794731527708
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794732837217
+      }
+    ],
+    "10.1 Implement `src/proof/child/prototypes.ts`": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794731528184
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794732837943
+      }
+    ],
+    "10.3 Implement `src/proof/child/stubs.ts`": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794732844224
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733019284
+      }
+    ],
+    "10.4 Implement `src/proof/child/protocol.ts`": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794732844500
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733019792
+      }
+    ],
+    "6.2 Implement `src/proof/core/redact.ts`": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733028015
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733380057
+      }
+    ],
+    "7.1 Implement `src/proof/core/delta.ts`": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733028179
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733380345
+      }
+    ],
+    "7.3 Implement `src/proof/core/apiSurface.ts`": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733028349
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733380472
+      }
+    ],
+    "7.5 Implement `src/proof/core/verdict.ts`": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733028758
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733380679
+      }
+    ],
+    "10.6 Implement `src/proof/child/sideRuntime.ts`": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733029392
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733381386
+      }
+    ],
+    "6. Implement the Root_Normalizer and Path_Redactor": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733380224
+      }
+    ],
+    "5.2 Write property test for strict comparison": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733387070
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733716414
+      }
+    ],
+    "9.4 Write property test for Tree_Hash": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733387274
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733716665
+      }
+    ],
+    "10.2 Write property test for prototype delta and restoration": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733387909
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733716895
+      }
+    ],
+    "10.7 Define `src/proof/shell/executor/types.ts`": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733388406
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733717313
+      }
+    ],
+    "5. Implement comparison and seeds": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733716494
+      }
+    ],
+    "9. Implement the I/O shell modules": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733716774
+      }
+    ],
+    "7.2 Write property test for delta classification": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733724309
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733910410
+      }
+    ],
+    "7.6 Write property test for the verdict": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733724432
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733910653
+      }
+    ],
+    "8.1 Implement `src/proof/core/report.ts`": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733724574
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733911274
+      }
+    ],
+    "8.2 Implement `src/proof/serialize/canonicalReport.ts` and `deserialize.ts`": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733725339
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733912579
+      }
+    ],
+    "10.8 Implement `src/proof/shell/executor/inProcessExecutor.ts`": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733726183
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733914281
+      }
+    ],
+    "7. Implement delta classification, API-surface check and verdict": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733910741
+      }
+    ],
+    "10. Implement the SideRuntime and the InProcess_Executor": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733914402
+      }
+    ],
+    "8.6 Write the temp-root-leak safety test": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733927947
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794734337113
+      }
+    ],
+    "8.7 Write `docs/proof-of-life-ordering.md`": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733928318
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794734337487
+      }
+    ],
+    "8.9 Write the Identity_Scanner unit tests and the identity safety test": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733929510
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794734338558
+      }
+    ],
+    "11.1 Implement `src/proof/shell/driver.ts`": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733931285
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794734339692
+      }
+    ],
+    "11.3 Create the synthetic package generator and tarball builder": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794733931449
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794734340473
+      }
+    ],
+    "8. Implement the report builder, serializer and ordering document": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794734338970
+      }
+    ],
+    "13.1 Write `scripts/recordTarball.ts` and `scripts/lib/recordTarball.ts`": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794734356563
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794734504520
+      }
+    ],
+    "11.2 Implement `src/proof/shell/orchestrator.ts` and `src/proof/index.ts`": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794734511729
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794734961963
+      }
+    ],
+    "11.4 Write property test for same seed, same bytes": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794734970392
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794735427083
+      }
+    ],
+    "11.5 Write property test for alive against itself": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794734970682
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794735427697
+      }
+    ],
+    "11.6 Write property test for injected behavior changes": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794734971524
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794735428916
+      }
+    ],
+    "11.12 Write the end-to-end identity test (engine level)": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794734972025
+      },
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794735429949
+      }
+    ],
+    "11. Implement the driver, orchestrator and engine-level tests": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794735430437
+      }
+    ],
+    "12. Checkpoint: pure core and in-process engine": [
+      {
+        "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794735443843
       }
     ]
   }

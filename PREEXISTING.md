@@ -6,6 +6,14 @@ Third-party libraries and data sources used are listed here as they are added.
 ## Libraries
 - Next.js (MIT), React and React DOM (MIT), TypeScript (Apache-2.0)
 - vitest (MIT), fast-check (MIT), zod (MIT), semver (ISC), @types/semver (MIT)
+- tar 7.5.23 (BlueOak-1.0.0), runtime dependency for reading and writing package tarballs. Source: https://github.com/isaacs/node-tar. Its dependencies, with licenses read from each package's `package.json` in `node_modules`:
+  - chownr 3.0.0 (BlueOak-1.0.0). Source: git://github.com/isaacs/chownr.git
+  - minipass 7.1.3 (BlueOak-1.0.0). Source: https://github.com/isaacs/minipass
+  - yallist 5.0.0 (BlueOak-1.0.0). Source: https://github.com/isaacs/yallist
+  - @isaacs/fs-minipass 4.0.1 (ISC). Source: https://github.com/npm/fs-minipass
+  - minizlib 3.1.0 (MIT). Source: https://github.com/isaacs/minizlib
+  - BlueOak-1.0.0 is approved by name for tar, chownr, minipass and yallist (decision D9).
+- lodash.set 4.3.2 tarball (MIT), used as a test input for tar handling. Source: https://registry.npmjs.org/lodash.set/-/lodash.set-4.3.2.tgz
 - ESLint, @eslint/js (MIT), dev dependencies for the determinism lint rule (task 9.6)
 - @babel/eslint-parser, @babel/core, @babel/preset-typescript (MIT), dev dependencies that parse TypeScript in ESLint. typescript-eslint (MIT) was not used because its peer range is typescript <6.1.0 and this project uses TypeScript 7.
 - tsx (MIT), dev dependency that runs the fixture recording script `scripts/recordFixtures.ts` (task 9.1).

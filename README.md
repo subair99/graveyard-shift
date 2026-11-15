@@ -49,6 +49,23 @@ committed, so there is nothing to run for a normal checkout. Re-run the script (
 to overwrite) only to refresh them. The files contain no credentials, which
 `tests/engine/unit/fixtureSecrets.test.ts` checks.
 
+## Recording the lodash.set tarball
+The proof engine tests use the lodash.set@4.3.2 tarball as the Original. Recording it is a manual
+step that needs network (npm registry only, no credentials):
+
+```
+npm run fixtures:record-tarball              # download, verify, write
+npm run fixtures:record-tarball -- --force   # overwrite existing files
+npm run fixtures:record-tarball -- --dry-run # no network, prints the plan
+```
+
+It takes the tarball URL and `dist.integrity` from the recorded packument
+`tests/engine/fixtures/lodash.set/npm-449996e32bd2.json`, downloads only from
+`https://registry.npmjs.org/` (redirects are refused) and verifies the bytes against that
+integrity before writing anything. On a mismatch nothing is written. It writes
+`tests/proof/fixtures/lodash.set/lodash.set-4.3.2.tgz` and `lodash.set-4.3.2.meta.json` (name,
+version, tarball URL, integrity, source URL, fetch date, license, author credits).
+
 ## How Kiro is used
 See [`.kiro/`](.kiro/) for specs, steering, hooks and agents. A full write-up will follow.
 

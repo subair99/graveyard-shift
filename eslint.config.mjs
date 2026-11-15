@@ -4,6 +4,10 @@ import babelParser from "@babel/eslint-parser";
 export const deterministicFiles = [
   "src/engine/core/**/*.ts",
   "src/engine/serialize/**/*.ts",
+  // Pure proof directories. src/proof/child/stubs.ts is deliberately outside.
+  "src/proof/core/**/*.ts",
+  "src/proof/serialize/**/*.ts",
+  "src/proof/child/codec/**/*.ts",
 ];
 
 export const deterministicRules = {
