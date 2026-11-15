@@ -14,7 +14,7 @@ The proof engine serializes every Proof_Report to canonical JSON. Two reports th
 ## Comparison rules
 
 - **Strings** are compared by Unicode code point (`compareCodePoints` in `child/codec/order.ts`), ascending. Comparison does not use UTF-16 code units, `localeCompare` or `Intl.Collator`. It is case-sensitive: `Z` sorts before `a`, and a character outside the Basic Multilingual Plane sorts by its full code point, not by its surrogate pair.
-- **Sorts are stable.** `sortBy` applies its comparators in order and uses the original index as the last tie-breaker, so elements that tie on every rule keep their input order.
+- **Sorts are stable, and ties are broken by content.** After the documented keys of a list, entries that still tie are ordered by three fixed tie-breakers: 1. `deltaId` (an entry without one sorts first), 2. `function` (an entry without one sorts first), 3. the canonical JSON of the whole rendered entry, compared by code point. The canonical JSON includes nested lists, which are already sorted by their own rules. Two entries with equal canonical JSON are identical, so the original index never decides the bytes (`sortBy` keeps it only as a final stable fallback). The output is byte-identical for any permutation of any list.
 - **Undefined keys are omitted.** A key whose value is `undefined` is not written. A key that is absent is skipped. Keys not listed for an object kind are not written.
 - **No whitespace** is written between tokens.
 - **No wall-clock field.** The report holds no timestamp of any kind. Its fields are the package identity, verified hashes, counts, the seed, tool versions and the results. Tool versions are read from the running installation and are data, not time.
@@ -95,20 +95,20 @@ A Divergence has one of two shapes.
 
 ## List ordering
 
-All string comparisons are by code point. The "Tie-breakers" column lists later comparators in order. The original index is the last tie-breaker of every `sortBy` list.
+All string comparisons are by code point. The "Tie-breakers" column lists the later documented comparators in order. In every list sorted by the serializer, "Content tie-breakers" stands for `deltaId`, then `function`, then the canonical JSON of the entry (see "Comparison rules"); `functionsTested` is a list of strings and needs none.
 
 | List | Order | Tie-breakers, in order | Notes |
 |---|---|---|---|
 | `functionsTested` | Function name | None (equal strings are identical) | Sorted as strings. |
-| `casesPerFunction` | `function` | Original index | |
-| `unencodableValues` | `function` | Original index | The `reasons` keys use the fixed order above. |
-| `excludedFunctions` | `function` | Original index | |
-| `nonDeterministicFunctions` | `function` | Original index | Its `args` keep their order. `differences` follow the Differences rule. |
-| `divergences` | `function` | 1. `kind`. 2. The rendered counterexample (below). 3. Original index. | See "Divergence sort". |
-| `deltas` | `id` | Original index | `buildReport` first sorts by `id`, then `function`; the serializer sorts by `id` and keeps that order for equal ids. |
-| `harnessErrors` | `kind` | 1. `message`. 2. Original index. | `buildReport` first sorts by `kind`, then `function` (a missing function counts as the empty string), then `message`. |
-| `differences` (in a Divergence and in a non-deterministic entry) | `part`, in the fixed order `kind`, `async`, `value`, `args`, `prototypeDelta` | 1. `path`. 2. Original index. | A `part` not in the fixed list sorts after all known parts. |
-| `prototypeDelta` (in an Outcome) | `prototype`, in the fixed order `Object.prototype`, `Array.prototype`, `Function.prototype`, `String.prototype`, `Number.prototype`, `Boolean.prototype` | 1. Kind of key: string keys (`s`) before symbol keys (`sym`). 2. Key text: the string, or the symbol description. 3. Original index. | See "Prototype delta entries". |
+| `casesPerFunction` | `function` | Content tie-breakers | |
+| `unencodableValues` | `function` | Content tie-breakers | The `reasons` keys use the fixed order above. |
+| `excludedFunctions` | `function` | Content tie-breakers | |
+| `nonDeterministicFunctions` | `function` | Content tie-breakers | Its `args` keep their order. `differences` follow the Differences rule. |
+| `divergences` | `function` | 1. `kind`. 2. The rendered counterexample (below). 3. Content tie-breakers. | See "Divergence sort". |
+| `deltas` | `id` | Content tie-breakers | Equal ids are ordered by `function`, then by the canonical JSON of the entry. `buildReport` also pre-sorts by `id`, then `function`; the serializer does not depend on it. |
+| `harnessErrors` | `kind` | 1. `message`. 2. Content tie-breakers. | Equal kind and message are ordered by `function` (absent first), then by the canonical JSON of the entry. `buildReport` also pre-sorts by `kind`, `function`, `message`; the serializer does not depend on it. |
+| `differences` (in a Divergence and in a non-deterministic entry) | `part`, in the fixed order `kind`, `async`, `value`, `args`, `prototypeDelta` | 1. `path`. 2. Content tie-breakers. | A `part` not in the fixed list sorts after all known parts. |
+| `prototypeDelta` (in an Outcome) | `prototype`, in the fixed order `Object.prototype`, `Array.prototype`, `Function.prototype`, `String.prototype`, `Number.prototype`, `Boolean.prototype` | 1. Kind of key: string keys (`s`) before symbol keys (`sym`). 2. Key text: the string, or the symbol description. 3. Content tie-breakers. | See "Prototype delta entries". |
 | `args` of a Divergence, of a non-deterministic entry and of a demonstration | Not sorted | None | Argument order is semantic. |
 | `unencodable` reasons | Not a list. Fixed key order `cycle`, `depth`, `getter`, `proxy` | None | |
 
@@ -116,22 +116,22 @@ A `prototype` not in the fixed list sorts after all known prototypes.
 
 ### Divergence sort
 
-Divergences are sorted by `function`, then `kind`, then the canonical JSON of the shrunk counterexample **as rendered in the report**, which is the text after the Identity_Redactor and the Root_Normalizer. Two Divergences whose real arguments differ but whose redacted arguments are equal therefore tie on this key and keep their input order. Sorting on the real, unredacted arguments would make the order depend on a value that the report does not show, so it is not done (requirement 13.3).
+Divergences are sorted by `function`, then `kind`, then the canonical JSON of the shrunk counterexample **as rendered in the report**, which is the text after the Identity_Redactor and the Root_Normalizer. Two Divergences whose real arguments differ but whose redacted arguments are equal therefore tie on this key and are ordered by the content tie-breakers. Sorting on the real, unredacted arguments would make the order depend on a value that the report does not show, so it is not done (requirement 13.3).
 
 - For kinds `unexplained` and `delta-violation`, the key is `[` plus the canonical node JSON of each argument, joined by `,`, plus `]` (`argsJson` in the serializer).
 - For kind `api-surface`, there are no arguments. The key is `JSON.stringify` of `{export, original, resurrection}` taken from `apiSurface`, where each side is `null` or its summary object with `primitive` replaced by its canonical node JSON text.
 
-`buildReport` sorts with the same three comparators and then the original index. The serializer repeats the sort, so a report built in any order serializes the same way (subject to the open tie item in "Discrepancies").
+`buildReport` sorts with the same three comparators and then the original index. The serializer repeats the sort with the content tie-breakers, so a report built in any order serializes the same way.
 
 ### Prototype delta entries
 
-Entries are ordered by prototype (fixed order), then string keys before symbol keys, then by key text in code point order. Symbol keys are compared by description. A symbol with a `null` description counts as the empty string, so it sorts before every symbol with a non-empty description and ties with a symbol whose description is the empty string. Ties keep input order.
+Entries are ordered by prototype (fixed order), then string keys before symbol keys, then by key text in code point order. Symbol keys are compared by description. A symbol with a `null` description counts as the empty string, so it sorts before every symbol with a non-empty description and ties with a symbol whose description is the empty string. Entries that still tie (for example the same key with another `change`, `before` or `after`) are ordered by the content tie-breakers.
 
 A string key `s` and a symbol key `sym` never tie, even when the text is equal, because kind of key is compared first.
 
 ### Unencodable reasons
 
-`unencodableValues` entries sort by `function`. Inside an entry, `reasons` is an object with exactly `cycle`, `depth`, `getter`, `proxy`, in that order. The schema requires `total` to equal the sum of `reasons` and `casesWithUnencodable` not to exceed `cases`.
+`unencodableValues` entries sort by `function`, then the content tie-breakers. Inside an entry, `reasons` is an object with exactly `cycle`, `depth`, `getter`, `proxy`, in that order. The schema requires `total` to equal the sum of `reasons` and `casesWithUnencodable` not to exceed `cases`.
 
 ## Encoded nodes
 
@@ -198,9 +198,6 @@ The `args` in the report are the redacted rendering. When identity redaction or 
 
 ## Discrepancies
 
-None open as of 2026-11-15 for items 2 to 6 of the earlier list: design.md ("Serialization and ordering") documents the rules above and adopts the code's behavior (harness error and delta pre-sort in `buildReport`, the `api-surface` sort key, stable sorts for node lists, string keys before symbol keys with a `null` description counted as the empty string).
+None open as of 2026-11-15. The former item 1 (permutation tie on Divergences, harness errors and deltas) is fixed: the serializer breaks ties by `deltaId`, `function` and the canonical JSON of the entry, so its output does not depend on input order. design.md ("Serialization and ordering") documents the rules above and the code behavior they adopt (the `api-surface` sort key, stable sorts for node lists, string keys before symbol keys with a `null` description counted as the empty string). The `api-surface` sort key now writes the summary keys in the fixed table order, so summaries with equal content but another key order give the same key.
 
-Open, reported as a code gap (code not changed):
-
-1. **Permutation tie on Divergences and harness errors.** Requirement 13.3 and Property 23 describe canonical JSON that is identical for any permutation of the sortable lists, and R13.3 breaks ties by original index. Divergences are sorted by `function`, `kind` and the rendered counterexample only. Two Divergences with the same function, kind and rendered arguments but different `deltaId`, `replay`, outcomes or `shrink` (for example two `delta-violation` entries from different deltas that found the same counterexample) tie on every comparator while differing in content, so their output order depends on input order. The same applies to `harnessErrors` with the same `kind` and `message` and different `function`. `buildReport` hides this with its own earlier sort (`function` is added for harness errors and deltas), but `canonicalReport` on a hand-permuted report is not permutation-invariant in these cases. A fix needs extra tie-breakers (for example `deltaId`, `function`, then the canonical JSON of the entry), which goes beyond the sort rule written in R13.3.
 The code table (`REPORT_KEY_ORDER`) stays the single source of truth for key order. If it changes, update this document in the same change.

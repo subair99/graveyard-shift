@@ -614,9 +614,9 @@ Not touched: the journal entries above, `design.md`, the `tsconfig.json` change.
 
 Date 2026-11-15, Node v26.13.1, Windows, working directory `C:\dev\graveyard-shift`, vitest 5.1.0. No agents were running and no network command was run. Every number below was read from the output of these runs. Per-file durations are the vitest JSON reporter's `endTime - startTime` per test file (includes import time); files run in parallel, so they do not sum to the wall-clock.
 
-**User-run timings (pending)**
+**User-run timings**
 
-Fill only from output the user pastes. Commands the user was asked to run (PowerShell):
+Measured by the user in their own PowerShell; copied from the user's message; vitest durations and per-run wall-clock were not provided, so those cells are empty (do not invent). The runs were made after the budget changes: `testTimeout` 60000 for the proof projects, `p25` split into `p25a` to `p25d`, `p24b` split out, smaller inner packages, and `p26b` at `numRuns` 100. Commands the user was asked to run (PowerShell):
 
 ```
 Remove-Item Env:PROOF_BUDGET_MODE -ErrorAction SilentlyContinue; npm test
@@ -624,11 +624,22 @@ Remove-Item Env:PROOF_BUDGET_MODE -ErrorAction SilentlyContinue; npm test
 $env:FC_SEED=12345; npm test; Remove-Item Env:FC_SEED
 ```
 
-| run | command | vitest duration | proof-property budget line | files | tests | failures |
-|---|---|---|---|---|---|---|
-| 1 | | | | | | |
-| 2 | | | | | | |
-| 3 | | | | | | |
+| run | seed | vitest duration | proof-property (seconds, as reported by the user) | files | tests | skipped | failures |
+|---|---|---|---|---|---|---|---|
+| 1 | default | | 45.3 s | 78 | 1042 passed | 3 | 0 |
+| 2 | default | | 46.5 s | 78 | 1042 passed | 3 | 0 |
+| 3 | `FC_SEED=12345` | | 41.9 s | 78 | 1042 passed | 3 | 0 |
+
+All 78 files passed in each run. Slowest files reported by the user: `p24` 34.7 s to 38.4 s in the property, `p26b` 23.4 s to 34.7 s, `p26` 25.6 s to 28.9 s. All three runs are under the 60 s target, so option (d) (a separate `proof-heavy` project) was not needed and was not done.
+
+**The 3 skipped tests** (determined by reading the code, no run; the user's verbose run output will confirm if the user pastes `--reporter=verbose` output later):
+1. `tests/proof/unit/treeHash.test.ts`, the symlink test: `ctx.skip` when symlink creation fails (Windows without the privilege).
+2. `tests/proof/unit/endToEndIdentity.test.ts`, the `it.runIf(!wordMatchable)` placeholder: skipped when the user name is long and not generic.
+3. `tests/proof/unit/identitySafety.test.ts`, the `it.runIf(!runnable)` placeholder: skipped when `USERNAME` or a home variable is set.
+
+**Decisions**
+- The p26 main property keeps `caseCount` 4 (not 3). Reason: with 3 generated cases the engine could not be shown to still catch every non-witness mutation (no measurement exists for `caseCount` 3). The user decided to keep 4.
+- The delta variant `p26b` runs at `numRuns` 100.
 
 **Static checks**
 - `npm run typecheck`: exit 0, no output after the script banner.
@@ -683,4 +694,20 @@ Written at the task 12 follow-up. Module lists and file counts come from a direc
 - `child/runner.ts` (not yet written) is the second allowed user of process streams besides `shell/emit.ts`, as the `sourceScan` test already encodes. design.md states this.
 - `PathContext` in design.md now matches `core/redact.ts` (`caseInsensitive`, `knownPaths`, `identityPaths`). `Difference` in design.md is `{part, path}`; the richer `NodeDifference` from `firstDifference` is not in the report.
 - Ordering discrepancies 2 to 6 of `docs/proof-of-life-ordering.md`: the code was judged reasonable and design.md was changed to match it.
-- Open code gap (code not changed): `canonicalReport` is not permutation-invariant for Divergences that tie on function, kind and rendered counterexample but differ in content, and for harness errors that tie on kind and message but differ in function. R13.3 breaks ties by original index, so the code follows the requirement text, but Property 23 and the "same data gives same bytes" goal would need extra tie-breakers. This is listed in `docs/proof-of-life-ordering.md` under "Discrepancies" for the orchestrator.
+- (Superseded by the user's tie-break decision, see design.md R13.3 wording: ties after the documented keys are broken by `deltaId`, then `function`, then canonical JSON.) Open code gap (code not changed at that time): `canonicalReport` is not permutation-invariant for Divergences that tie on function, kind and rendered counterexample but differ in content, and for harness errors that tie on kind and message but differ in function. R13.3 breaks ties by original index, so the code follows the requirement text, but Property 23 and the "same data gives same bytes" goal would need extra tie-breakers. This is listed in `docs/proof-of-life-ordering.md` under "Discrepancies" for the orchestrator.
+
+## Proof of Life: lodash.set@4.3.2 tarball recorded (task 14, user step)
+
+All facts below are as told by the user; not re-measured by the agent.
+- The user ran `npm run fixtures:record-tarball`. The output said "Integrity verified (8049 bytes)".
+- Files: `tests\proof\fixtures\lodash.set\lodash.set-4.3.2.tgz` (8049 bytes) and `tests\proof\fixtures\lodash.set\lodash.set-4.3.2.meta.json` (1325 bytes).
+- The user checked that the JSON has no identity values or tokens, and committed the files.
+
+## Proof of Life: lodash.set fixtures (tasks 15.1, 15.2)
+
+Written from reading the fixture files and READMEs; nothing was run.
+- Alive fixture (`tests/proof/fixtures/lodash.set-alive/`): the guard was copied from the real lodash 4.17.20 `baseSet`. Source: https://raw.githubusercontent.com/lodash/lodash/4.17.20/lodash.js, fetched 2026-11-15 (recorded in the fixture's `index.js` comment and `README.md` by the task agent; both re-read to confirm the URL and date).
+- The guard returns `object` at the offending segment, so assignments for earlier segments stay. For example `set({}, 'a.__proto__.x', 1)` gives `{ a: {} }`. This is not all-or-nothing.
+- The only difference of the alive `index.js` from the original 4.3.2 is the guard block.
+- Broken fixture (`tests/proof/fixtures/lodash.set-broken/`): changes ordinary behavior. Intermediate containers are always `{}`, so `set({}, 'a[0]', 1)` gives `{ a: { '0': 1 } }`, not `{ a: [1] }`. It also carries the same guard. It still contains the unused `isIndex` helper from the original.
+- Not checked: whether `.gitattributes` affects the line endings of the `LICENSE` copies in the fixtures.

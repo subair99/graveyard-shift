@@ -94,7 +94,7 @@ describe('canonicalReport', () => {
     expect(json).toBe(canonicalReport(r));
   });
 
-  it('sorts function lists by name and keeps the original index as tie-breaker', () => {
+  it('sorts function lists by name and breaks ties by the canonical JSON of the entry', () => {
     const r = baseReport();
     r.excludedFunctions = [
       { function: 'z', reason: 'first' },

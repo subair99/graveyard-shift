@@ -477,7 +477,7 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - A function harness whose `accept` never accepts ends the run with the harness error `generator-exhausted` (function and phase named, no path), Verdict `inconclusive` and never `alive`; skipped candidates are not counted in `cases`; a delta generator that yields an out-of-predicate case gives `generator-violates-predicate`. No test uses an unbounded `.filter` (it would hang, limitation L13)
     - _Requirements: 8.12, 8.13, 8.14, 8.15, 11.3, 12.3_
 
-- [-] 12. Checkpoint: pure core and in-process engine
+- [x] 12. Checkpoint: pure core and in-process engine
   - Agents do not run `npm test` or the full suite. Run `npm run typecheck`, `npm run lint` and, where a change needs it, one test file at a time (`npx vitest run <path>`, under about 30 s each); report failures before the sandbox is built
   - Budget work: finish the time-budget work for `proof-property` (the 60 s target is never changed silently)
   - Then write: "Ready for you to run:" followed by the three timing runs (PowerShell), and wait for the user to paste the output of all three; continue only after the output is pasted:
@@ -510,14 +510,14 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
   - _Requirements: 14.1, 14.11_
 
 - [ ] 15. Create the lodash.set fixtures
-  - [ ] 15.1 Write the hand-written alive resurrection `tests/proof/fixtures/lodash.set-alive/`
+  - [x] 15.1 Write the hand-written alive resurrection `tests/proof/fixtures/lodash.set-alive/`
     - Extract the Original with `extractTarball` (or `tar -xzf` by hand once) as the starting point; keep the `LICENSE` text, `package.json` author and contributors, `module.exports = set`, function `name` `set` and `length` 3
     - Add the guard in `baseSet`: when a path segment (after key conversion) equals `__proto__`, `constructor` or `prototype`, `set` returns the object unchanged at that point; assignments for earlier segments stay
     - Check the guard against the real lodash 4.17.20 `baseSet` source (the design flags this): fetch the file with `web_fetch` from the lodash GitHub tag 4.17.20 as an agent action (not from a test), compare the guard with the fixture, and write the exact source URL, fetch date and any difference in a comment in the fixture and in `docs/kiro-journal.md`; if the source differs from the design's description, make the fixture document its own rule and update the design text in "Fixtures"
     - The only differences from the Original must be inside the delta region (paths with a dangerous segment)
     - _Requirements: 14.4_
 
-  - [ ] 15.2 Write the deliberately broken resurrection `tests/proof/fixtures/lodash.set-broken/`
+  - [x] 15.2 Write the deliberately broken resurrection `tests/proof/fixtures/lodash.set-broken/`
     - Same as the alive fixture, plus one change outside the delta: intermediate containers are always `{}` and never `[]` for a numeric next segment, so `set({}, 'a[0]', 1)` returns `{ a: { '0': 1 } }`; the export surface stays unchanged
     - Keep the license and author credits
     - _Requirements: 14.5_
@@ -531,8 +531,8 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - License text and author credits present in both resurrection fixtures, same export names and arity as the Original
     - _Requirements: 14.4, 14.5_
 
-- [ ] 16. Implement the lodash.set harness
-  - [ ] 16.1 Implement `src/proof/harnesses/lodash.set/config.ts` and `sandbox/pollution.cjs`
+- [x] 16. Implement the lodash.set harness
+  - [x] 16.1 Implement `src/proof/harnesses/lodash.set/config.ts` and `sandbox/pollution.cjs`
     - Generators for object, path (dotted, bracket, array forms) and value arguments; predicate `pathHasDangerousSegment`; the delta generator that builds in-predicate paths by construction; the three explicit delta cases; `caseCount` 100 for the function and the delta phase
     - `pollution.cjs`: plain CommonJS `exports.check = ({ prototypeDelta }) => ...`, reads only the given delta, granted by exact path
     - No lodash-specific code in the engine, only in this directory
@@ -543,7 +543,7 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - **Validates: Requirements 14.6**
 
 - [ ] 17. Implement the Sandbox_Executor
-  - [ ] 17.1 Implement `src/proof/shell/executor/sandboxCommand.ts`
+  - [x] 17.1 Implement `src/proof/shell/executor/sandboxCommand.ts`
     - `buildSandboxArgv(spec, runnerDir)` (pure): `--permission`, one `--allow-fs-read=<path>` flag per path (repeated flags, never a comma-joined flag) for the runner DIRECTORY (`src/proof/child`, not a single file), the `fs.realpath.native` package directory (and the created path as well when it differs), and each harness path (`readPaths`, setup module); `--max-old-space-size`; the runner entry file; no `--allow-net`, `--allow-child-process`, `--allow-worker`, `--allow-addons`, `--allow-fs-write`, `--allow-inspector`, `--allow-wasi`, `--allow-ffi` or `--allow-openssl-store`. Reject (as `sandbox-unavailable`, message without the path) any path containing `*` (observed to widen the grant), and conservatively `?`, `[`, `]`, `{` and `}` (untested); allow `,`. Spawn options use `cwd` equal to the package directory in the same path form as its grant
     - `buildSandboxEnv(platform, parentEnv)` (pure): returns only `{ TZ: 'UTC' }`, copies nothing from `parentEnv`, never `NODE_OPTIONS`; a comment documents that on Windows the launcher adds 11 OS-supplied names which the engine does not rely on (Requirement 5.19)
     - _Requirements: 5.2, 5.3, 5.16, 5.17, 5.18, 5.19, 16.3_
@@ -553,7 +553,7 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - **Validates: Requirements 5.2, 5.3, 5.16, 5.17, 16.3**
     - Generated paths: a path with `,` or spaces gives one flag per path and never a comma-joined flag; a path containing `*`, `?`, `[`, `]`, `{` or `}` is rejected; the environment result is `{ TZ: 'UTC' }` for any parent environment
 
-  - [ ] 17.3 Implement `src/proof/child/runner.ts`
+  - [x] 17.3 Implement `src/proof/child/runner.ts`
     - NDJSON loop over `SideRuntime`, saves the original `process.stdout.write` for its own messages, then replaces `process.stdout.write`, `process.stderr.write` and `console` methods with no-ops before the package loads, `ready`, `load`, `exports`, `call`, `shutdown`, `fatal`; erasable TypeScript syntax only
     - _Requirements: 5.4, 5.8, 5.10_
 

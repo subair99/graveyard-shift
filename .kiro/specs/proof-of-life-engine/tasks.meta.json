@@ -620,6 +620,16 @@
         "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794733912579
+      },
+      {
+        "executionId": "047db4e1-9bbf-4ef3-b545-c355b905c509",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794741948616
+      },
+      {
+        "executionId": "047db4e1-9bbf-4ef3-b545-c355b905c509",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794742458478
       }
     ],
     "10.8 Implement `src/proof/shell/executor/inProcessExecutor.ts`": [
@@ -799,6 +809,21 @@
         "executionId": "0463b1a9-d14c-4ccd-a14b-c3f91aad1c7f",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794735443843
+      },
+      {
+        "executionId": "047db4e1-9bbf-4ef3-b545-c355b905c509",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794741948462
+      },
+      {
+        "executionId": "047db4e1-9bbf-4ef3-b545-c355b905c509",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794742957719
+      },
+      {
+        "executionId": "047db4e1-9bbf-4ef3-b545-c355b905c509",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794743081824
       }
     ],
     "13.2 Write offline tests for the recorder logic": [
@@ -818,6 +843,73 @@
         "executionId": "6e7cbda7-a02b-41e5-a52f-6062fdecef58",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794740092909
+      }
+    ],
+    "15.1 Write the hand-written alive resurrection `tests/proof/fixtures/lodash.set-alive/`": [
+      {
+        "executionId": "047db4e1-9bbf-4ef3-b545-c355b905c509",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794741948749
+      },
+      {
+        "executionId": "047db4e1-9bbf-4ef3-b545-c355b905c509",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794742458676
+      }
+    ],
+    "15.2 Write the deliberately broken resurrection `tests/proof/fixtures/lodash.set-broken/`": [
+      {
+        "executionId": "047db4e1-9bbf-4ef3-b545-c355b905c509",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794741948866
+      },
+      {
+        "executionId": "047db4e1-9bbf-4ef3-b545-c355b905c509",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794742458822
+      }
+    ],
+    "16.1 Implement `src/proof/harnesses/lodash.set/config.ts` and `sandbox/pollution.cjs`": [
+      {
+        "executionId": "047db4e1-9bbf-4ef3-b545-c355b905c509",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794741949155
+      },
+      {
+        "executionId": "047db4e1-9bbf-4ef3-b545-c355b905c509",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794742459393
+      }
+    ],
+    "16. Implement the lodash.set harness": [
+      {
+        "executionId": "047db4e1-9bbf-4ef3-b545-c355b905c509",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794742459577
+      }
+    ],
+    "17.1 Implement `src/proof/shell/executor/sandboxCommand.ts`": [
+      {
+        "executionId": "047db4e1-9bbf-4ef3-b545-c355b905c509",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794742460024
+      },
+      {
+        "executionId": "047db4e1-9bbf-4ef3-b545-c355b905c509",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794742598541
+      }
+    ],
+    "17.3 Implement `src/proof/child/runner.ts`": [
+      {
+        "executionId": "047db4e1-9bbf-4ef3-b545-c355b905c509",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794742598882
+      },
+      {
+        "executionId": "047db4e1-9bbf-4ef3-b545-c355b905c509",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794742957586
       }
     ]
   }

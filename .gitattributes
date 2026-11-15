@@ -1,1 +1,3 @@
 * text=auto eol=lf
+# Fixture bytes must never be changed by Git
+tests/**/fixtures/** -text

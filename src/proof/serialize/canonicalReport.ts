@@ -6,7 +6,7 @@
 // src/engine/serialize. Encoded nodes are written through the codec's canonical form
 // (`canonicalizeNode`, `nodeJson`).
 
-import { canonicalizeNode, nodeJson } from "../child/codec/canonical";
+import { nodeJson } from "../child/codec/canonical";
 import { compareCodePoints, ordered, sortBy } from "../child/codec/order";
 import type { EncodedNode, ProofReport } from "../types";
 
@@ -134,6 +134,39 @@ function argsJson(args: unknown): string {
   return "[" + asArr(args).map((n) => nodeJson(n as EncodedNode)).join(",") + "]";
 }
 
+/** Absent sorts first, then code point order. */
+function cmpOptional(a: unknown, b: unknown): number {
+  if (a === undefined || b === undefined) return a === undefined ? (b === undefined ? 0 : -1) : 1;
+  return cmpStr(a, b);
+}
+
+/**
+ * Sorts a list of objects by the documented primary comparators, then breaks ties by `deltaId`
+ * (absent first), `function` (absent first) and the canonical JSON of the whole rendered entry
+ * (code point order). The result does not depend on the input order, and equal entries are
+ * identical in content, so the original index is never the deciding tie-breaker.
+ */
+function sortEntries(
+  list: unknown,
+  render: (o: Obj) => unknown,
+  ...primary: Array<(a: Obj, b: Obj) => number>
+): unknown[] {
+  type Item = { raw: Obj; out: unknown; json: string };
+  const items: Item[] = asArr(list)
+    .map(asObj)
+    .map((raw) => {
+      const out = render(raw);
+      return { raw, out, json: write(out) };
+    });
+  return sortBy<Item>(
+    items,
+    ...primary.map((c) => (a: Item, b: Item) => c(a.raw, b.raw)),
+    (a, b) => cmpOptional(a.raw["deltaId"], b.raw["deltaId"]),
+    (a, b) => cmpOptional(a.raw["function"], b.raw["function"]),
+    (a, b) => compareCodePoints(a.json, b.json),
+  ).map((i) => i.out);
+}
+
 function descriptor(mapNode: MapNode): (v: unknown) => unknown {
   const node = (n: unknown): unknown => mapNode(n as EncodedNode);
   return (v) =>
@@ -154,17 +187,17 @@ function deltaKeyText(key: unknown): string {
 function prototypeDelta(mapNode: MapNode): (v: unknown) => unknown {
   const desc = descriptor(mapNode);
   return (v) =>
-    sortBy(
-      asArr(v).map(asObj),
+    sortEntries(
+      v,
+      (e) =>
+        ordered(e, REPORT_KEY_ORDER.deltaEntry, {
+          key: (k) => ordered(asObj(k), REPORT_KEY_ORDER.deltaKey),
+          before: desc,
+          after: desc,
+        }),
       (a, b) => rank(PROTOTYPE_ORDER, a["prototype"]) - rank(PROTOTYPE_ORDER, b["prototype"]),
       (a, b) => deltaKeyRank(a["key"]) - deltaKeyRank(b["key"]),
       (a, b) => compareCodePoints(deltaKeyText(a["key"]), deltaKeyText(b["key"])),
-    ).map((e) =>
-      ordered(e, REPORT_KEY_ORDER.deltaEntry, {
-        key: (k) => ordered(asObj(k), REPORT_KEY_ORDER.deltaKey),
-        before: desc,
-        after: desc,
-      }),
     );
 }
 
@@ -182,11 +215,12 @@ function outcome(mapNode: MapNode): (v: unknown) => unknown {
 }
 
 function differences(v: unknown): unknown[] {
-  return sortBy(
-    asArr(v).map(asObj),
+  return sortEntries(
+    v,
+    (d) => ordered(d, REPORT_KEY_ORDER.difference),
     (a, b) => rank(DIFFERENCE_PART_ORDER, a["part"]) - rank(DIFFERENCE_PART_ORDER, b["part"]),
     (a, b) => cmpStr(a["path"], b["path"]),
-  ).map((d) => ordered(d, REPORT_KEY_ORDER.difference));
+  );
 }
 
 function exportSummary(mapNode: MapNode): (v: unknown) => unknown {
@@ -228,16 +262,16 @@ function sortedApiSurface(v: unknown): string {
     if (s === null || s === undefined) return null;
     const o = asObj(s);
     const prim = o["primitive"];
-    return {
-      ...o,
-      primitive: prim === undefined ? undefined : nodeJson(prim as EncodedNode),
-    };
+    return ordered(o, REPORT_KEY_ORDER.exportSummary, {
+      primitive: () => (prim === undefined ? undefined : nodeJson(prim as EncodedNode)),
+    });
   };
-  return JSON.stringify({
-    export: a["export"],
-    original: side(a["original"]),
-    resurrection: side(a["resurrection"]),
-  });
+  return JSON.stringify(
+    ordered(
+      { export: a["export"], original: side(a["original"]), resurrection: side(a["resurrection"]) },
+      REPORT_KEY_ORDER.apiSurface,
+    ),
+  );
 }
 
 function propertyResult(mapNode: MapNode): (v: unknown) => unknown {
@@ -265,52 +299,59 @@ function buildReport(report: ProofReport, mapNode: MapNode): Obj {
       }),
     functionsTested: (v) => asArr(v).map(String).sort(compareCodePoints),
     casesPerFunction: (v) =>
-      sortBy(asArr(v).map(asObj), byFunction).map((e) =>
-        ordered(e, REPORT_KEY_ORDER.casesPerFunction),
-      ),
+      sortEntries(v, (e) => ordered(e, REPORT_KEY_ORDER.casesPerFunction), byFunction),
     unencodableValues: (v) =>
-      sortBy(asArr(v).map(asObj), byFunction).map((e) =>
-        ordered(e, REPORT_KEY_ORDER.unencodableValue, {
-          reasons: (r) => ordered(asObj(r), REPORT_KEY_ORDER.reasons),
-        }),
+      sortEntries(
+        v,
+        (e) =>
+          ordered(e, REPORT_KEY_ORDER.unencodableValue, {
+            reasons: (r) => ordered(asObj(r), REPORT_KEY_ORDER.reasons),
+          }),
+        byFunction,
       ),
     excludedFunctions: (v) =>
-      sortBy(asArr(v).map(asObj), byFunction).map((e) =>
-        ordered(e, REPORT_KEY_ORDER.excludedFunction),
-      ),
+      sortEntries(v, (e) => ordered(e, REPORT_KEY_ORDER.excludedFunction), byFunction),
     nonDeterministicFunctions: (v) =>
-      sortBy(asArr(v).map(asObj), byFunction).map((e) =>
-        ordered(e, REPORT_KEY_ORDER.nonDeterministicFunction, {
-          args: nodes(mapNode),
-          differences,
-        }),
+      sortEntries(
+        v,
+        (e) =>
+          ordered(e, REPORT_KEY_ORDER.nonDeterministicFunction, {
+            args: nodes(mapNode),
+            differences,
+          }),
+        byFunction,
       ),
     divergences: (v) =>
-      sortBy(
-        asArr(v).map(asObj),
+      sortEntries(
+        v,
+        divergenceOf,
         byFunction,
         (a, b) => cmpStr(a["kind"], b["kind"]),
         (a, b) => compareCodePoints(counterexampleKey(a), counterexampleKey(b)),
-      ).map(divergenceOf),
+      ),
     deltas: (v) =>
-      sortBy(asArr(v).map(asObj), (a, b) => cmpStr(a["id"], b["id"])).map((e) =>
-        ordered(e, REPORT_KEY_ORDER.delta, {
-          demonstration: (d) =>
-            d === null
-              ? null
-              : ordered(asObj(d), REPORT_KEY_ORDER.demonstration, {
-                  args: nodes(mapNode),
-                  original: prop,
-                  resurrection: prop,
-                }),
-        }),
+      sortEntries(
+        v,
+        (e) =>
+          ordered(e, REPORT_KEY_ORDER.delta, {
+            demonstration: (d) =>
+              d === null
+                ? null
+                : ordered(asObj(d), REPORT_KEY_ORDER.demonstration, {
+                    args: nodes(mapNode),
+                    original: prop,
+                    resurrection: prop,
+                  }),
+          }),
+        (a, b) => cmpStr(a["id"], b["id"]),
       ),
     harnessErrors: (v) =>
-      sortBy(
-        asArr(v).map(asObj),
+      sortEntries(
+        v,
+        (e) => ordered(e, REPORT_KEY_ORDER.harnessError),
         (a, b) => cmpStr(a["kind"], b["kind"]),
         (a, b) => cmpStr(a["message"], b["message"]),
-      ).map((e) => ordered(e, REPORT_KEY_ORDER.harnessError)),
+      ),
     toolVersions: (v) => ordered(asObj(v), REPORT_KEY_ORDER.toolVersions),
   });
 }
@@ -335,7 +376,7 @@ function write(v: unknown): string {
  * canonical encoded nodes. Idempotent; the input is not modified.
  */
 export function canonicalizeReport(report: ProofReport): ProofReport {
-  return buildReport(report, canonicalizeNode) as unknown as ProofReport;
+  return JSON.parse(canonicalReport(report)) as ProofReport;
 }
 
 /**

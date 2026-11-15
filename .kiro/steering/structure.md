@@ -21,14 +21,22 @@ src/proof/core/  Pure core (determinism lint scope): seeds, equal (comparison), 
 src/proof/serialize/  Pure: canonicalReport.ts (REPORT_KEY_ORDER, canonical JSON), deserialize.ts (zod)
 src/proof/shell/  I/O shell: driver, orchestrator, emit (the single output path), entry, integrity, treeHash, workDir
 src/proof/shell/tarball/  tarballExtractor.ts, the only importer of `tar`
-src/proof/shell/executor/  Executor interface (types.ts) and inProcessExecutor.ts (tests only); the Sandbox_Executor is planned here
-src/proof/child/  Sandbox side, self-contained, erasable TypeScript syntax only: protocol, prototypes, sideRuntime, stubs, package.json ({"type":"module"}); runner.ts is planned
+src/proof/shell/executor/  Executor interface (types.ts) and inProcessExecutor.ts (tests only), sandboxCommand.ts (pure buildSandboxArgv / buildSandboxEnv); the Sandbox_Executor itself is planned here
+tests/proof/unit/sandboxCommand.test.ts  Argv and environment builder tests
+src/proof/child/  Sandbox side, self-contained, erasable TypeScript syntax only: protocol, prototypes, sideRuntime, stubs, runner (entry script: NDJSON loop over SideRuntime on stdin/stdout), package.json ({"type":"module"})
+tests/proof/unit/runner.test.ts  Smoke test: runner as a real child under `node --permission`
 src/proof/child/codec/  Pure Value_Codec (determinism lint scope): nodes, order, encode, decode, canonical; imports nothing outside this directory
+src/proof/harnesses/lodash.set/  lodash.set Harness_Config (config.ts: generators, predicate, declared delta) and sandbox/pollution.cjs (CommonJS delta property module); the only lodash-specific code
+tests/proof/unit/lodashHarness.test.ts  Config validation, generator/predicate agreement, pollution module
 tests/proof/unit/  Proof engine unit tests (one file per module, sourceScan.test.ts, determinismLint.test.ts, ...)
 tests/proof/property/  Proof engine property tests, named p*-*.test.ts (fast-check, one file per design property)
 tests/proof/integration/  Planned: real child process (sandbox) tests; does not exist yet
 tests/proof/helpers/  Shared test helpers (arbitraries, synthetic packages, tarball builders, runners)
-tests/proof/fixtures/  Planned: recorded tarballs (written by npm run fixtures:record-tarball); does not exist yet
+tests/proof/fixtures/  Recorded tarball (lodash.set/, written by npm run fixtures:record-tarball) and hand-written fixture packages
+tests/proof/fixtures/lodash.set-alive/  Hand-written lodash.set 4.3.3 resurrection (original plus the pollution guard in baseSet); test fixture, never published
+tests/proof/unit/lodashAliveFixture.test.ts  Original vs alive fixture checks (pollution runs in a spawned node child)
+tests/proof/fixtures/lodash.set-broken/  Deliberately broken lodash.set 4.3.3 (numeric-index containers are `{}`; has the pollution guard); test fixture, never published
+tests/proof/unit/lodashBrokenFixture.test.ts  Original vs broken fixture checks (pollution runs in a spawned node child)
 scripts/spike/  Sandbox spike scripts (task 1; results in docs/kiro-journal.md)
 package.json      Scripts and dependencies (npm)
 tsconfig.json     TypeScript config (strict)

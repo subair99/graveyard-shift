@@ -594,7 +594,7 @@ function redactionMaskedDifference(rawPair: RawPair, identity: IdentityValues, p
 5. `buildReport` serializes and runs the temp-root-leak check (R13.23), then the Identity_Scanner backstop (R13.26) over the serialized report.
 6. Only if the backstop still finds an Identity_Value, the harness error is `identity-leak`: Verdict `inconclusive`, and the fallback report that omits `divergences` and `deltas` (and the cases of `nonDeterministicFunctions`), states the error without any path and any Identity_Value, and is searched again by both checks, so the value is not written to disk. The CLI writes no report that failed either check. `identity-leak` means that the redaction missed something (a form the rules do not cover, a transformed or split copy, or a string that did not pass through the redactor). It is never raised only because a returned value contained an Identity_Value: such a value is redacted in step 4.
 
-**The flag `redactionMaskedDifference` (R13.30).** It is `true` exactly when the Original Outcome and the Resurrection Outcome recorded in the Divergence (for `api-surface`, the two recorded `ExportSummary` values) differ before identity redaction and have the same canonical JSON after it, and `false` otherwise. Example: two Outcomes that differ only in the case of a home-directory path on Windows (`C:\Users\alice` against `c:\users\ALICE`, with that path as USERPROFILE) are a Divergence, both render as `<user-home>`, and the flag is `true`. Two Outcomes that return `C:\Users\alice\x` and `C:\Users\bob\x` with only `USERNAME=alice` in the snapshot are a Divergence, render as `C:\Users\<user>\x` and `C:\Users\bob\x`, and the flag is `false`. The flag is the last key of a Divergence object (R13.2), it is present on every Divergence, and the schema rejects an entry without it or with a non-boolean value (R13.6). The Divergences are sorted by function, kind, and the canonical JSON of the counterexample **as rendered in the report, after the Identity_Redactor** (R13.3), ties broken by original index. docs/proof-of-life-ordering.md states the position and meaning of the flag and this sort rule (R13.8).
+**The flag `redactionMaskedDifference` (R13.30).** It is `true` exactly when the Original Outcome and the Resurrection Outcome recorded in the Divergence (for `api-surface`, the two recorded `ExportSummary` values) differ before identity redaction and have the same canonical JSON after it, and `false` otherwise. Example: two Outcomes that differ only in the case of a home-directory path on Windows (`C:\Users\alice` against `c:\users\ALICE`, with that path as USERPROFILE) are a Divergence, both render as `<user-home>`, and the flag is `true`. Two Outcomes that return `C:\Users\alice\x` and `C:\Users\bob\x` with only `USERNAME=alice` in the snapshot are a Divergence, render as `C:\Users\<user>\x` and `C:\Users\bob\x`, and the flag is `false`. The flag is the last key of a Divergence object (R13.2), it is present on every Divergence, and the schema rejects an entry without it or with a non-boolean value (R13.6). The Divergences are sorted by function, kind, and the canonical JSON of the counterexample **as rendered in the report, after the Identity_Redactor** (R13.3), ties broken by `deltaId` (absent first), then `function` (absent first), then the entry's canonical JSON by code point. docs/proof-of-life-ordering.md states the position and meaning of the flag and this sort rule (R13.8).
 
 **Counterexample and replay.** The counterexample in the report is the redacted rendering. When redaction changed it, it differs from the real argument and cannot be pasted back as an explicit Case (L14). The Replay_Parameters (`seed` and `path`) do not use the report text: `fc.check(sameProperty, { seed, path })` regenerates the shrunk case from the parent's generators, so replay stays exact. The replay test compares the reproduced counterexample with the recorded one **before** identity redaction, using the raw value that the driver kept in memory, not the report text (R8.8).
 
@@ -888,7 +888,7 @@ Rule 2 before rule 3 resolves the clash between R9.4 and R12.2 (see Resolved amb
 
 ### Serialization and ordering
 
-`serialize/canonicalReport.ts` follows `src/engine/serialize/canonicalJson.ts`: a single exported `REPORT_KEY_ORDER` table, an `ordered(obj, keys, map)` helper that skips undefined, and `sortBy` with an index tie-breaker. The generic helpers come from `child/codec/order.ts`.
+`serialize/canonicalReport.ts` follows `src/engine/serialize/canonicalJson.ts`: a single exported `REPORT_KEY_ORDER` table, an `ordered(obj, keys, map)` helper that skips undefined, and `sortBy`, which orders by the documented keys and then by the content tie-breakers of the sort table below (`deltaId`, `function`, canonical JSON of the entry), never by input position. The generic helpers come from `child/codec/order.ts`.
 
 | Object | Key order |
 |---|---|
@@ -915,23 +915,23 @@ Rule 2 before rule 3 resolves the clash between R9.4 and R12.2 (see Resolved amb
 | Outcome | `kind`, `async`, `value`, `args`, `prototypeDelta` |
 | EncodedNode | per `t` table in `child/codec/nodes.ts` (`t` first) |
 
-Sorting rules (all by `compareCodePoints`, ties broken by original index):
+Sorting rules (all by `compareCodePoints`). Ties on the keys below are broken by three tie-breakers, in order: `deltaId` (absent first), `function` (absent first), then the canonical JSON of the whole rendered entry (code point order). The output is therefore byte-identical for any permutation of any list. The column "Tie-breaker" says "content" for these three:
 
 | List | Order | Tie-breaker |
 |---|---|---|
-| functionsTested, casesPerFunction, unencodableValues, excludedFunctions, nonDeterministicFunctions | function name | original index |
-| divergences | function, then kind, then canonical JSON of the shrunk `args` as rendered in the report, that is after the Identity_Redactor (for `api-surface`: of `apiSurface`, also as rendered) (R13.3) | original index |
-| deltas | id | original index |
-| harnessErrors | kind, then message | original index |
-| differences | part (fixed order `kind`, `async`, `value`, `args`, `prototypeDelta`), then path | original index |
-| prototypeDelta in an Outcome | prototype in the fixed six-name order, then kind of key (string keys before symbol keys), then key text: the string, or the symbol description (a `null` description counts as the empty string) | original index (stable sort) |
+| functionsTested, casesPerFunction, unencodableValues, excludedFunctions, nonDeterministicFunctions | function name | content |
+| divergences | function, then kind, then canonical JSON of the shrunk `args` as rendered in the report, that is after the Identity_Redactor (for `api-surface`: of `apiSurface`, also as rendered) (R13.3) | content |
+| deltas | id | content |
+| harnessErrors | kind, then message | content |
+| differences | part (fixed order `kind`, `async`, `value`, `args`, `prototypeDelta`), then path | content |
+| prototypeDelta in an Outcome | prototype in the fixed six-name order, then kind of key (string keys before symbol keys), then key text: the string, or the symbol description (a `null` description counts as the empty string) | content |
 | `props` of nodes, Map entries, Set items | key; canonical JSON of the entry or item | original index (stable sort). Equal `props` keys cannot occur in one object, and equal Map entries or Set items are identical in content, so the bytes do not depend on it |
 
 Details that the code fixes and the design adopts (the code is reasonable in each case; `docs/proof-of-life-ordering.md` lists the same rules):
 
 - **`api-surface` sort key.** The key is `JSON.stringify({ export, original, resurrection })` where each side is `null` or its summary with `primitive` replaced by its canonical node JSON text. The summary keys keep the input object's own key order inside the key text. Two summaries with equal content but another key order give different key texts, which can change the order only between Divergences that are otherwise identical, so the bytes do not change. `buildReport` uses its own earlier sort key (`JSON.stringify` of the rendered `apiSurface`); the serializer's sort is the final one.
-- **Harness error and delta pre-sort.** `buildReport` sorts harness errors by `kind`, then `function` (a missing function counts as the empty string), then `message`, and deltas by `id`, then `function`. The serializer then sorts harness errors by `kind`, then `message`, and deltas by `id` only (R13.3), and both sorts are stable. The pre-sort is not part of the contract; it only makes the order of entries that tie in the serializer depend on `function` instead of on discovery order.
-- **Ties in the serializer.** Entries that tie on every serializer key keep their input order (R13.3: ties broken by original index). Property 23 therefore holds for lists whose tied entries are identical in content, as its statement says. For Divergences with equal function, kind and rendered counterexample but different `deltaId`, `replay`, Outcomes or `shrink`, and for harness errors with equal kind and message but different `function`, the canonical JSON of a hand-permuted report can differ. This is a known limit of the rule in R13.3, not hidden (see the report of task 12 follow-up in docs/kiro-journal.md).
+- **Harness error and delta pre-sort.** `buildReport` sorts harness errors by `kind`, then `function` (a missing function counts as the empty string), then `message`, and deltas by `id`, then `function`. The serializer does not depend on it: it sorts harness errors by `kind`, `message` and deltas by `id`, then applies the content tie-breakers (`function` is the second one), so the pre-sort is not part of the contract.
+- **Ties in the serializer.** Entries that tie on every documented key are ordered by `deltaId`, `function` and the canonical JSON of the entry, so Property 23 holds even when tied entries differ in content (for example Divergences with equal function, kind and rendered counterexample but different `deltaId`, `replay`, Outcomes or `shrink`, or harness errors with equal kind and message but different `function`). Entries with equal canonical JSON are identical, so the input position never decides the bytes. This applies to report lists only; the codec's node lists (`props`, Map entries, Set items) use a stable sort, and their ties are identical in content.
 
 The report has no wall-clock field. `docs/proof-of-life-ordering.md` documents: the key-order table above, the sort table above, the position and `reasons` order of `unencodableValues`, the canonical node order, the rule that undefined keys are omitted, the position and meaning of `redactionMaskedDifference` in a Divergence, the rule that the Divergence sort uses the redacted counterexample, and the replay recipe (seed and path, not the report text).
 
@@ -1112,7 +1112,7 @@ Reflection results: the prework found about 110 testable criteria. They were mer
 
 ### Property 23: Canonical ordering
 
-*For any* valid Proof_Report and any permutation of its sortable lists, the canonical JSON is identical (entries that tie on every key differ only in original index and are identical in content), keys follow the key-order table, and keys with undefined values are omitted.
+*For any* valid Proof_Report and any permutation of its sortable lists, the canonical bytes are identical for every permutation of the sortable lists, including tied entries that differ in content (ties after the documented keys are broken by `deltaId`, then `function`, then the entry's canonical JSON), keys follow the key-order table, and keys with undefined values are omitted.
 
 **Validates: Requirements 13.1, 13.3**
 
