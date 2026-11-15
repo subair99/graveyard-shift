@@ -1,3 +1,4 @@
+// Requirements: 10.1, 10.2, 10.3
 import { describe, expect, it } from "vitest";
 import { compareApiSurface, type ExportEntry } from "../../../src/proof/core/apiSurface";
 

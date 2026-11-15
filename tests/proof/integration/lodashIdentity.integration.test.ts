@@ -5,6 +5,7 @@
 // caseCount and explicit cases whose objects and values carry the machine's real identity values.
 // The values come from the same environment snapshot `defaultProofDeps()` takes. No assertion
 // message or test name prints a real value: every check is a boolean with a fixed message.
+// Requirements: 13.25, 13.26, 13.28, 13.29, 13.30, 16.3
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";

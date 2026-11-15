@@ -1,3 +1,4 @@
+// Requirements: 9.1
 import { afterEach, describe, expect, it } from 'vitest';
 import { FROZEN_TIME_MS, installStubs, type StubHandle } from '../../../src/proof/child/stubs.ts';
 

@@ -2,6 +2,7 @@
 // `spin()` is a synchronous infinite loop that only the parent can stop; `hang()` is a promise that
 // never settles, which the child answers itself. The wall-clock bound is a correctness check, not a
 // benchmark.
+// Requirements: 5.4, 15.6
 import { performance } from "node:perf_hooks";
 import { afterEach, describe, expect, it } from "vitest";
 import { createHarness, isRunning, waitForExit } from "./helpers/sandboxHarness";

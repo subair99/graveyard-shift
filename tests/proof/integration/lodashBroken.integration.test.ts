@@ -11,6 +11,7 @@
 // an `index` only). Keeping numeric paths out of the explicit list makes the GENERATED phase
 // (seed and path) the one under test. The generators and the case count (100) are the defaults.
 // No assertion message prints an Identity_Value or a temp root: all checks are booleans.
+// Requirements: 3.6, 8.7, 8.8, 11.4, 11.8, 12.2, 13.4, 14.8
 import { mkdirSync, mkdtempSync, existsSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";

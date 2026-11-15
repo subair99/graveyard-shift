@@ -28,6 +28,7 @@
  * alias tracking is by name for the whole file (no scopes), so a shadowing
  * local variable named like an alias can produce a false positive.
  */
+// Requirements: 13.25, 13.28, 16.2, 16.3
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, resolve, sep } from "node:path";
 import { parse } from "@babel/parser";

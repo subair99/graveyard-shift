@@ -1,3 +1,4 @@
+// Requirements: 4.2, 4.3, 4.4
 import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";

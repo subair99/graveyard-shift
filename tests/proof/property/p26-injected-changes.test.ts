@@ -9,6 +9,7 @@
 // and caseCount 5 -> 4 per generated package. Calls per case stay 2 (mutated pair and control).
 // Witness-only mutations still use explicit cases, so the lower caseCount does not remove them.
 //
+// Requirements: 7.7, 7.8, 10.2, 15.4, 15.11
 // Validates: Requirements 15.4, 15.11, 7.7, 7.8, 10.2
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { fc, fcParams } from "../../engine/helpers/fc";

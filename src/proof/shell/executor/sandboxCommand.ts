@@ -12,7 +12,8 @@
 //
 // Paths: the caller passes the `fs.realpathSync.native` form of the package directory, and the
 // `cwd` returned here is that same string, so grant and `cwd` are in the same path form
-// (Requirement 5.17). The created form, when it differs, goes into `extraReadPaths`.
+// (Requirement 5.17). The optional `realpath` input is applied to the runner directory, the package
+// directory and every extra grant before validation, so a short 8.3 form cannot reach a flag.
 //
 // Environment: only `TZ=UTC` (Requirement 5.3). On Windows the process launcher adds OS-supplied
 // variables to the child's environment (11 names observed in the spike, journal task 1.4). The
@@ -34,6 +35,13 @@ export interface SandboxCommandInput {
   extraReadPaths: readonly string[];
   /** Heap limit in MB, a positive integer. */
   maxOldSpaceMb: number;
+  /**
+   * Resolves a grant path (production passes `fs.realpathSync.native`, which expands 8.3 short
+   * names and links). Applied to `runnerDir`, `packageDir` and every `extraReadPaths` entry before
+   * validation. A path for which it throws is used unchanged. Default: identity (the builder
+   * stays pure).
+   */
+  realpath?: (p: string) => string;
 }
 
 export interface SandboxCommand {
@@ -83,13 +91,25 @@ function pathProblem(label: string, value: string): string | undefined {
 export function buildSandboxArgv(
   input: SandboxCommandInput,
 ): Result<SandboxCommand, ExecutorError> {
+  const resolveGrant = (p: string): string => {
+    if (input.realpath === undefined || typeof p !== "string" || p.length === 0) return p;
+    try {
+      return input.realpath(p);
+    } catch {
+      return p; // for example ENOENT: the input path stays as it is
+    }
+  };
+  const runnerDir = resolveGrant(input.runnerDir);
+  const packageDir = resolveGrant(input.packageDir);
+  const extraReadPaths = input.extraReadPaths.map(resolveGrant);
+
   const labeled: Array<[string, string]> = [
     ["node executable", input.execPath],
-    ["runner directory", input.runnerDir],
+    ["runner directory", runnerDir],
     ["runner entry", input.runnerEntry],
-    ["package directory", input.packageDir],
+    ["package directory", packageDir],
   ];
-  input.extraReadPaths.forEach((p, i) => labeled.push([`extra read #${i + 1}`, p]));
+  extraReadPaths.forEach((p, i) => labeled.push([`extra read #${i + 1}`, p]));
   for (const [label, value] of labeled) {
     const problem = pathProblem(label, value);
     if (problem !== undefined) return unavailable(problem);
@@ -100,7 +120,7 @@ export function buildSandboxArgv(
 
   // Runner directory, package directory, then extra paths; exact duplicates are granted once.
   const grants: string[] = [];
-  for (const p of [input.runnerDir, input.packageDir, ...input.extraReadPaths]) {
+  for (const p of [runnerDir, packageDir, ...extraReadPaths]) {
     if (!grants.includes(p)) grants.push(p);
   }
 
@@ -114,7 +134,7 @@ export function buildSandboxArgv(
         `--max-old-space-size=${input.maxOldSpaceMb}`,
         input.runnerEntry,
       ],
-      cwd: input.packageDir,
+      cwd: packageDir,
     },
   };
 }

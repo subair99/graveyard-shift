@@ -9,6 +9,7 @@
 //   3. the spike's candidate sets { }, { TZ }, { SystemRoot }, { SystemRoot, TZ } each start and
 //      load a package under `--permission`, and only the TZ ones are in UTC.
 // That the parent's variables do not reach the child is asserted in envScrubbed.integration.test.ts.
+// Requirements: 5.3, 5.18, 5.19
 import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";

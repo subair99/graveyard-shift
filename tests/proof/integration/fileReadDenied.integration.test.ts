@@ -4,6 +4,7 @@
 //
 // By design the runner directory (src/proof/child) is granted read, so reading it is allowed
 // and is deliberately not asserted here.
+// Requirements: 5.2, 15.6
 import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";

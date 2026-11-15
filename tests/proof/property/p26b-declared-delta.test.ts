@@ -7,6 +7,7 @@
 // caseCount 5 -> 3. Both runs per case keep their explicit cases (the delta case [-3] and the
 // mutation witness), so the assertions do not depend on generated cases.
 //
+// Requirements: 7.7, 7.8, 10.2, 15.4, 15.11
 // Validates: Requirements 15.4, 15.11, 7.7, 7.8, 10.2
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { DeclaredDelta } from "../../../src/proof/types";

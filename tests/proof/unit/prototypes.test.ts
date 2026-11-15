@@ -1,3 +1,4 @@
+// Requirements: 5.10, 5.12
 import { afterEach, describe, expect, it } from 'vitest'
 import {
   PROTO_NAMES,

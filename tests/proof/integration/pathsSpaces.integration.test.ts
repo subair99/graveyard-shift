@@ -5,6 +5,7 @@
 // package real path; Node error text carries the NATIVE path (characters unencoded) while
 // `pathToFileURL` text carries the percent-encoded form with uppercase hex; the Root_Normalizer
 // replaces both with `<package>`. One full engine run uses a temp root named `gs space`.
+// Requirements: 5.2, 5.17, 13.19
 import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";

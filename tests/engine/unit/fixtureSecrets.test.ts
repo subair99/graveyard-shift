@@ -48,16 +48,29 @@ function scanFiles(files: readonly string[], root: string, token: string | undef
   return found;
 }
 
-function resolveToken(): string | undefined {
-  if (!process.env.GITHUB_TOKEN && existsSync(join(process.cwd(), '.env'))) {
+/**
+ * Reads GITHUB_TOKEN from `env`, loading `.env` first when the variable is not set. A missing
+ * `.env` (code ENOENT) is not an error: the token-shape checks still run. Any other loader error
+ * is rethrown with a fixed message that carries no file content and no value.
+ */
+export function loadOptionalEnvToken(
+  loadEnvFile: (path: string) => void = (path) => process.loadEnvFile(path),
+  env: Readonly<Record<string, string | undefined>> = process.env,
+): string | undefined {
+  if (!env.GITHUB_TOKEN) {
     try {
-      process.loadEnvFile(join(process.cwd(), '.env'));
-    } catch {
-      // unreadable .env: continue with the environment as is
+      loadEnvFile(join(process.cwd(), '.env'));
+    } catch (error) {
+      const code = typeof error === 'object' && error !== null ? (error as { code?: unknown }).code : undefined;
+      if (code !== 'ENOENT') throw new Error('loading .env failed with an error other than ENOENT');
     }
   }
-  const value = process.env.GITHUB_TOKEN;
+  const value = env.GITHUB_TOKEN;
   return value && value.length > 0 ? value : undefined;
+}
+
+function resolveToken(): string | undefined {
+  return loadOptionalEnvToken();
 }
 
 describe('fixture credential scan', () => {
@@ -98,6 +111,37 @@ describe('fixture credential scan', () => {
         `${name} fetchedAt is second-precision UTC`,
       ).toBe(true);
     }
+  });
+
+  it('loadOptionalEnvToken: a loader that throws ENOENT yields undefined without throwing', () => {
+    const missing = (): never => {
+      throw Object.assign(new Error('ENOENT: no such file or directory'), { code: 'ENOENT' });
+    };
+    expect(loadOptionalEnvToken(missing, {})).toBeUndefined();
+  });
+
+  it('loadOptionalEnvToken: another loader error is rethrown with a fixed message and no token', () => {
+    const secret = 'fake-token-value-for-this-test';
+    const broken = (): never => {
+      throw Object.assign(new Error(`bad line GITHUB_TOKEN=${secret}`), { code: 'EACCES' });
+    };
+    let message = '';
+    try {
+      loadOptionalEnvToken(broken, {});
+    } catch (error) {
+      message = error instanceof Error ? error.message : '';
+    }
+    expect(message).toBe('loading .env failed with an error other than ENOENT');
+    expect(message.includes(secret)).toBe(false);
+  });
+
+  it('loadOptionalEnvToken: does not call the loader when the token is already set', () => {
+    let calls = 0;
+    const loader = (): void => {
+      calls += 1;
+    };
+    expect(loadOptionalEnvToken(loader, { GITHUB_TOKEN: 'x' })).toBe('x');
+    expect(calls).toBe(0);
   });
 
   it('scanner self-test: detects a fake token and a header, ignores a clean file', () => {

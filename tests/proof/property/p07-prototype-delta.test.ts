@@ -5,6 +5,7 @@
 // SideRuntime, and every real mutation is made under the unique prefix `__gs_p7_`, with an
 // unconditional cleanup in `finally` and a guard test that compares the six real prototypes with a
 // snapshot taken before this file ran.
+// Requirements: 5.10, 5.12
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'

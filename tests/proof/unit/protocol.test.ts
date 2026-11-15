@@ -1,3 +1,4 @@
+// Requirements: 5.8
 import { describe, expect, it } from 'vitest'
 import {
   ProtocolReader,

@@ -1,6 +1,7 @@
 // Network denial under the real Sandbox_Executor (task 18.2; Requirements 5, 15.6).
 // A package function that tries to reach a local server the test started must fail, and the server
 // must never see a connection: the denial comes from the Node permission model before a socket opens.
+// Requirements: 5.2, 15.6
 import { createServer } from "node:http";
 import type { Server, Socket } from "node:net";
 import type { AddressInfo } from "node:net";

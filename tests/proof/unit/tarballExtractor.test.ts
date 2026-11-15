@@ -1,3 +1,4 @@
+// Requirements: 3.1, 3.2, 3.3, 3.10
 import { mkdtemp, readFile, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";

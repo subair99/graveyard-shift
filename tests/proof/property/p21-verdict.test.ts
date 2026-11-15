@@ -1,3 +1,4 @@
+// Requirements: 9.4, 10.4, 11.6, 12.1, 12.2, 12.3, 12.4, 12.6, 12.7
 import { describe, expect, it } from 'vitest';
 import { computeVerdict, type RunFacts } from '../../../src/proof/core/verdict';
 import { HarnessErrorKindSchema } from '../../../src/proof/types';

@@ -2,6 +2,7 @@
  * CLI tests (task 17.5, Requirements 1.4, 13.26, 13.28). The engine is replaced by a fake `run`, so
  * no sandbox child starts and nothing touches the network.
  */
+// Requirements: 1.4, 13.26, 13.28
 import { mkdtempSync, readFileSync, rmSync, writeFileSync, existsSync } from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";

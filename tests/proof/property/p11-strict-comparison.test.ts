@@ -1,4 +1,5 @@
 // Feature: proof-of-life-engine, Property 11: Comparison is strict structural equality
+// Requirements: 6.4, 7.1, 7.2, 7.3, 7.4
 // **Validates: Requirements 7.1, 7.2, 7.3, 7.4, 6.4**
 import { types } from "node:util";
 import { describe, expect, it } from "vitest";

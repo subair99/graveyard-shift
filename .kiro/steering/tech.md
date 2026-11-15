@@ -30,12 +30,13 @@
 - Proof of Life run: `npm run proof:run -- <options>` (`tsx src/proof/cli.ts`; exit codes 0 alive, 1 restless, 2 inconclusive, 64 usage error)
 - Record the lodash.set tarball: `npm run fixtures:record-tarball` (manual; needs network, no credentials)
 - Record engine fixtures: `npm run fixtures:record` (manual; needs network)
+- Requirement trace: `npm run trace` (`tsx scripts/trace.ts`; not a test; reads test headers and the spec, writes `docs/traceability.md`; every `tests/proof/**/*.test.ts` carries a `// Requirements: N.M, ...` header line)
 
 ## Test environment variables
 Not secrets and not in `.env.example`; set them in the shell for a run.
 - `PROOF_BUDGET_MODE=warn`: a proof project that exceeds its wall-clock target prints a warning instead of failing the run.
 - `PROOF_LOG_TIMINGS=1`: appends the measured wall-clock of each proof project to `docs/kiro-journal.md`.
-- `PROOF_TEST_OTHER_DRIVE`: optional writable directory on another drive, read only by `scripts/spike/otherDrive.ts` (no vitest test reads it yet).
+- `PROOF_TEST_OTHER_DRIVE`: optional writable directory on another drive, read only by `scripts/spike/otherDrive.ts` (no vitest test reads it yet). The other-drive case is not verified locally; exercised on the GitHub Windows runner (checkout D:, temp C:), pending CI confirmation of the next run.
 
 ## Proof engine notes
 - The sandbox runs the package in a child process under Node's permission model (`node --permission` with exact `--allow-fs-read` grants, no network, no child processes, scrubbed environment). It is a seat belt against accidental access, not a security boundary against malicious code.

@@ -1,3 +1,4 @@
+// Requirements: 3.9, 5.4, 5.6, 5.10, 5.12, 7.8, 9.1, 11.7
 import { spawnSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -8,6 +9,7 @@ import { encodeValue } from '../../../src/proof/child/codec/encode.ts'
 import type { EncodedNode } from '../../../src/proof/child/codec/nodes.ts'
 import { PROTO_NAMES, type PrototypeSet } from '../../../src/proof/child/prototypes.ts'
 import { createSideRuntime, type SideCallResponse } from '../../../src/proof/child/sideRuntime.ts'
+import { buildSandboxArgv, buildSandboxEnv } from '../../../src/proof/shell/executor/sandboxCommand.ts'
 import { OutcomeSchema } from '../../../src/proof/types.ts'
 
 const POLLUTED = '__gs_test_sideRuntime_polluted'
@@ -277,29 +279,51 @@ describe('SideRuntime.load and listExports', () => {
 
 describe('restoration that cannot be verified (spawned child under --permission)', () => {
   it('reports restoreVerified false when the package freezes Array.prototype', () => {
-    const dir = join(root, 'freeze')
-    mkdirSync(dir)
+    // Production path form: resolve everything with realpathSync.native first and use only the real
+    // strings (grant, cwd, package dir, script), as the Sandbox_Executor does.
+    const created = join(root, 'freeze')
+    mkdirSync(created)
+    const dir = realpathSync.native(created)
     writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'freezer', version: '1.0.0' }))
     writeFileSync(join(dir, 'index.js'), 'exports.freeze = () => { Object.freeze(Array.prototype); return 1 }\n')
+    const childDir = realpathSync.native(CHILD_DIR)
     const script = join(dir, 'run.mjs')
-    const url = pathToFileURL(join(CHILD_DIR, 'sideRuntime.ts')).href
     writeFileSync(
       script,
-      `import { createSideRuntime } from ${JSON.stringify(url)}
+      `import { createSideRuntime } from ${JSON.stringify(pathToFileURL(join(childDir, 'sideRuntime.ts')).href)}
 const rt = createSideRuntime({ packageDir: ${JSON.stringify(dir)}, entryFile: 'index.js', outputLimitBytes: 1000000 })
 const l = rt.load()
 const r = await rt.call({ fn: 'freeze', args: [], caseSeed: 1, properties: [], timeoutMs: 0 })
-process.stdout.write(JSON.stringify({ loaded: l.ok, kind: r.result.outcome.kind, restoreVerified: r.restoreVerified }))
+process.stdout.write(JSON.stringify({
+  loaded: l.ok,
+  kind: r.result.outcome.kind,
+  restoreVerified: r.restoreVerified,
+  loadError: l.ok ? undefined : l.error.message,
+  crashReason: r.crashReason,
+}))
 `,
     )
-    const real = (p: string): string => realpathSync.native(p)
-    const run = spawnSync(
-      process.execPath,
-      ['--permission', `--allow-fs-read=${real(CHILD_DIR)}`, `--allow-fs-read=${real(dir)}`, script],
-      { encoding: 'utf8', env: { PATH: process.env['PATH'] ?? '', NODE_ENV: 'test' } },
-    )
-    expect(dirname(script)).toBe(dir)
+    const realScript = realpathSync.native(script)
+    const built = buildSandboxArgv({
+      execPath: process.execPath,
+      runnerDir: childDir,
+      runnerEntry: realScript,
+      packageDir: dir,
+      extraReadPaths: [],
+      maxOldSpaceMb: 256,
+      realpath: realpathSync.native,
+    })
+    if (!built.ok) throw new Error(built.error.message)
+    const run = spawnSync(built.value.command, built.value.args, {
+      cwd: built.value.cwd,
+      encoding: 'utf8',
+      env: { ...buildSandboxEnv() } as unknown as NodeJS.ProcessEnv,
+      shell: false,
+    })
+    expect(dirname(realScript)).toBe(dir)
     expect(run.stderr).toBe('')
-    expect(JSON.parse(run.stdout)).toEqual({ loaded: true, kind: 'returned', restoreVerified: false })
+    const parsed = JSON.parse(run.stdout) as Record<string, unknown>
+    // The diagnostics (loadError, crashReason) are part of the failure message.
+    expect(parsed, run.stdout).toMatchObject({ loaded: true, kind: 'returned', restoreVerified: false })
   })
 })

@@ -1,6 +1,7 @@
 // Identity safety through buildReport (task 8.9; Requirements 13.25 to 13.30, decisions D10 and D11,
 // limitation L14). Fake identity values only, except the one real-machine test at the end, which
 // never prints the values it reads: every assertion there is a boolean with a fixed message.
+// Requirements: 13.25, 13.26, 13.27, 13.28, 13.29, 13.30
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { findIdentity, identityValuesFromEnv, type Platform } from "../../../src/proof/core/identity";
 import { buildReport, type RawDivergence, type ReportInput } from "../../../src/proof/core/report";

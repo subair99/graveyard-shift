@@ -1,3 +1,4 @@
+// Requirements: 13.25, 13.30
 import { describe, expect, it } from 'vitest';
 import type { IdentityValues } from '../../../src/proof/core/identity';
 import {

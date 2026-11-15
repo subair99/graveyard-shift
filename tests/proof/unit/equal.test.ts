@@ -1,3 +1,4 @@
+// Requirements: 6.4, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.9
 import { describe, expect, it } from "vitest";
 import { compareOutcomes, deepEqualNodes, firstDifference } from "../../../src/proof/core/equal";
 import type { EncodedNode, Outcome } from "../../../src/proof/types";

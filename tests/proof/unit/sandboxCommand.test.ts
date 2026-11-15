@@ -1,3 +1,8 @@
+// Requirements: 5.2, 5.3, 5.16, 5.17, 5.18
+import { spawnSync } from "node:child_process";
+import { mkdtempSync, realpathSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { basename, join } from "node:path";
 import { describe, expect, it } from "vitest";
 import * as fc from "fast-check";
 import {
@@ -158,5 +163,76 @@ describe("buildSandboxEnv", () => {
       buildSandboxEnv("win32", { NODE_OPTIONS: "--inspect", GS_TEST_SECRET: "x", PATH: "p" }),
     ).toEqual({ TZ: "UTC" });
     expect(Object.keys(buildSandboxEnv("linux", { A: "1" }))).toEqual(["TZ"]);
+  });
+});
+
+describe("buildSandboxArgv path resolution (injected realpath)", () => {
+  it("emits the resolved strings, not the input ones, and cwd equals the resolved packageDir", () => {
+    const map: Record<string, string> = {
+      "/short/RUNNER~1": "/long/runner-dir",
+      "/short/PKGDIR~1": "/long/package-dir",
+      "/short/EXTRA~1": "/long/extra-dir",
+    };
+    const input: SandboxCommandInput = {
+      execPath: "/usr/bin/node",
+      runnerDir: "/short/RUNNER~1",
+      runnerEntry: "/long/runner-dir/runner.ts",
+      packageDir: "/short/PKGDIR~1",
+      extraReadPaths: ["/short/EXTRA~1", "/short/PKGDIR~1"],
+      maxOldSpaceMb: 64,
+      realpath: (p) => map[p] ?? p,
+    };
+    const built = ok(input);
+    expect(built.args.filter((a) => a.startsWith("--allow-fs-read="))).toEqual([
+      "--allow-fs-read=/long/runner-dir",
+      "--allow-fs-read=/long/package-dir",
+      "--allow-fs-read=/long/extra-dir",
+    ]);
+    expect(built.args.join("\n")).not.toContain("~1");
+    expect(built.cwd).toBe("/long/package-dir");
+  });
+
+  it("uses the input path unchanged when realpath throws (for example ENOENT)", () => {
+    const built = ok({
+      ...posix,
+      realpath: () => {
+        throw new Error("ENOENT");
+      },
+    });
+    expect(built.cwd).toBe(posix.packageDir);
+    expect(built.args).toContain(`--allow-fs-read=${posix.packageDir}`);
+  });
+
+  it("expands a grant path with an 8.3 short component with fs.realpath.native", (ctx) => {
+    if (process.platform !== "win32") return ctx.skip("8.3 short names exist only on Windows");
+    const dir = mkdtempSync(join(tmpdir(), "gs-eight-three-long-name-"));
+    try {
+      const longPath = realpathSync.native(dir);
+      // shell: false; verbatim arguments so that the quotes reach cmd.exe unescaped.
+      const shortRun = spawnSync("cmd.exe", ["/d", "/c", `"for %I in ("${longPath}") do @echo %~sI"`], {
+        encoding: "utf8",
+        shell: false,
+        windowsVerbatimArguments: true,
+      });
+      const shortPath = (shortRun.stdout ?? "").trim();
+      if (shortPath === "" || !shortPath.includes("~") || shortPath === longPath) {
+        return ctx.skip("8.3 short name generation is disabled or the short path could not be obtained");
+      }
+      expect(realpathSync.native(shortPath)).toBe(longPath);
+      const built = ok({
+        ...win,
+        runnerDir: shortPath,
+        packageDir: shortPath,
+        extraReadPaths: [shortPath],
+        realpath: realpathSync.native,
+      });
+      const values = built.args.filter((a) => a.startsWith("--allow-fs-read=")).map((a) => a.slice("--allow-fs-read=".length));
+      expect(values).toEqual([longPath]);
+      expect(built.cwd).toBe(longPath);
+      expect(basename(longPath).length).toBeGreaterThan(12);
+      expect(built.args.some((a) => a.includes("~1"))).toBe(false);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });

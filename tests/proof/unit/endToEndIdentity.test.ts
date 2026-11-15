@@ -5,6 +5,7 @@
 // diverge on purpose. The identity values come from the same environment snapshot that
 // `defaultProofDeps()` takes. No assertion message or test name prints a real value: every check
 // is a boolean with a fixed message.
+// Requirements: 3.6, 13.25, 13.26, 13.28, 13.29, 13.30, 16.3
 import { mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";

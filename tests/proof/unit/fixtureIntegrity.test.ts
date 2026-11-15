@@ -9,6 +9,7 @@ import type { ExtractedFile } from "../../../src/proof/shell/tarball/tarballExtr
 import { extractTarball } from "../../../src/proof/shell/tarball/tarballExtractor";
 import { computeDirectoryTreeHash } from "../../../src/proof/shell/treeHash";
 
+// Requirements: 14.1, 14.2, 14.3, 14.4, 14.5
 // Validates: Requirements 14.1, 14.2, 14.3
 
 const ROOT = process.cwd();

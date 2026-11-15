@@ -1,3 +1,4 @@
+// Requirements: 14.5
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";

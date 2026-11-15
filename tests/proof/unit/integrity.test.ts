@@ -1,3 +1,4 @@
+// Requirements: 2.1, 2.2, 2.3
 import { createHash } from "node:crypto";
 
 import { describe, expect, it } from "vitest";

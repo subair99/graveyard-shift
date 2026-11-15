@@ -1,4 +1,5 @@
 // Feature: proof-of-life-engine, Property 25: A package is alive against itself
+// Requirements: 12.1, 15.3
 // Validates: Requirements 15.3 (and 12.1 to 12.7, 9.4 for the controls)
 //
 // Part a: the Resurrection is a directory copy of the Original.

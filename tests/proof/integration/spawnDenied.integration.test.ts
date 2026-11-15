@@ -1,6 +1,7 @@
 // Child process and worker thread denial (task 18.4; Requirements 5, 15.6) with a real
 // Sandbox_Executor. A spawn that succeeded would run node outside the sandbox and create a marker
 // file, so every test asserts that the marker never appears.
+// Requirements: 5.2, 15.6
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";

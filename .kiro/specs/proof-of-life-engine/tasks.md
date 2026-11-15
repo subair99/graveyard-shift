@@ -660,7 +660,7 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - Scope of this task: it writes the workflow file and the journal entry; it does not push, run the workflow or change repository settings
     - _Requirements: 13.27, 13.29, 16.3_
 
-- [-] 21. Final checkpoint
+- [x] 21. Final checkpoint
   - The agent runs `npm run typecheck`, `npm run lint` and `npm run build` itself (build only if it finishes in a reasonable time; otherwise ask the user to run it). The agent does not run the full suite
   - Write "Ready for you to run: `npm test`" and wait; continue only after the user pastes the output. Ask the user if questions arise
   - Record the commands, date, environment and the wall-clock times of the two proof suites in `docs/kiro-journal.md` from the user's pasted output only (measured values only; flag any overrun of the 60 s and 120 s targets)

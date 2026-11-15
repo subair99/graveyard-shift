@@ -1,6 +1,7 @@
 // Safety test for the temporary-root leak check (Requirements 13.18 to 13.24, 13.23): a root that
 // survives anywhere in the serialized report makes buildReport return the fallback report.
 // Runs through buildReport with the real canonical serializer.
+// Requirements: 13.23, 13.24
 import { describe, expect, it } from "vitest";
 import { identityValuesFromEnv, type Platform } from "../../../src/proof/core/identity";
 import { rootForms } from "../../../src/proof/core/normalize";

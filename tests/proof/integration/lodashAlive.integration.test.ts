@@ -3,6 +3,7 @@
 //
 // The case counts are reduced (20 generated, 10 delta) to keep the test short; the production
 // default of the harness is 100 each (see helpers/lodashRun.ts).
+// Requirements: 3.6, 11.8, 12.1, 14.7
 import { mkdtempSync, readdirSync, realpathSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";

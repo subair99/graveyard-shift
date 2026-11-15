@@ -1,4 +1,5 @@
 // Feature: proof-of-life-engine, Property 8: Value codec round trip
+// Requirements: 6.1, 6.2, 6.5, 6.6, 6.7
 // **Validates: Requirements 6.1, 6.2, 6.5, 6.6, 6.7**
 import { types } from "node:util";
 import { describe, expect, it } from "vitest";

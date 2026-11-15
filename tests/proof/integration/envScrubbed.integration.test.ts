@@ -3,6 +3,7 @@
 // The engine passes only `TZ=UTC`. On Windows the process launcher adds standard OS variables
 // (11 names observed in the task 1.4 spike), so this test does NOT assert an empty environment.
 // It asserts that parent-only variables are absent. Only names are ever compared or printed.
+// Requirements: 5.3, 5.18, 5.19, 15.6
 import { randomBytes } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { buildSandboxEnv } from "../../../src/proof/shell/executor/sandboxCommand";

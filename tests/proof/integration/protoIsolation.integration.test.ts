@@ -5,6 +5,7 @@
 // Restart fixture: `restart-probe.freezeArray()` (and `freezeObject()`) freeze a built-in prototype.
 // The runner cannot restore a frozen prototype (`isRestorable` is false), so the call reports
 // `restoreVerified: false` and the executor restarts the child (a Restart_Event).
+// Requirements: 5.10, 5.11, 5.12, 5.13, 5.15
 import { afterEach, describe, expect, it } from "vitest";
 import { decodeNode } from "../../../src/proof/child/codec/decode";
 import type { CallResult } from "../../../src/proof/shell/executor/types";

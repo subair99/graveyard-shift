@@ -1,4 +1,5 @@
 // Feature: proof-of-life-engine, Property 24: Same seed, same bytes
+// Requirements: 13.4, 15.2
 // Validates: Requirements 15.2 (and 12/13/15 determinism: no timestamps, no temp paths in the report)
 //
 // Two runs of runProofOfLife with the same request, deps and a fresh InProcess_Executor produce

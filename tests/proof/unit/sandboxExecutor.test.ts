@@ -1,5 +1,6 @@
 // Sandbox_Executor tests with real child processes (task 17.4; Requirements 5.2 to 5.9, 5.12 to
 // 5.14, 16.4). The denial, environment and isolation tests are task 18.
+// Requirements: 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9, 5.12, 5.13, 5.14, 16.4
 import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";

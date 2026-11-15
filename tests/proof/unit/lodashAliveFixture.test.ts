@@ -1,3 +1,4 @@
+// Requirements: 14.4
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { createRequire } from "node:module";

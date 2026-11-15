@@ -1,3 +1,4 @@
+// Requirements: 6.1, 6.2, 6.3, 6.5, 6.6, 6.7, 6.9, 13.11, 15.11, 15.12
 import { describe, expect, it } from 'vitest'
 import { decodeNode } from '../../../src/proof/child/codec/decode.ts'
 import { encodeValue } from '../../../src/proof/child/codec/encode.ts'

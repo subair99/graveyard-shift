@@ -1,6 +1,7 @@
 // Smoke test of src/proof/child/runner.ts as a real child under `node --permission`
 // (task 17.3; Requirements 5.7, 5.8, 5.10 to 5.12). The full sandbox denial and isolation tests
 // are task 18.
+// Requirements: 5.7, 5.8, 5.10, 5.11, 5.12
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { mkdtempSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";

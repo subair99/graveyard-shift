@@ -332,6 +332,7 @@ export class SandboxExecutor implements Executor {
       packageDir: dir.value,
       extraReadPaths: [],
       maxOldSpaceMb: 64,
+      realpath: realpathSync.native,
     });
     if (!built.ok) return built;
     const script =
@@ -384,6 +385,7 @@ export class SandboxExecutor implements Executor {
         packageDir: real,
         extraReadPaths: extra,
         maxOldSpaceMb: Math.max(1, Math.floor(spec.limits.heapLimitMb)),
+        realpath: realpathSync.native,
       });
       if (!built.ok) return fail<SideHandle>(built.error.kind, built.error.message);
 

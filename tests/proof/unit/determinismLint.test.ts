@@ -1,3 +1,4 @@
+// Requirements: 16.2
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ESLint } from "eslint";

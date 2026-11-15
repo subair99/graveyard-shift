@@ -1,3 +1,4 @@
+// Requirements: 8.6, 8.11, 12.3, 13.3, 13.18, 13.23, 13.25, 13.26, 13.30
 import { describe, expect, it } from "vitest";
 import { identityValuesFromEnv } from "../../../src/proof/core/identity";
 import { buildReport, type RawDivergence, type ReportInput } from "../../../src/proof/core/report";

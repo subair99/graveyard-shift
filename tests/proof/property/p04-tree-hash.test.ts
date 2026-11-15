@@ -10,6 +10,7 @@ import { extractTarball } from "../../../src/proof/shell/tarball/tarballExtracto
 import { computeDirectoryTreeHash, computeTreeHash, type TreeFile } from "../../../src/proof/shell/treeHash";
 
 // Feature: proof-of-life-engine, Property 4: Tree_Hash depends only on paths and bytes
+// Requirements: 4.1, 4.2, 4.3, 4.4
 // **Validates: Requirements 4.1, 4.2, 4.3, 4.4**
 
 /**

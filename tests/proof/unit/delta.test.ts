@@ -1,3 +1,4 @@
+// Requirements: 11.2, 11.3, 11.4, 11.5, 11.6, 11.10
 import { describe, expect, it } from "vitest";
 import {
   accumulateCase,

@@ -1,5 +1,6 @@
 // Self-test of the integration helpers (task 18.1): a real sandboxed child answers a round trip
 // and nothing is left behind afterwards.
+// Requirements: 15.1
 import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { isRunning, waitForExit, withExecutor } from "./helpers/sandboxHarness";

@@ -1,4 +1,5 @@
 // Feature: proof-of-life-engine, Property 20: Delta classification
+// Requirements: 11.2, 11.3, 11.4, 11.5, 11.6, 11.9, 11.10
 // **Validates: Requirements 11.2, 11.3, 11.4, 11.5, 11.6, 11.9, 11.10**
 import { describe, expect, it } from "vitest";
 import {

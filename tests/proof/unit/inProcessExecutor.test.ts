@@ -1,3 +1,4 @@
+// Requirements: 5.1, 5.9, 5.10, 5.12
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'

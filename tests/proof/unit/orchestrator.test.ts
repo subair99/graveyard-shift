@@ -1,3 +1,4 @@
+// Requirements: 1.1, 1.2, 1.5, 2.2, 2.3, 3.5, 3.6, 3.9, 3.10, 4.4, 5.7, 8.3, 8.4, 10.4, 12.2, 12.3, 13.28
 import { mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
