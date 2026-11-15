@@ -137,7 +137,7 @@ A citation shows which tests claim to cover a criterion; it does not prove cover
 
 Criteria that no test file cites, with the class and evidence from `docs/traceability-gaps.json`:
 
-- 12.7: needs a test. No test or budget covers the 120 s limit for the engine project: README.md (test projects table) lists the engine project with target none, and tests/proof/helpers/budgetGlobalSetup.ts sets targets only for proof-property and proof-integration. design.md (Test strategy) states the limit and docs/kiro-journal.md has no engine-project timing. A test or budget would measure the wall-clock of the tests/engine property files and fail above 120 s.
+- 12.7: needs a test. No test or budget covers the 120 s limit for the engine project: README.md (test projects table) lists the engine project with target none, and tests/proof/helpers/budgetReporter.ts sets targets only for the proof-property, proof-heavy and proof-integration projects. design.md (Test strategy) states the limit and docs/kiro-journal.md has no engine-project timing. A test or budget would measure the wall-clock of the tests/engine property files and fail above 120 s.
 
 Gaps per class:
 

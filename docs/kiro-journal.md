@@ -843,3 +843,47 @@ Measured by the user in their own PowerShell; copied from the user's message; no
 - Autopsy-engine gaps (4.13, 5.9, 8.6, 12.7), read against the tests: 4.13 covered by `status.test.ts` (each of the four statuses returned as the single `status`), 5.9 covered by `causes.test.ts` ('returns empty when no condition holds', and `certificate.ts` passes that list to the certificate), 8.6 covered by `risk.test.ts` (unavailable signs listed by name and absent from contributions); their numbers were added to those headers (header edits only). 12.7 stays 'needs a test': the engine project has no time target and no engine timing is recorded.
 - After these changes, one `npm run trace` run by the agent: autopsy-engine: criteria 107, cited 106, gaps 1, unknown citations 0, classes: needs a test 1; documentation only 0; covered, header missing 0. proof-of-life-engine: criteria 165, cited 149, gaps 16, unknown citations 0, classes: needs a test 9 (2.4, 7.10, 8.9, 8.10, 12.5, 13.5, 13.15, 13.17, 16.5); documentation only 7 (3.7, 3.11, 6.8, 8.15, 13.8, 14.11, 16.6); covered, header missing 0. 15.7 became cited by `budgetReporter.test.ts` and its entry was dropped. The remaining 'needs a test' count is 9, not the ten in the request: 13 minus 1.6, 3.8, 15.8, 16.1.
 - No suite timings in this entry from the agent. No test or suite was run by me; `npm run typecheck`, `npm run lint` and `npm run trace` were.
+
+## Proof of Life: proof-heavy project (option 1d of checkpoint 12, user decision)
+- Reason: the user's own run showed `proof-property` at 55.9 s (55.92 s, user-reported) against its 60 s target, a 4.1 s margin.
+- Change: `p24-same-seed-same-bytes`, `p26-injected-changes` and `p26b-declared-delta` moved into a new vitest project `proof-heavy` with its own target of 90 s. Config: `proof-heavy` includes exactly those three files in `tests/proof/property/`; `proof-property` keeps its include globs and excludes the same three (plus vitest's default excludes). `p24b` and the other files stay in `proof-property`.
+- `numRuns` unchanged (>= 100 everywhere); only project membership changed. The 60 s target of `proof-property` and the 120 s target of `proof-integration` are unchanged.
+- The 90 s target is a TARGET chosen by the user, not a measurement. The first measurement of the new project will come from the user's next run (pending).
+- Files: `vitest.config.mts`, `tests/proof/helpers/budgetGlobalSetup.ts` (target table), `tests/proof/unit/budgetReporter.test.ts` (proof-heavy cases), `.github/workflows/ci.yml` (comment only), `README.md`, `.kiro/steering/structure.md`, `.kiro/steering/tech.md`, design.md "Time budgets".
+
+## Proof of Life: first proof-heavy measurement (user-run)
+- Measured by the user in their own PowerShell; copied from the user's message; not measured by the agent. The 'Test Files / Tests / Duration' lines were NOT provided (the user's message had a placeholder), so none are recorded here.
+- `[budget] proof-heavy: 104.8 s sum of file durations`
+- `[budget] proof-property: 129.2 s sum of file durations`
+- `[budget] proof-integration: 36.3 s sum of file durations`
+- `[budget] proof-integration: 54.7 s whole-run wall-clock, upper bound (target 120 s)`
+- `[budget] proof-heavy: 54.7 s whole-run wall-clock, upper bound (target 90 s)`
+- `[budget] proof-property: 54.7 s whole-run wall-clock, upper bound (target 60 s)`
+- These are sums of file durations and whole-run values. The per-project pass/fail check that printed the whole-run lines is replaced by the span check (next entry). No per-project span was measured in this run, so none is stated.
+
+## Proof of Life: per-project budget check (span), user decision
+- Reason: the check in `teardown()` used the whole run's wall-clock, so every proof project was judged on the same time (54.7 s in the user's run). Moving files out of `proof-property` therefore could not change its check against 60 s. Earlier whole-run numbers in this journal ('whole-run wall-clock, upper bound') were upper bounds, not per-project measurements.
+- Decision: the check is per project, on its span (first test file start to last test file end). Targets unchanged (60 s, 90 s, 120 s).
+- Where pass/fail lives: one place, the custom reporter `tests/proof/helpers/budgetReporter.ts` in `onTestRunEnd`. A `globalSetup` `teardown()` receives no arguments and cannot see reporter data, so the `globalSetup` entries and `tests/proof/helpers/budgetGlobalSetup.ts` were removed. The reporter is loaded by path from `vitest.config.mts` (the inline reporter object was replaced, so the config no longer holds logic). A strict overrun prints the error and sets `process.exitCode = 1`; in vitest 5.1.0 the run already sets that code for failed tests and the CLI exits through `process.exit()` without an argument. `PROOF_BUDGET_MODE=warn` only warns. `PROOF_LOG_TIMINGS=1` appends the checked value.
+- Fields: span from `onTestModuleStart` (first) to `onTestModuleEnd` (last) with `performance.now()` in the main process, per `TestModule.project.name`. `onTestModuleQueued` is not used: files are queued at the start of the run, so the span would equal the whole run. The span therefore excludes the import time of the first file. Sum: `TestModule.diagnostic().duration` (info only). Whole-run: `onTestRunStart` to `onTestRunEnd` (info only, and the fallback when no span exists for a project). Projects without files in the run are not evaluated.
+- Output lines (each starts `[budget] <project>:`): span (checked), sum (info only), whole-run (info only); on fallback one line, 'span unavailable; checked against target'.
+- Tests: `tests/proof/unit/budgetReporter.test.ts` rewritten for the span check and the span tracker; one run of that file by the agent: 28 passed (the three `[budget] proof-property` lines of that single-file run printed through the real reporter; they are not a suite timing).
+- Not verified without a real multi-project run: span values with parallel projects, that the exit code is 1 on a strict overrun, and the `PROOF_LOG_TIMINGS` append. The first span measurements come from the user's next run (pending).
+## Proof of Life: first span measurements (user-run)
+- Measured by the user in their own PowerShell; copied from the user's message; not measured by the agent.
+- Run 1, `npm test`: Test Files 100 passed (100); Tests 1260 passed | 3 skipped (1263); Duration 56.01s; exit code 0.
+  - `[budget] proof-heavy: 43.5 s span (target 90 s); sum 106.8 s; whole-run 56.0 s`
+  - `[budget] proof-integration: 14.1 s span (target 120 s); sum 39.3 s; whole-run 56.0 s`
+  - `[budget] proof-property: 36.1 s span (target 60 s); sum 131.1 s; whole-run 56.0 s`
+- Run 2, `npx vitest run --project proof-heavy`: Test Files 3 passed (3); Tests 3 passed (3); Duration 20.95s; exit code 0.
+  - `[budget] proof-heavy: 20.2 s span (target 90 s); sum 53.1 s; whole-run 21.0 s` (only proof-heavy was evaluated)
+- Run 3, `npx vitest run tests/proof/unit/executorTypes.test.ts`: Test Files 1 passed (1); Tests 7 passed (7); Duration 379ms; exit code 0.
+  - `[budget] proof-property: 0.0 s span (target 60 s); sum 0.0 s; whole-run 0.4 s` (only proof-property was evaluated)
+- User observations (the user's reading, not verified by an agent): no fallback line appeared in any run, so the module hooks fired for every file; proof-heavy alone took 20.2 s span against 43.5 s in the full run, so the full-run time is mostly CPU sharing between parallel projects.
+- Margins as printed (arithmetic on the user's numbers: target minus printed span): proof-property 60 - 36.1 = 23.9 s; proof-heavy 90 - 43.5 = 46.5 s; proof-integration 120 - 14.1 = 105.9 s.
+- These are the first per-project span measurements. The earlier whole-run figures in this journal were upper bounds.
+## Proof of Life: PROOF_BUDGET_SCALE (test aid, user decision)
+- Purpose: confirm that a strict overrun gives exit code 1 and warn mode gives exit code 0, without a slow suite.
+- Rules: a number, default 1, multiplies every target; it must be finite and > 0 (strict parse, not parseFloat); a rejected value prints `[budget] PROOF_BUDGET_SCALE rejected: must be a positive number (got <JSON string>)`, sets exit code 1 whatever PROOF_BUDGET_MODE is, and evaluates nothing; never set in CI; with a scale other than 1 nothing is written to this journal (a note goes to stderr).
+- Commands given to the user (single file `tests/proof/unit/executorTypes.test.ts`, scale 0.000001 so the 60 s target is 60 microseconds): strict expects exit code 1; with PROOF_BUDGET_MODE=warn expects 0; an invalid scale expects 1 and the rejection message. See the agent's report for the exact commands.
+- Results: pending the user's run.

@@ -28,19 +28,20 @@ npm run dev     # http://localhost:3000
 npm run build
 npm run typecheck
 npm run lint
-npm test        # vitest, all three projects; set FC_SEED to replay a property-test seed
+npm test        # vitest, all four projects; set FC_SEED to replay a property-test seed
 ```
 
 ### Test projects
-Vitest runs three projects (`vitest.config.mts`). Select one with `npx vitest run --project <name>`.
+Vitest runs four projects (`vitest.config.mts`). Select one with `npx vitest run --project <name>`.
 
 | Project | Files | Wall-clock target |
 |---|---|---|
 | `engine` | `tests/engine` | none |
-| `proof-property` | `tests/proof/property`, `tests/proof/unit` | 60 s |
+| `proof-property` | `tests/proof/property` and `tests/proof/unit`, except the three files of `proof-heavy` | 60 s |
+| `proof-heavy` | `p24-same-seed-same-bytes`, `p26-injected-changes`, `p26b-declared-delta` in `tests/proof/property` (100 engine runs each; they were close to the `proof-property` target) | 90 s |
 | `proof-integration` | `tests/proof/integration` (real sandbox child processes) | 120 s |
 
-The numbers are targets, not measurements. A global setup prints each project's wall-clock and fails the run when a target is exceeded. `PROOF_BUDGET_MODE=warn` downgrades that to a warning and `PROOF_LOG_TIMINGS=1` appends the measured value to [docs/kiro-journal.md](docs/kiro-journal.md). Measured timings appear only in that journal, from runs the user made.
+The table numbers are targets, not measurements. Projects run in parallel, so a reporter (`tests/proof/helpers/budgetReporter.ts`) checks each project that ran against its own target, using its **span**: the time from its first test file starting to its last test file ending. Each project prints three lines starting `[budget] <project>:`: the span (checked), the sum of the file durations (information only: files run in parallel, so the sum can exceed the span) and the whole-run wall-clock (information only: an upper bound for the project). If the span cannot be measured, the check falls back to the whole-run wall-clock and the line says "span unavailable". A strict overrun fails the run. `PROOF_BUDGET_MODE=warn` downgrades that to a warning and `PROOF_LOG_TIMINGS=1` appends the checked value to [docs/kiro-journal.md](docs/kiro-journal.md). `PROOF_BUDGET_SCALE=<number>` (test aid only, never set in CI) multiplies every target (60 / 90 / 120 s) by a positive number, default 1, so a strict overrun (exit code 1) and a warn-mode overrun can be confirmed on one fast file; a value that is not a finite number > 0 fails the run with exit code 1 whatever the mode, and a scale other than 1 never writes the journal. The numbers a run prints are measurements of that run; measured timings recorded here come only from runs the user made, in that journal.
 
 Copy `.env.example` to `.env` and fill in `GITHUB_TOKEN` (and `KIRO_API_KEY` for resurrections).
 

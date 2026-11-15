@@ -20,8 +20,8 @@ tests/proof/unit/fixtureIntegrity.test.ts  Tarball vs meta vs recorded packument
 tests/proof/unit/recordTarball.test.ts  Offline tests for the tarball recorder (fake fetch, temp dirs)
 tests/engine/unit/  Engine unit tests (types.test.ts, http.test.ts, ...)
 tests/setup/networkGuard.ts  Blocks network access in every vitest project (root setupFiles)
-tests/proof/helpers/budgetGlobalSetup.ts  Vitest global setup: measures wall-clock per proof project, enforces the 60 s / 120 s targets (PROOF_BUDGET_MODE, PROOF_LOG_TIMINGS); exports the pure `evaluateBudget` and `concludeBudget` (injected clock and writers)
-tests/proof/unit/budgetReporter.test.ts  Budget overrun logic (R15.7, R15.8): targets, strict vs warn, exact-target, unknown project; no journal write
+tests/proof/helpers/budgetReporter.ts  Vitest custom reporter (default export, loaded by path from vitest.config.mts): checks each proof project that ran against its target on its span (first test file start to last test file end; 60 s / 90 s / 120 s; PROOF_BUDGET_MODE, PROOF_LOG_TIMINGS, PROOF_BUDGET_SCALE test aid); falls back to the whole-run wall-clock when the span is unavailable; exports the pure `parseBudgetScale`, `createSpanTracker`, `evaluateBudget`, `evaluateRun`, `concludeRun` (injected clock and writers)
+tests/proof/unit/budgetReporter.test.ts  Span-based budget logic (R15.7, R15.8): targets, strict vs warn, exact-target, span fallback, unknown project and project without files not evaluated, span tracker, PROOF_BUDGET_SCALE parse and scaled targets; no journal write
 src/proof/index.ts, types.ts  Proof of Life Engine public API; zod schemas and shared types (Proof_Report, Outcome, encoded nodes, harness errors, Result)
 src/proof/core/  Pure core (determinism lint scope): seeds, equal (comparison), normalize (Root_Normalizer), redact (Path_Redactor, Identity_Redactor over nodes), identity (Identity_Values, scanner), delta (classification), apiSurface, verdict, report (buildReport, fallbackReport)
 src/proof/serialize/  Pure: canonicalReport.ts (REPORT_KEY_ORDER, canonical JSON), deserialize.ts (zod)
@@ -38,7 +38,7 @@ src/proof/child/codec/  Pure Value_Codec (determinism lint scope): nodes, order,
 src/proof/harnesses/lodash.set/  lodash.set Harness_Config (config.ts: generators, predicate, declared delta) and sandbox/pollution.cjs (CommonJS delta property module); the only lodash-specific code
 tests/proof/unit/lodashHarness.test.ts  Config validation, generator/predicate agreement, pollution module
 tests/proof/unit/  Proof engine unit tests (one file per module, sourceScan.test.ts, determinismLint.test.ts, ...); part of vitest project `proof-property`
-tests/proof/property/  Proof engine property tests, named p*-*.test.ts (fast-check, one file per design property); part of vitest project `proof-property`
+tests/proof/property/  Proof engine property tests, named p*-*.test.ts (fast-check, one file per design property); part of vitest project `proof-property`, except p24-same-seed-same-bytes, p26-injected-changes and p26b-declared-delta, which are the vitest project `proof-heavy`
 tests/proof/integration/  Real child process (sandbox) tests, named *.integration.test.ts: envScrubbed, fileReadDenied, networkDenied, spawnDenied, protoIsolation, timeoutKill, lodashAlive, lodashBroken, lodashIdentity (vitest project `proof-integration`)
 tests/proof/integration/helpers/lodashRun.ts  Shared runner for the lodash.set integration tests
 tests/proof/integration/helpers/sandboxHarness.ts  withExecutor / createHarness: temp root, real Sandbox_Executor, open side, call, cleanup in finally; readChildEnvKeys, readChildPermissions
@@ -52,7 +52,7 @@ tests/proof/fixtures/lodash.set-broken/  Deliberately broken lodash.set 4.3.3 (n
 tests/proof/unit/lodashBrokenFixture.test.ts  Original vs broken fixture checks (pollution runs in a spawned node child)
 scripts/spike/  Sandbox spike scripts (task 1; results in docs/kiro-journal.md)
 package.json      Scripts and dependencies (npm)
-vitest.config.mts  Vitest config: projects engine, proof-property, proof-integration; budget global setup; network guard in the root setupFiles
+vitest.config.mts  Vitest config: projects engine, proof-property, proof-heavy, proof-integration; budget reporter; network guard in the root setupFiles
 eslint.config.mjs  ESLint config (determinism rules over the pure directories)
 .github/workflows/ci.yml  CI (GitHub Actions): jobs test-linux, test-no-identity, test-windows; runs typecheck, lint and the full suite; no secrets
 tsconfig.json     TypeScript config (strict)

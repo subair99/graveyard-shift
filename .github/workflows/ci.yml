@@ -18,8 +18,11 @@
 #   permission model, so the Node version below must stay at 26 or newer.
 # - No secrets, no .env, no live recorders (fixtures:record, fixtures:record-tarball), and no step
 #   prints environment variables. Do not add one.
-# - PROOF_BUDGET_MODE=warn: the 60 s and 120 s targets were set for the maintainer's machine. A
-#   slower hosted runner prints the budget lines but does not fail the build because of them.
+# - PROOF_BUDGET_SCALE is a local test aid for the budget reporter: never set in CI.
+# - PROOF_BUDGET_MODE=warn: the budget is checked per project on its span (first test file start to last
+#   test file end): 60 s proof-property, 90 s proof-heavy, 120 s proof-integration. The targets were set for
+#   the maintainer's machine. A slower hosted runner prints the budget lines but does not fail the build
+#   because of them.
 #   Correctness failures still fail the build.
 # - timeout-minutes values are generous upper limits, not measurements.
 
