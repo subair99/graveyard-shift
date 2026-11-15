@@ -1,0 +1,10 @@
+{
+  "_FAKE": "FAKE SAMPLE FOR THE SPIKE. Not a real Death Certificate. Not produced by the autopsy engine. Do not cite.",
+  "package": "example-fake-package",
+  "version": "0.0.0-fake",
+  "cause_of_death": "FAKE: no commits since an invented date",
+  "time_of_death": "1999-01-01",
+  "sources": [
+    { "url": "https://example.invalid/fake", "fetched": "1999-01-01" }
+  ]
+}

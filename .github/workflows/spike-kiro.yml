@@ -1,0 +1,68 @@
+# THROWAWAY SPIKE. Delete this file (and spikes/kiro-headless/) after the spike. See spikes/kiro-headless/README.md.
+#
+# What it measures:
+#   1. Whether Kiro CLI installs on a GitHub-hosted ubuntu-latest runner and prints its version.
+#   2. Whether a trivial headless prompt (no tools) authenticates with KIRO_API_KEY on the user's plan,
+#      its exit code and its wall-clock seconds.
+#   3. With the credit meter read before and after by the user (README), the credit cost of one trivial call
+#      and whether bonus credits are consumed.
+#
+# Notes:
+# - workflow_dispatch only, no inputs. GitHub lists a workflow in the Actions UI "Run workflow" button only
+#   when the workflow file exists on the default branch, so merge this file to main first.
+# - The secret KIRO_API_KEY is an environment secret of the environment `medium` (create it first; restrict
+#   deployment branches to main). It is set only in the env of the prompt step.
+# - No step prints the key, the environment, or runs with `set -x`.
+# - The install uses the only documented method (a script served from cli.kiro.dev). It is UNPINNED: the script
+#   itself is not pinned to a hash (the step prints its sha256 so the run is auditable). The script verifies the
+#   downloaded zip against a sha256 from a manifest on the same download host, which detects corruption but is
+#   not an independent signature. Whether Kiro publishes a signature: to verify.
+
+name: spike-kiro
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  kiro-headless:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: medium
+    permissions:
+      contents: read
+    steps:
+      # actions/checkout v7.0.1, the newest release and the same major as ci.yml (resolved 2026-11-15, see README).
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Kiro CLI (documented script, unpinned: to verify)
+        run: |
+          set -eu
+          curl -fsSL -o "$RUNNER_TEMP/kiro-install.sh" https://cli.kiro.dev/install
+          echo "install script sha256:"
+          sha256sum "$RUNNER_TEMP/kiro-install.sh"
+          # --version pins the CLI release (3.3.0 was the latest stable on 2026-11-15); the script checks the
+          # zip sha256 against the host manifest. --force: no terminal to confirm. --no-modify-path: CI only.
+          bash "$RUNNER_TEMP/kiro-install.sh" --version 3.3.0 --force --no-modify-path
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: kiro-cli --version
+        run: kiro-cli --version
+
+      - name: Headless prompt (no tools trusted)
+        env:
+          KIRO_API_KEY: ${{ secrets.KIRO_API_KEY }}
+        run: |
+          # No --trust-all-tools and no --trust-tools: per the headless docs, a tool call is then denied, which
+          # is the most restrictive choice, and this prompt needs no tool.
+          start=$(date +%s)
+          set +e
+          timeout 240 kiro-cli chat --v3 --no-interactive "Reply with the single word OK. Do not use any tools."
+          code=$?
+          set -e
+          end=$(date +%s)
+          echo "::notice title=kiro-headless::exit_code=${code} elapsed_seconds=$((end - start))"
+          exit "$code"

@@ -1,0 +1,99 @@
+# THROWAWAY SPIKE (spike 4: artifact attestation with a custom predicate).
+# - Not part of the product pipeline. Delete this file and spikes/attest/ afterwards.
+# - Needs a PUBLIC repository on GitHub Free (attestations are public-repo only on that plan).
+# - Must be on the default branch to be dispatchable (workflow_dispatch).
+# - Run steps and expected output: spikes/attest/README.md. Choice of action: spikes/attest/DECISION.md.
+
+name: spike-attest
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Create dummy.txt and predicate.json
+        run: |
+          set -euo pipefail
+          mkdir inputs
+          printf 'graveyard-shift spike-attest dummy file\n' > inputs/dummy.txt
+          DUMMY_SHA256="$(sha256sum inputs/dummy.txt | cut -d' ' -f1)"
+          jq -n --arg sha "$DUMMY_SHA256" '{
+            spike: true,
+            medium: { mode: "local" },
+            sha256OfDummy: $sha,
+            createdBy: "spike-attest.yml"
+          }' > inputs/predicate.json
+          cat inputs/predicate.json
+
+      - name: Upload inputs
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: spike-attest-inputs
+          path: inputs/
+          if-no-files-found: error
+          retention-days: 1
+
+  attest:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      id-token: write
+      attestations: write
+      contents: read
+    steps:
+      - name: Download inputs
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: spike-attest-inputs
+          path: inputs/
+
+      - name: Attest dummy.txt with the custom predicate
+        id: attest
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: inputs/dummy.txt
+          predicate-type: https://graveyard-shift.dev/attestation/spike/v1
+          predicate-path: inputs/predicate.json
+
+      - name: Collect result
+        env:
+          BUNDLE_PATH: ${{ steps.attest.outputs.bundle-path }}
+        run: |
+          set -euo pipefail
+          mkdir result
+          cp inputs/dummy.txt result/dummy.txt
+          cp "$BUNDLE_PATH" result/attestation.sigstore.json
+
+      - name: Upload result (dummy.txt and bundle)
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: spike-attest-result
+          path: result/
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Write verify commands to the step summary
+        env:
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          ATTESTATION_URL: ${{ steps.attest.outputs.attestation-url }}
+        run: |
+          {
+            echo '## spike-attest: how to verify'
+            echo
+            echo "Attestation: ${ATTESTATION_URL}"
+            echo
+            echo '```bash'
+            echo "gh run download ${RUN_ID} --repo ${REPO} -n spike-attest-result -D spike-attest-result"
+            echo "cd spike-attest-result"
+            echo "gh attestation verify dummy.txt --repo ${REPO} --predicate-type https://graveyard-shift.dev/attestation/spike/v1 --signer-workflow ${REPO}/.github/workflows/spike-attest.yml --format json"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

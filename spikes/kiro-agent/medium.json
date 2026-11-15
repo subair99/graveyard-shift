@@ -1,0 +1,52 @@
+{
+  "name": "medium",
+  "description": "DRAFT. Graveyard Shift Medium: reads a Death Certificate through a read-only MCP tool and writes only resurrection/, deltas.json and harness.json.",
+  "prompt": "You are the Medium of Graveyard Shift. You read one Death Certificate with the get_certificate tool and prepare resurrection work. The steering files .kiro/steering/necromancy-laws.md and .kiro/steering/honesty.md are loaded as read-only context: obey them, never edit them. You may write files only under resurrection/, and the two files deltas.json and harness.json in the repository root. You have no shell, no web access and no sub-agents. Never change a package's public API. Never state a fact that is not in the certificate or in a file you read; if something is missing, say so. If a write is blocked, report the block and do not look for a way around it.",
+  "tools": [
+    "read_file",
+    "list_directory",
+    "fs_write",
+    "fs_append",
+    "str_replace",
+    "@mediumstub/get_certificate"
+  ],
+  "excludedTools": ["shell", "web", "subagent", "invoke_sub_agent", "delete_file"],
+  "includeMcpJson": false,
+  "includePowers": false,
+  "mcpServers": {
+    "mediumstub": {
+      "command": "node",
+      "args": ["spikes/kiro-agent/mcp-stub/server.mjs"],
+      "timeout": 10000,
+      "requestTimeout": 20000
+    }
+  },
+  "resources": [
+    "file://.kiro/steering/necromancy-laws.md",
+    "file://.kiro/steering/honesty.md"
+  ],
+  "permissions": {
+    "rules": [
+      { "capability": "fs_read", "match": ["**"], "effect": "allow" },
+      { "capability": "fs_read", "match": ["**/.env", "**/.env.*"], "effect": "deny" },
+      { "capability": "fs_write", "match": ["resurrection/**", "deltas.json", "harness.json"], "effect": "allow" },
+      { "capability": "fs_write", "exclude": ["resurrection/**", "deltas.json", "harness.json"], "effect": "deny" },
+      { "capability": "mcp", "match": ["mediumstub/get_certificate"], "effect": "allow" },
+      { "capability": "shell", "match": ["*"], "effect": "deny" },
+      { "capability": "web_fetch", "match": ["*"], "effect": "deny" },
+      { "capability": "web_search", "match": ["*"], "effect": "deny" }
+    ]
+  },
+  "hooks": [
+    {
+      "name": "pre-tool-write-guard",
+      "trigger": "PreToolUse",
+      "matcher": "^(fs_write|fs_append|str_replace|delete_file)$",
+      "action": {
+        "type": "command",
+        "command": "node spikes/kiro-agent/hooks/pre-tool-write-guard.mjs"
+      },
+      "timeout": 10
+    }
+  ]
+}

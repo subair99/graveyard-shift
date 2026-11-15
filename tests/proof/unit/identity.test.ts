@@ -89,10 +89,10 @@ describe('USERNAME rules', () => {
   });
 
   it('a bare generic name outside a path is not matched (L14), inside a path it is', () => {
-    const id = win('D:\\elsewhere', 'Owner');
-    expect(redactIdentity('the Owner of this', id, 'win32')).toBe('the Owner of this');
-    expect(redactIdentity('C:\\Users\\Owner\\x', id, 'win32')).toBe('C:\\Users\\<user>\\x');
-    expect(isWordMatchableUserName('Owner')).toBe(false);
+    const id = win('D:\\elsewhere', 'Admin');
+    expect(redactIdentity('the Admin of this', id, 'win32')).toBe('the Admin of this');
+    expect(redactIdentity('C:\\Users\\Admin\\x', id, 'win32')).toBe('C:\\Users\\<user>\\x');
+    expect(isWordMatchableUserName('Admin')).toBe(false);
     for (const generic of GENERIC_USER_NAMES) expect(isWordMatchableUserName(generic)).toBe(false);
   });
 

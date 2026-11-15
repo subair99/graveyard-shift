@@ -90,7 +90,7 @@ Throwaway scripts live in `scripts/spike/`. Each entry below records only observ
 | --- | --- |
 | 1. `scripts/spike/child` granted, `package.json` `{"type":"module"}` present | exit 0, stdout `ready hello crypt\n`, stderr empty. No experimental warning on stderr. The sibling `./a.ts` and `./b.ts` imports worked. |
 | 2. `runner.ts` and `a.ts` in dir `a` (granted, with package.json), `b.ts` in dir `b` (not granted), `a.ts` imports `../b/b.ts` | exit 1, stdout empty, stderr `Error [ERR_ACCESS_DENIED]: Access to this API has been restricted. Use --allow-fs-read to manage permissions.` with `permission: 'FileSystemRead'` and `resource` equal to the path of `b.ts`, thrown from `realpathSync` in the ESM resolver. |
-| 3. Same three child files copied to a temp dir with no `package.json` in it (granted dir only) | exit 0, stdout `ready hello crypt\n`, stderr empty (no module-type warning either). I checked that `C:\package.json`, `C:\Users\package.json`, `C:\Users\Owner\package.json` and `C:\Users\Owner\AppData\package.json` do not exist; ancestors under `AppData\Local\Temp` were not checked individually. |
+| 3. Same three child files copied to a temp dir with no `package.json` in it (granted dir only) | exit 0, stdout `ready hello crypt\n`, stderr empty (no module-type warning either). I checked that `C:\package.json`, `C:\Users\package.json`, `<home>\package.json` and `<home>\AppData\package.json` do not exist; ancestors under `AppData\Local\Temp` were not checked individually. |
 | 4a. `enum Color { Red, Green }` in a granted dir with package.json | exit 1, stderr `SyntaxError [ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX]: TypeScript enum is not supported in strip-only mode`. |
 | 4b. `class P { constructor(public readonly x: number) {} }` in the same dir | exit 1, stderr `SyntaxError [ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX]: TypeScript parameter property is not supported in strip-only mode`. |
 
@@ -150,7 +150,7 @@ Observed facts:
 - `env: {}` did not give the child an empty environment on this machine. In case 1 the child's `Object.keys(process.env)` was `HOMEDRIVE, HOMEPATH, LOGONSERVER, PATH, SYSTEMDRIVE, SYSTEMROOT, TEMP, USERDOMAIN, USERNAME, USERPROFILE, WINDIR` (11 names). A spawn of `cmd.exe /c set` with `env: {}` also listed `COMSPEC, HOMEDRIVE, HOMEPATH, LOGONSERVER, PATH, PATHEXT, PROMPT, SYSTEMDRIVE, SYSTEMROOT, TEMP, USERDOMAIN, USERNAME, USERPROFILE, WINDIR`. So Windows or libuv supplies these names when the env block is empty. I did not determine which of the two does it.
 - In a one-off check (`GS_TEST_SECRET` set in the parent, `env: {}`), the child's `PATH`, `TEMP` and `USERNAME` values were equal to the parent shell's values, and `PATH` was not empty. This does not show whether the values come from the parent or from the registry defaults, because both can be identical here.
 - Cases 3 and 4: passing `SystemRoot` produced the key `SystemRoot` (mixed case) in the child, where cases 1, 2 and 8 produced `SYSTEMROOT`. The other 10 default names were present in every case.
-- Every case (1 to 8) started, exited 0, loaded the CommonJS package, read the granted file, returned `os.tmpdir()` = `C:\Users\Owner\AppData\Local\Temp` and `os.homedir()` = `C:\Users\Owner`, and echoed `ping`. Stderr was empty in all cases. `HOME` appeared in the child only when it was passed (case 7).
+- Every case (1 to 8) started, exited 0, loaded the CommonJS package, read the granted file, returned `os.tmpdir()` = `<home>\AppData\Local\Temp` and `os.homedir()` = `<home>`, and echoed `ping`. Stderr was empty in all cases. `HOME` appeared in the child only when it was passed (case 7).
 - `GS_TEST_SECRET` was absent from the child's key list in all 8 cases. `NODE_OPTIONS` was absent in all 8 cases.
 - `TZ=UTC` changed `getTimezoneOffset()` from -60 (machine time zone, no `TZ`) to 0 (cases 2 and 4). Only these two values were observed; I did not test other `TZ` values or a different machine time zone.
 - `PATH`, `TEMP`/`TMP`, `USERPROFILE`/`HOME` were not needed for loading a package, reading a granted file, `os.tmpdir()` or `os.homedir()`; these calls worked in cases 1 to 4 and 8, where none of them was passed (the OS-provided defaults were present, see above).
@@ -166,7 +166,7 @@ Conclusions (only what was observed):
 - Date 2026-11-14, Node v26.13.1, Windows 11, working directory `C:\dev\graveyard-shift`. POSIX: not tested.
 - Files created: `scripts/spike/cwdChild/{package.json,runner.ts}` (`{"type":"module"}`, erasable syntax only) and the driver `scripts/spike/cwdPackage.ts`. The runner prints one JSON line with: `process.cwd()`, `fs.realpathSync.native(process.cwd())`, a `createRequire(<packageDir>/package.json)('.')` load (the package's `index.js` does `require('./x.js')`), `fs.readFileSync('./x.js')` (relative to the child's cwd), and `createRequire(<cwd>/noop.js)('./x.js')`.
 - Command: `node scripts/spike/cwdPackage.ts` (driver exit 0; the same `MODULE_TYPELESS_PACKAGE_JSON` warning for the driver as in 1.2). The driver creates `os.tmpdir()/spike-cwd-*` (path taken through `realpathSync.native`) and removes it in `finally`; afterwards `Test-Path $env:TEMP\spike-cwd-*` printed `False`. Every case used `spawnSync(process.execPath, ['--permission', '--allow-fs-read=<scripts/spike/cwdChild>', ...grants, runner.ts, <packageDir>], { shell: false, env: {}, cwd })` via `runNode`. All children exited 0 with empty stderr; failures show in the JSON line. `npm run typecheck`: exit 0.
-- "Real" below is the `realpathSync.native` form `C:\Users\Owner\AppData\Local\Temp\spike-cwd-lqcnx7\a-long-package-directory-name`. "OK" means `ok:true`.
+- "Real" below is the `realpathSync.native` form `<home>\AppData\Local\Temp\spike-cwd-lqcnx7\a-long-package-directory-name`. "OK" means `ok:true`.
 
 | # | cwd passed | Grants (besides runner dir) | `process.cwd()` | `realpath.native(cwd)` | package load (`./x.js` inside package) | `readFileSync('./x.js')` | `require('./x.js')` from cwd |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -177,7 +177,7 @@ Conclusions (only what was observed):
 | 3b | junction | junction only (package arg = junction path) | junction path | OK, returns the real path | `ERR_ACCESS_DENIED` | OK (33) | `ERR_ACCESS_DENIED` |
 | 3c | junction | real + junction | junction path | OK, returns the real path | OK (package arg = junction path) | OK (33) | OK |
 | 4 | symlink (`dir` type) | - | not tested: `symlinkSync` threw `EPERM: operation not permitted` (no symlink privilege for this user); the junction in 3a to 3c covers a reparse-point path | - | - | - | - |
-| 5a | 8.3 short path `C:\Users\Owner\AppData\Local\Temp\SPIKE-~1\A-LONG~1` | real package dir only | the short path as passed | `ERR_ACCESS_DENIED` | OK (package arg = real path) | `ERR_ACCESS_DENIED` | `ERR_ACCESS_DENIED` |
+| 5a | 8.3 short path `<home>\AppData\Local\Temp\SPIKE-~1\A-LONG~1` | real package dir only | the short path as passed | `ERR_ACCESS_DENIED` | OK (package arg = real path) | `ERR_ACCESS_DENIED` | `ERR_ACCESS_DENIED` |
 | 5b | short path | short path only | short path | OK, returns the real path | OK (package arg = short path) | OK (33) | OK |
 | 5c | short path | real + short | short path | OK, returns the real path | OK | OK (33) | OK |
 
@@ -203,9 +203,9 @@ Conclusions (only what was observed):
 
 Observed, same for all five directory names unless stated:
 - The child started (exit 0, empty stderr, signal null), `process.cwd()` equalled the package dir, and `createRequire(...)('.')` loaded the package (`{"x":"from-index"}`).
-- Thrown messages that contain a `file://` URL: only mechanism F (`ERR_IMPORT_ATTRIBUTE_MISSING`). Message for `gs space`: `Module "file:///C:/Users/Owner/AppData/Local/Temp/spike-spaces-Q6G6tZ/gs%20space/pkg/data.json" needs an import attribute of "type: json"`. So the segment appears as `gs%20space` (percent-encoded), the drive letter as `C:` after `file:///`, and separators as `/`.
+- Thrown messages that contain a `file://` URL: only mechanism F (`ERR_IMPORT_ATTRIBUTE_MISSING`). Message for `gs space`: `Module "file:///<home>/AppData/Local/Temp/spike-spaces-Q6G6tZ/gs%20space/pkg/data.json" needs an import attribute of "type: json"`. So the segment appears as `gs%20space` (percent-encoded), the drive letter as `C:` after `file:///`, and separators as `/`.
 - Thrown messages that contain a path in native form (backslashes, the space unencoded, no quotes added by the engine): A `Cannot find module 'C:\...\gs space\pkg\missing.mjs' imported from C:\dev\graveyard-shift\scripts\spike\spacesChild\runner.ts`; B `Cannot find module 'C:\...\gs space\pkg\nope.mjs' imported from C:\...\gs space\pkg\esm.mjs` (the path is in single quotes inside the message, a Node quote, not added by us); C `Cannot find module './nope.js'\nRequire stack:\n- C:\...\gs space\pkg\package.json`; E `ENOENT: no such file or directory, open 'C:\...\gs space\pkg\nope.txt'` (a URL was passed in, the message has the native path); G `Directory import 'C:\...\gs space\pkg\sub' is not supported resolving ES modules imported from <runner path>`; H `Unknown file extension ".foo" for C:\...\gs space\pkg\file.foo` (no quotes).
-- Mechanism D: `pathToFileURL(<pkg>).href` gave `file:///C:/Users/Owner/AppData/Local/Temp/spike-spaces-.../gs%20space/pkg`.
+- Mechanism D: `pathToFileURL(<pkg>).href` gave `file:///<home>/AppData/Local/Temp/spike-spaces-.../gs%20space/pkg`.
 - Denied read (`secret.txt` outside every grant), all three forms (native path, file URL, `import()` of the URL): `code: ERR_ACCESS_DENIED`, message `Access to this API has been restricted. Use --allow-fs-read to manage permissions.` The message contains no path (in 1.2 the same error carried a `resource` property with the path; that property was not printed here).
 - Note on runner paths: A, B, G and the `imported from` part show the runner script path (`C:\dev\graveyard-shift\scripts\spike\spacesChild\runner.ts`) as a native path outside the package root.
 
@@ -230,10 +230,10 @@ Conclusions (only what was observed):
 
 ### Risk 5b: package path on another drive (`other-drive`, task 1.7)
 - Date 2026-11-14, Node v26.13.1, Windows 11 (10.0.26300), working directory `C:\dev\graveyard-shift`.
-- Command: `Get-PSDrive -PSProvider FileSystem`. Observed: one drive, `C` (root `C:\`). Repository drive `C:\`; `os.tmpdir()` is `C:\Users\Owner\AppData\Local\Temp` (drive `C:\`). `$env:PROOF_TEST_OTHER_DRIVE` was empty.
+- Command: `Get-PSDrive -PSProvider FileSystem`. Observed: one drive, `C` (root `C:\`). Repository drive `C:\`; `os.tmpdir()` is `<home>\AppData\Local\Temp` (drive `C:\`). `$env:PROOF_TEST_OTHER_DRIVE` was empty.
 - The user was asked once whether they can provide a directory on another drive and answered no.
 - Created `scripts/spike/otherDrive.ts` (reuses `runNode` and `scripts/spike/cjsChild/runner.ts`). It takes a writable directory from `PROOF_TEST_OTHER_DRIVE` (ignored if on the repository drive) or, on Windows, the first other drive letter `A:` to `Z:` that exists and accepts a probe directory. It builds the 1.3 package (`main: entry.js`, requires `./lib/x.js`) in a temp directory there, runs `node --permission --allow-fs-read=<cjsChild dir> --allow-fs-read=<pkg> runner.ts <pkg> .` with `cwd` = the package and `shell: false`, prints the result and removes the temp directory. With no other drive it prints `other drive not available` and exits 0.
-- Command: `node scripts/spike/otherDrive.ts` (same `MODULE_TYPELESS_PACKAGE_JSON` warning as in 1.2). Observed stdout: `date: 2026-11-14`, `node: v26.13.1`, `repository drive: C:\`, `os.tmpdir(): C:\Users\Owner\AppData\Local\Temp (drive C:\)`, `other drive letters present: (none)`, `other drive not available`. Exit 0. `npm run typecheck`: exit 0.
+- Command: `node scripts/spike/otherDrive.ts` (same `MODULE_TYPELESS_PACKAGE_JSON` warning as in 1.2). Observed stdout: `date: 2026-11-14`, `node: v26.13.1`, `repository drive: C:\`, `os.tmpdir(): <home>\AppData\Local\Temp (drive C:\)`, `other drive letters present: (none)`, `other drive not available`. Exit 0. `npm run typecheck`: exit 0.
 - other drive not available (observed drive list: `C` only, 2026-11-14). This case is NOT verified. Risk stays unverified: a package directory on a different drive than the runner directory has not been tested. Addendum: verified in CI run 2 on the GitHub Windows runner (checkout on D:, temp on C:, per the user; the sandbox tests passed in CI runs 1 and 2; see "Proof of Life: CI run 1"). It remains not verified on the user's own machine (drive C: only). The integration test `other-drive` (18.11) is conditional and will report "skipped" when no other drive exists and `PROOF_TEST_OTHER_DRIVE` is unset.
 - Check that the script's load path runs (not a verification of the risk): I created a virtual drive with `subst X: <temp dir on C:>`, set `PROOF_TEST_OTHER_DRIVE=X:\` and ran `node scripts/spike/otherDrive.ts`. Observed: `package root (PROOF_TEST_OTHER_DRIVE): X:\spike-otherdrive-gf4jx8 (drive X:\)`, `runner dir: ...\cjsChild (drive C:\)`, `exit=0 signal=null`, stdout `{"ok":true,"value":{"main":"ok","x":"from-x"}}`, stderr empty; driver exit 0. Afterwards `subst X: /d` removed the mapping and the temp directory was deleted; `Get-PSDrive -PSProvider FileSystem` showed `C` only. `subst` maps a letter onto a directory of the same physical volume, so this does not test a real second drive (different volume or filesystem), and Node may or may not treat it differently from one; that was not examined.
 - Disposition: `scripts/spike/otherDrive.ts` is kept as the basis of the conditional integration test `other-drive` (18.11).
@@ -539,12 +539,12 @@ Not touched: the journal entries above, `design.md`, the `tsconfig.json` change.
 - Throwaway scripts created for this entry: `scripts/spike/jxDriver.mjs` and `scripts/spike/jxChild/runner.mjs`. **Both were deleted after the run** (checked: `scripts/spike/` holds only the files kept in task 1.15). The first run of the driver failed before its `try` block (my `cmd.exe for %~sI` quoting returned `C:\"C:\...\"` as the short path), left `spike-jx-GSWucF` in the temp directory, and I deleted that directory by hand; I replaced the short-path lookup by `(New-Object -ComObject Scripting.FileSystemObject).GetFolder(<path>).ShortPath`. The second run removed its own temp directory (`cleanup exists: false`; `Test-Path $env:TEMP\spike-jx-*` printed `False`) and the junction.
 
 **Item 1: junction grant versus 8.3 short-name grant (`createRequire`).**
-- Command: `node scripts/spike/jxDriver.mjs`. It creates `<tmp>\spike-jx-rKenNn\a-long-package-directory-name` (real; `package.json` `{"main":"index.js"}`, `x.js`, `index.js` exporting `{file: __filename, x: require('./x.js')}`), a junction `link-to-package` made with `New-Item -ItemType Junction` (exit 0), and the short path `C:\Users\Owner\AppData\Local\Temp\SPIKE-~1\A-LONG~1`. The child runs `node --permission --allow-fs-read=<runner dir> [--allow-fs-read=<grant>...] runner.mjs <pkg>` with `shell: false`, `env: {}` and `cwd` equal to the package argument. The runner prints `cwd`, then each step with `ok` or `code`, `resource`, `permission`: relative read of `./x.js`, `statSync`, `realpathSync` (JS), `realpathSync.native`, `readFileSync` of `<pkg>\index.js`, `createRequire(<pkg>\package.json)(<pkg>)` and a require of a missing file.
+- Command: `node scripts/spike/jxDriver.mjs`. It creates `<tmp>\spike-jx-rKenNn\a-long-package-directory-name` (real; `package.json` `{"main":"index.js"}`, `x.js`, `index.js` exporting `{file: __filename, x: require('./x.js')}`), a junction `link-to-package` made with `New-Item -ItemType Junction` (exit 0), and the short path `<home>\AppData\Local\Temp\SPIKE-~1\A-LONG~1`. The child runs `node --permission --allow-fs-read=<runner dir> [--allow-fs-read=<grant>...] runner.mjs <pkg>` with `shell: false`, `env: {}` and `cwd` equal to the package argument. The runner prints `cwd`, then each step with `ok` or `code`, `resource`, `permission`: relative read of `./x.js`, `statSync`, `realpathSync` (JS), `realpathSync.native`, `readFileSync` of `<pkg>\index.js`, `createRequire(<pkg>\package.json)(<pkg>)` and a require of a missing file.
 - Parent-side `realpath` values: `fs.realpathSync.native(junction)` and `fs.realpathSync.native(short)` both returned the long real path. `fs.realpathSync(junction)` (JS) returned the long real path (the target). `fs.realpathSync(short)` (JS) returned the short path unchanged.
 
 | Case (cwd = load path form) | Grants | Observed |
 | --- | --- | --- |
-| J1 junction | junction only | relative read, `statSync`, `realpathSync` (JS; returned the target path), `realpathSync.native` (returned the target path) and `readFileSync` ok; **`load` failed `ERR_ACCESS_DENIED` with `resource` `\\?\C:\Users\Owner\AppData\Local\Temp\spike-jx-rKenNn\a-long-package-directory-name\index.js`** (the junction target, not granted) |
+| J1 junction | junction only | relative read, `statSync`, `realpathSync` (JS; returned the target path), `realpathSync.native` (returned the target path) and `readFileSync` ok; **`load` failed `ERR_ACCESS_DENIED` with `resource` `\\?\<home>\AppData\Local\Temp\spike-jx-rKenNn\a-long-package-directory-name\index.js`** (the junction target, not granted) |
 | J2 junction | real only | relative read, `stat`, both `realpath`s and `read` failed `ERR_ACCESS_DENIED` with `resource` ending `\link-to-package\...` (junction form); `load` failed with `resource` `...\link-to-package\package.json` |
 | J3 junction | junction + real | everything ok; `load` returned `file` = the real `index.js` path |
 | S1 short | short only | everything ok; `realpathSync` (JS) returned the short path; `realpathSync.native` returned the long path; `load` returned `file` = `...\SPIKE-~1\A-LONG~1\index.js` |
@@ -566,7 +566,7 @@ Not touched: the journal entries above, `design.md`, the `tsconfig.json` change.
 - Explanation, only as far as observed: `tar` is extraneous (installed with `--no-save`), its dependencies are flattened to the top level (no nested `node_modules`), and `npm ls <name>` printed only the node that matches the name. A query that names the dependencies showed them under `tar` as deduped. That `npm ls` filters this way by design was not checked in npm's source.
 
 **Item 4: always grant the `fs.realpathSync.native` path.**
-- Same driver, cases R1, R2, R3: the engine input is the junction path, the 8.3 path and the real path; `fs.realpathSync.native(input)` returned `C:\Users\Owner\AppData\Local\Temp\spike-jx-rKenNn\a-long-package-directory-name` for all three. The child was started with `cwd`, the only `--allow-fs-read` (besides the runner directory) and the load path all set to that string. For all three inputs: exit 0, empty stderr, relative read ok (25 bytes), `statSync`, both `realpath`s and `readFileSync` ok, `createRequire` load ok (`file` = the real `index.js`, `x` = `from-x`), and the missing-file error text `Cannot find module './missing.js'` with the real path in `Require stack`. The three outputs were identical in everything except the label.
+- Same driver, cases R1, R2, R3: the engine input is the junction path, the 8.3 path and the real path; `fs.realpathSync.native(input)` returned `<home>\AppData\Local\Temp\spike-jx-rKenNn\a-long-package-directory-name` for all three. The child was started with `cwd`, the only `--allow-fs-read` (besides the runner directory) and the load path all set to that string. For all three inputs: exit 0, empty stderr, relative read ok (25 bytes), `statSync`, both `realpath`s and `readFileSync` ok, `createRequire` load ok (`file` = the real `index.js`, `x` = `from-x`), and the missing-file error text `Cannot find module './missing.js'` with the real path in `Require stack`. The three outputs were identical in everything except the label.
 - The child never received the junction or short form, so a message containing the user-supplied form was not observed; the Root_Normalizer's matching of the created form (R13.19) stays untested by this spike.
 
 **Sections of `design.md` edited (task 1.14 reopened)**
@@ -882,8 +882,116 @@ Measured by the user in their own PowerShell; copied from the user's message; no
 - User observations (the user's reading, not verified by an agent): no fallback line appeared in any run, so the module hooks fired for every file; proof-heavy alone took 20.2 s span against 43.5 s in the full run, so the full-run time is mostly CPU sharing between parallel projects.
 - Margins as printed (arithmetic on the user's numbers: target minus printed span): proof-property 60 - 36.1 = 23.9 s; proof-heavy 90 - 43.5 = 46.5 s; proof-integration 120 - 14.1 = 105.9 s.
 - These are the first per-project span measurements. The earlier whole-run figures in this journal were upper bounds.
+- Format note (user): the compact one-line format `[budget] <project>: <S> s span (target <T> s); sum <N> s; whole-run <W> s` in the user's message was the user's own shortening, not a different reporter: the user's terminal printed the repo reporter's three labelled lines per project (span, sum, whole-run). The numbers are the user's; the journal copy keeps the compact form as pasted.
 ## Proof of Life: PROOF_BUDGET_SCALE (test aid, user decision)
 - Purpose: confirm that a strict overrun gives exit code 1 and warn mode gives exit code 0, without a slow suite.
 - Rules: a number, default 1, multiplies every target; it must be finite and > 0 (strict parse, not parseFloat); a rejected value prints `[budget] PROOF_BUDGET_SCALE rejected: must be a positive number (got <JSON string>)`, sets exit code 1 whatever PROOF_BUDGET_MODE is, and evaluates nothing; never set in CI; with a scale other than 1 nothing is written to this journal (a note goes to stderr).
 - Commands given to the user (single file `tests/proof/unit/executorTypes.test.ts`, scale 0.000001 so the 60 s target is 60 microseconds): strict expects exit code 1; with PROOF_BUDGET_MODE=warn expects 0; an invalid scale expects 1 and the rejection message. See the agent's report for the exact commands.
-- Results: pending the user's run.
+- Results: measured by the user in their own PowerShell; copied from the user's message. File used: `tests/proof/unit/executorTypes.test.ts`; all 7 tests passed in each run.
+  - (1) `PROOF_BUDGET_SCALE=0.000001`, strict:
+    - `[budget] proof-property: 0.0109 s span, first test file start to last test file end (checked against target 6.00e-5 s = 60 s x PROOF_BUDGET_SCALE 0.000001; test aid)`
+    - `[budget] proof-property took 0.0109 s, over the 6.00e-5 s target (60 s x PROOF_BUDGET_SCALE 0.000001; test aid). Set PROOF_BUDGET_MODE=warn to downgrade.`
+    - exit code: 1
+  - (2) same with `PROOF_BUDGET_MODE=warn`:
+    - `[budget] proof-property: 0.0112 s span, first test file start to last test file end (checked against target 6.00e-5 s = 60 s x PROOF_BUDGET_SCALE 0.000001; test aid)`
+    - `[budget] WARNING: proof-property took 0.0112 s, over the 6.00e-5 s target (60 s x PROOF_BUDGET_SCALE 0.000001; test aid)`
+    - exit code: 0
+  - (3) `PROOF_BUDGET_SCALE=1abc`:
+    - `[budget] PROOF_BUDGET_SCALE rejected: must be a positive number (got "1abc")`
+    - exit code: 1
+  - Conclusion (from these outputs only): a strict overrun exits 1, warn mode exits 0 with a warning, and an invalid scale exits 1. The observed span (0.0109 s and 0.0112 s) was above the 6.00e-5 s scaled target used.
+## Proof of Life: budget work closed (user-run results)
+- The committed and pushed state includes `tests/proof/helpers/budgetReporter.ts` (user-reported: it had been untracked and is now committed).
+- CI result for this push: not provided (the user's message had the placeholder `<all green / failing job and error lines>`). Not recorded here.
+- The budget work (proof-heavy project with a 90 s target, per-project span check, PROOF_BUDGET_SCALE test aid) is closed per the user's decision.
+- The proof-of-life-engine spec is closed per the user's decision.
+- Open items, listed elsewhere: the unfinished optional tasks and the 'needs a test' gaps in `docs/traceability-gaps.json`; the other-drive case, verified in CI only.
+## 2026-11-15: Plan mode
+- User-stated (not verified by an agent): the user used Kiro's Plan mode on 2026-11-15 for both planning rounds of the overnight resurrection pipeline.
+## 2026-11-15: Pipeline plan (final)
+### Summary
+- Three specs: (a) resurrection-pipeline, (b) medium-agent, (c) crypt-ui.
+- Output stays a pull request with a signed Proof of Life; the Medium is the only unit called a "Kiro agent".
+### Heroes
+- `lodash.set` is the hero package.
+- `ip`: the Coroner runs and shows its certificate, with the verdict "resurrection blocked: runtime dependencies not supported yet (D4)". Unverified: the registry shows `ip@2.0.1` with no `dependencies` field, so re-check it before relying on this verdict.
+- `inflight` gets a rest-in-peace card (successor `lru-cache`, no resurrection attempted).
+### Decisions
+- Harness: a delta DSL (`deltas.json`: `prototype-unchanged` or `returns-expected`, each citing an advisory ID in the certificate) plus a preset menu. The LLM never writes executable harness code; a deterministic compiler builds `HarnessConfig`.
+- resurrection-eligibility is a separate artifact, read from the verified tarball's `package.json`.
+- Medium modes:
+  - Mode 1: headless in GitHub Actions with `KIRO_API_KEY`, only if spike 2 shows it works.
+  - Mode 2: local in WSL; the Medium pushes `resurrection/`, `deltas.json` and `harness.json` to branch `resurrect/<package>`; CI then runs through `workflow_dispatch` on `main` and checks out only those data paths.
+  - The mode is recorded in the attestation predicate and in the README.
+  - If headless fails, mode 2 is the primary demo path.
+  - The Medium's output is untrusted in both modes.
+- MCP: a read-only local stdio server (`get_certificate`, `get_advisories`, `read_original_file`, `list_original_files`), no network, in spec (b).
+- UI: read-only static pages from committed JSON (Ledger, Death Certificate, Proof of Life, Verify). Next.js static export on GitHub Pages, Vercel as fallback. No séance stream, no Crew bot.
+- Credits: the user has 3,000 credits until 30 Nov. Pipeline budget is up to 1,000, hard cap 150 per run, one Medium attempt per package per run. The cap is a ceiling, not an estimate. If the CLI does not report usage, `ledger.json` assumes the cap was spent per run.
+- Schedule: manual dispatch plus about 3 nights (26-28 Nov).
+- Pinned actions: every third-party action in spike workflows is pinned to a full commit SHA. The existing `ci.yml` uses tags; whether to pin it is undecided.
+### Rejected
+- An LLM writing executable harness code.
+- A dependency-root extension for `ip`.
+### Cut order
+1. npm publish.
+2. Scheduled runs beyond one night.
+3. Second candidate package.
+4. UI polish (Verify page last).
+- Never cut: verdict gate, sign-only-on-alive, `gh attestation verify`, mode label.
+### Timeline
+- 16 Nov: spikes.
+- 16-19 Nov: spec (a).
+- 19-22 Nov: spec (b).
+- 23-26 Nov: spec (c).
+- 27-29 Nov: scheduled runs, video, write-up.
+- 30 Nov: submit.
+## 2026-11-15: Spikes prepared, not run
+- Nothing has been run by the user yet, so no spike results exist. Findings below come from reading docs or from a static scan; "to verify" items need the user's run. Index: `spikes/README.md`.
+### Spike 1: secret scan (`spikes/secret-scan/`, report `REPORT.md`, script `scan.ps1`)
+- Static scan of 26 commits (all refs, reflog, unreachable). No real secret found. One unclassified row (`scripts/spike/envMinimum.ts`, `GS_TEST_SECRET`) was judged a canary phrase, not a credential.
+- Identity items: a gmail address in all commits; home-path mentions in `docs/kiro-journal.md` (10 versions) and `tests/proof/unit/identity.test.ts`; `sessionId` fields in two `tasks.meta.json` files under `.kiro/`.
+- To verify: the user reads the report and decides about the e-mail address (no-reply setting) and the journal and test paths.
+### Spike 2: headless Kiro (`.github/workflows/spike-kiro.yml`, `spikes/kiro-headless/README.md`)
+- Found in docs (fetched 2026-11-15): install command, `kiro-cli chat --v3 --no-interactive`, exit codes, API key creation at app.kiro.dev for paid plans, `/usage` for the meter. Latest stable CLI read as 3.3.0; the workflow pins it. `actions/checkout` v7.0.1 is pinned to a full SHA.
+- To verify: the plan can create an API key (Free unclear); `index.json` lists 3.3.0; a run with no trust flags exits 0; `/usage` works non-interactively with an API key and its cost; which balance (plan, trial, bonus) decrements and the cost of one call; throttling; the install script and zip have no published signature.
+### Spike 3: custom agent (`spikes/kiro-agent/`: `medium.json`, `FIELDS.md`, `README.md`, `mcp-stub/server.mjs`, `hooks/pre-tool-write-guard.mjs`, `hooks/run-cases.mjs`, `fixtures/certificate.sample.json`)
+- Draft Medium agent, a read-only MCP stub with one tool, and a write guard hook (allows `resurrection/**`, `deltas.json`, `harness.json`). Fields and their confirmation status are in `FIELDS.md`.
+- Run-cases results, from the agent's own runs (not the user's): WSL 32 passed; Windows 27 passed, 5 skipped.
+- To verify: the CLI version, that the hook fires and blocks in a real headless run (exit code semantics, `/tmp/medium-guard.log`), MCP tool use, and the credit cost.
+### Spike 4: attestation (`.github/workflows/spike-attest.yml`, `spikes/attest/README.md`, `spikes/attest/DECISION.md`)
+- Research only: `actions/attest` chosen with a custom predicate type; needs a public repository.
+- To verify: the run succeeds without `artifact-metadata: write`; real JSON field names and `subject.name`; failure message and exit code for a changed file; offline verification with `--bundle` and `--custom-trusted-root`; `--signer-workflow` accepts the path without a ref; pinned SHAs are reachable from default branches.
+### Spike 6: Coroner candidates (`scripts/spike/coroner-candidates.ts`, `spikes/candidates/SHORTLIST.md`)
+- Shortlist of nine packages read from registry and advisory pages; first is `lodash.setwith@4.3.2`. Advisory fixed versions are "none" for the ones listed. `lodash.pick@4.4.0` advisory applicability and several licenses are unverified.
+- The ip discrepancy: for control `ip@2.0.1` the registry packument read lists no `dependencies` field (checked 2026-11-15), which does not match the expected "blocked, runtime dependencies". The script computes the control from live data and prints the observed result next to the expectation. Not resolved.
+- To verify: the user runs the script and compares the output with the shortlist.
+### Still open
+- Spikes 5 (local WSL mode) and 7 (GitHub settings) have no files; they are user actions. Spike 8 (npm org, stretch) is the same.
+- Workflows can be dispatched only from the default branch, and `spike-attest` needs a public repository.
+
+## 2026-11-15: Secret scan result and decisions
+
+Source: `spikes/secret-scan/REPORT.md`. The scan was run by an agent, so every number below is agent-run. The user will re-run `spikes/secret-scan/scan.ps1` before the repository goes public.
+
+### Result (agent-run)
+- Scanned: 26 commits, 545 blobs, 3 branch refs, 2 tags.
+- No real secret found; nothing to rotate. `.env` was never committed. `.env.example` was always empty.
+- One unclassified match: `scripts/spike/envMinimum.ts:13` (commit 366c2e8). It is a canary string, not a credential.
+- Identity items found:
+  - Home paths in `docs/kiro-journal.md` (10 versions) and in `tests/proof/unit/identity.test.ts` (2 versions).
+  - The user's Gmail address in all 26 commits.
+  - 3 author names and 2 e-mail addresses.
+  - `sessionId` fields in two `tasks.meta.json` files (2004 hits).
+  - 247 absolute-path-style hits in the proof spec files; these are not the user's home path.
+- Limits: pattern-based, no entropy analysis.
+
+### Decisions (user)
+1. Gmail address in commit history: keep history as is. The user has switched new commits to his GitHub no-reply address.
+2. Replace every home-path and profile-path mention in `docs/kiro-journal.md` with `<home>`, in a new commit. Do not rewrite history.
+3. Keep the `sessionId` fields in the two `tasks.meta.json` files (no change).
+4. Commit `spikes/secret-scan/` (`scan.ps1` and `REPORT.md`) so the scan can be re-run before the repo goes public.
+
+### Open
+- Older versions of `docs/kiro-journal.md` in git history still contain the home paths.
+- `tests/proof/unit/identity.test.ts` still has its home-path mentions. The user's decision covered only the journal, so this is not decided.

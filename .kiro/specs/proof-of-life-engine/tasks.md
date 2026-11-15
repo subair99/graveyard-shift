@@ -154,7 +154,7 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - Edit `.kiro/steering/necromancy-laws.md` (a steering rule file; this agent edits it): state that the license list MIT, ISC, BSD or Apache-2.0 applies to the packages that Graveyard Shift resurrects and publishes under `@graveyard-shift/<name>`, that the project's own dependencies MAY use any permissive OSI-approved license, including BlueOak-1.0.0, and that each such dependency is listed in `PREEXISTING.md` with its license. Keep all other lines of that file unchanged
     - _Requirements: 3.1, 3.7, 14.11_
 
-  - [-] 3.2 Extend the ESLint determinism scope and configure the vitest projects
+  - [x] 3.2 Extend the ESLint determinism scope and configure the vitest projects
     - In `eslint.config.mjs` add `src/proof/core/**`, `src/proof/serialize/**` and `src/proof/child/codec/**` to `deterministicFiles` (keep `src/engine/core`, `src/engine/serialize`); make sure `src/proof/child/stubs.ts` stays outside the scope
     - In `vitest.config.mts` define the projects `engine` (existing tests, unchanged behavior), `proof-property` (`tests/proof/property` and `tests/proof/unit`) and `proof-integration` (`tests/proof/integration`), using the keys confirmed in 1.10; attach `tests/setup/networkGuard.ts` to every project; keep `FC_SEED` handling
     - Create `tests/proof/helpers/budgetGlobalSetup.ts`: measures the wall-clock time of the project in its teardown (the measurement may read the clock because it lives in test helpers, outside the lint scope), prints it, fails the run when the target (60 s for `proof-property`, 120 s for `proof-integration`) is exceeded unless `PROOF_BUDGET_MODE=warn`, and appends the measured value to `docs/kiro-journal.md` when `PROOF_LOG_TIMINGS=1`
@@ -547,7 +547,7 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - **Validates: Requirements 14.6**
 
 - [x] 17. Implement the Sandbox_Executor
-  - [ ] 17.1 Implement `src/proof/shell/executor/sandboxCommand.ts`
+  - [x] 17.1 Implement `src/proof/shell/executor/sandboxCommand.ts`
     - `buildSandboxArgv(spec, runnerDir)` (pure): `--permission`, one `--allow-fs-read=<path>` flag per path (repeated flags, never a comma-joined flag) for the runner DIRECTORY (`src/proof/child`, not a single file), the package directory, and each harness path (`readPaths`, setup module), each canonicalised with `fs.realpath.native` through the injected `realpath` (a path that cannot be resolved stays as given); the created (unresolved) form is NOT granted separately; `--max-old-space-size`; the runner entry file; no `--allow-net`, `--allow-child-process`, `--allow-worker`, `--allow-addons`, `--allow-fs-write`, `--allow-inspector`, `--allow-wasi`, `--allow-ffi` or `--allow-openssl-store`. Reject (as `sandbox-unavailable`, message without the path) any path containing `*` (observed to widen the grant), and conservatively `?`, `[`, `]`, `{` and `}` (untested); allow `,`. Spawn options use `cwd` equal to the resolved package directory, which is also its grant and the base of the module load path (spike 1.5: a read through the short 8.3 or link form fails when only the long form is granted)
     - `buildSandboxEnv(platform, parentEnv)` (pure): returns only `{ TZ: 'UTC' }`, copies nothing from `parentEnv`, never `NODE_OPTIONS`; a comment documents that on Windows the launcher adds 11 OS-supplied names which the engine does not rely on (Requirement 5.19)
     - _Requirements: 5.2, 5.3, 5.16, 5.17, 5.18, 5.19, 16.3_
@@ -660,7 +660,7 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - Scope of this task: it writes the workflow file and the journal entry; it does not push, run the workflow or change repository settings
     - _Requirements: 13.27, 13.29, 16.3_
 
-- [ ] 21. Final checkpoint
+- [x] 21. Final checkpoint
   - The agent runs `npm run typecheck`, `npm run lint` and `npm run build` itself (build only if it finishes in a reasonable time; otherwise ask the user to run it). The agent does not run the full suite
   - Write "Ready for you to run: `npm test`" and wait; continue only after the user pastes the output. Ask the user if questions arise
   - Record the commands, date, environment and the wall-clock times of the two proof suites in `docs/kiro-journal.md` from the user's pasted output only (measured values only; flag any overrun of the 60 s and 120 s targets)

@@ -1,0 +1,45 @@
+{
+  "_about": "Cases for pre-tool-write-guard.mjs. run-cases.mjs builds a temp project (root/) with an outside/ sibling, applies 'setup', then pipes one hook event per case to the guard. '{ROOT}' in a path is replaced by the temp project root. 'tool' defaults to fs_write. 'needs: symlink' cases are skipped if the OS refuses to create symlinks; 'needs: posix' cases (absolute paths built from the temp root) are skipped on Windows.",
+  "setup": {
+    "files": ["README.md", "outside/secret.txt"],
+    "dirs": ["resurrection", ".kiro/agents", ".github/workflows"],
+    "symlinks": [
+      { "link": "resurrection/escape-dir", "target": "../../outside", "type": "dir" },
+      { "link": "resurrection/escape-dangling", "target": "../../outside/not-yet.txt", "type": "file" },
+      { "link": "resurrection/readme-link", "target": "../README.md", "type": "file" }
+    ]
+  },
+  "cases": [
+    { "id": "allow-new-file-in-resurrection", "path": "resurrection/hello.txt", "expect": "allow" },
+    { "id": "allow-dot-slash-prefix", "path": "./resurrection/ok.txt", "expect": "allow" },
+    { "id": "allow-nested-new-dirs", "path": "resurrection/a/b/new.json", "expect": "allow" },
+    { "id": "allow-deltas-json", "path": "deltas.json", "expect": "allow" },
+    { "id": "allow-harness-json", "path": "harness.json", "expect": "allow" },
+    { "id": "allow-absolute-inside-allowed-dir", "path": "{ROOT}/resurrection/abs.txt", "expect": "allow", "needs": "posix" },
+    { "id": "allow-append-in-resurrection", "tool": "fs_append", "path": "resurrection/log.txt", "expect": "allow" },
+    { "id": "allow-non-write-tool-passes-through", "tool": "read_file", "path": "README.md", "expect": "allow" },
+    { "id": "deny-readme", "path": "README.md", "expect": "deny" },
+    { "id": "deny-parent-dir", "path": "../x", "expect": "deny" },
+    { "id": "deny-traversal-out-of-resurrection", "path": "resurrection/../README.md", "expect": "deny" },
+    { "id": "deny-double-traversal", "path": "resurrection/../../x", "expect": "deny" },
+    { "id": "deny-absolute-outside", "path": "/etc/passwd", "expect": "deny" },
+    { "id": "deny-absolute-sibling-outside", "path": "{ROOT}/../outside/new.txt", "expect": "deny", "needs": "posix" },
+    { "id": "deny-windows-drive-backslash", "path": "C:\\Windows\\x.txt", "expect": "deny" },
+    { "id": "deny-windows-drive-slash", "path": "C:/x.txt", "expect": "deny" },
+    { "id": "deny-backslash-relative", "path": "resurrection\\hello.txt", "expect": "deny" },
+    { "id": "deny-kiro-agents", "path": ".kiro/agents/medium.json", "expect": "deny" },
+    { "id": "deny-github-workflow", "path": ".github/workflows/ci.yml", "expect": "deny" },
+    { "id": "deny-github-under-resurrection", "path": "resurrection/.github/x.yml", "expect": "deny" },
+    { "id": "deny-resurrection-dir-itself", "path": "resurrection", "expect": "deny" },
+    { "id": "deny-similar-name", "path": "deltas.json.bak", "expect": "deny" },
+    { "id": "deny-similar-dir-name", "path": "resurrection2/x.txt", "expect": "deny" },
+    { "id": "deny-empty-path", "path": "", "expect": "deny" },
+    { "id": "deny-missing-path", "omitPath": true, "expect": "deny" },
+    { "id": "deny-home-relative", "path": "~/x.txt", "expect": "deny" },
+    { "id": "deny-str-replace-readme", "tool": "str_replace", "path": "README.md", "expect": "deny" },
+    { "id": "deny-delete-readme", "tool": "delete_file", "path": "README.md", "expect": "deny" },
+    { "id": "deny-symlinked-dir-escape", "path": "resurrection/escape-dir/pwn.txt", "expect": "deny", "needs": "symlink" },
+    { "id": "deny-dangling-symlink-file", "path": "resurrection/escape-dangling", "expect": "deny", "needs": "symlink" },
+    { "id": "deny-symlink-to-readme", "path": "resurrection/readme-link", "expect": "deny", "needs": "symlink" }
+  ]
+}
