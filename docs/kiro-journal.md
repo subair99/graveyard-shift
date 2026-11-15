@@ -823,3 +823,23 @@ Measured by the user in their own PowerShell; copied from the user's message; no
 - Proof gaps by class: needs a test 13 (1.6, 2.4, 3.8, 7.10, 8.9, 8.10, 12.5, 13.5, 13.15, 13.17, 15.8, 16.1, 16.5); documentation only 8 (3.7, 3.11, 6.8, 8.15, 13.8, 14.11, 15.7, 16.6); covered, header missing 2 (15.5, 15.9: the covering tests are `tests/engine/helpers/fc.test.ts` and `tests/engine/unit/networkGuard.test.ts`, which cite the autopsy-engine numbering, so no proof header was added).
 - `src/proof/shell/executor/sandboxExecutor.ts`: the header comment now says the created form is also passed in the extra read paths but collapses into the real path, because `buildSandboxArgv` resolves every entry through `fs.realpathSync.native` (comment only; the code is unchanged).
 - No suite timings in this entry. No test or suite was run by me; `npm run typecheck`, `npm run lint` and `npm run trace` were.
+
+## Proof of Life: full-suite run before closing the spec (user-run)
+Measured by the user in their own PowerShell; copied from the user's message; not re-measured by the agent.
+- 99 files passed; 1200 tests passed, 3 skipped (1203); duration 53.67 s.
+- Budget lines: `[budget] proof-property: 227.8 s sum of file durations`; `[budget] proof-integration: 38.0 s sum of file durations`; `[budget] proof-integration: 53.7 s whole-run wall-clock, upper bound (target 120 s)`; `[budget] proof-property: 53.7 s whole-run wall-clock, upper bound (target 60 s)`.
+- `npm run trace` (exit 0, user-run): autopsy-engine: criteria 107, cited 103, gaps 4, unknown citations 0; proof-of-life-engine: criteria 165, cited 142, gaps 23, unknown citations 0, classes: needs a test 13; documentation only 8; covered, header missing 2.
+- The user committed and pushed.
+
+## CI run 3 (user-reported)
+- CI result for this push: not provided (placeholder in the message).
+
+## Proof of Life: closing decisions (user, this round)
+- Cross-spec citations are allowed: a test that covers a criterion counts whichever spec it was written for. Header syntax: `// Requirements: 1.2, 4.3; proof-of-life-engine 15.5, 15.9` (bare list = the test's own spec; groups separated by semicolons). `scripts/trace.ts` parses it, credits the named spec's table, and lists an unknown spec name or number under "Cited numbers that do not exist".
+- Tests were written only for 1.6 and 16.1 (no network imports or globals under src/proof), 3.8 (only the Tarball_Extractor imports tar) and 15.8 (budget overrun branch: strict fails, warn warns).
+- `sandboxExecutor.ts` no longer pushes the created form into extraReadPaths; the builder's realpath step stays.
+- The unclassified-gap and stale-entry checks of `npm run trace` now apply to both specs (exit 1 and listed); the "unclassified (not requested)" wording for autopsy-engine is gone.
+- Cited from engine tests: `tests/engine/helpers/fc.test.ts` cites proof 15.5 (asserts numRuns >= 100 of the shared `fcParams()` that the proof property tests use) and 15.9 (FC_SEED replay); `tests/engine/unit/networkGuard.test.ts` cites proof 15.9 (offline guard).
+- Autopsy-engine gaps (4.13, 5.9, 8.6, 12.7), read against the tests: 4.13 covered by `status.test.ts` (each of the four statuses returned as the single `status`), 5.9 covered by `causes.test.ts` ('returns empty when no condition holds', and `certificate.ts` passes that list to the certificate), 8.6 covered by `risk.test.ts` (unavailable signs listed by name and absent from contributions); their numbers were added to those headers (header edits only). 12.7 stays 'needs a test': the engine project has no time target and no engine timing is recorded.
+- After these changes, one `npm run trace` run by the agent: autopsy-engine: criteria 107, cited 106, gaps 1, unknown citations 0, classes: needs a test 1; documentation only 0; covered, header missing 0. proof-of-life-engine: criteria 165, cited 149, gaps 16, unknown citations 0, classes: needs a test 9 (2.4, 7.10, 8.9, 8.10, 12.5, 13.5, 13.15, 13.17, 16.5); documentation only 7 (3.7, 3.11, 6.8, 8.15, 13.8, 14.11, 16.6); covered, header missing 0. 15.7 became cited by `budgetReporter.test.ts` and its entry was dropped. The remaining 'needs a test' count is 9, not the ten in the request: 13 minus 1.6, 3.8, 15.8, 16.1.
+- No suite timings in this entry from the agent. No test or suite was run by me; `npm run typecheck`, `npm run lint` and `npm run trace` were.

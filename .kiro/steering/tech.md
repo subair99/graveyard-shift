@@ -30,7 +30,7 @@
 - Proof of Life run: `npm run proof:run -- <options>` (`tsx src/proof/cli.ts`; exit codes 0 alive, 1 restless, 2 inconclusive, 64 usage error)
 - Record the lodash.set tarball: `npm run fixtures:record-tarball` (manual; needs network, no credentials)
 - Record engine fixtures: `npm run fixtures:record` (manual; needs network)
-- Requirement trace: `npm run trace` (`tsx scripts/trace.ts`; not a test; reads test headers and the spec, writes `docs/traceability.md`; every `tests/proof/**/*.test.ts` carries a `// Requirements: N.M, ...` header line)
+- Requirement trace: `npm run trace` (`tsx scripts/trace.ts`; not a test; reads test headers and the spec, writes `docs/traceability.md`; every `tests/proof/**/*.test.ts` carries a `// Requirements: N.M, ...` header line; `; <spec-name> N.M, ...` after it cites another spec)
 
 ## Test environment variables
 Not secrets and not in `.env.example`; set them in the shell for a run.

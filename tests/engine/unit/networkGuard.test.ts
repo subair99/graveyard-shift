@@ -1,4 +1,4 @@
-// Requirements: 10.1, 11.4
+// Requirements: 10.1, 11.4; proof-of-life-engine 15.9
 import { describe, expect, it } from "vitest";
 import http from "node:http";
 import { NetworkGuardError, isLlmHost } from "../../setup/networkGuard";

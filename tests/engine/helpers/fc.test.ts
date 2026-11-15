@@ -1,4 +1,4 @@
-// Requirements: 12.5, 12.6
+// Requirements: 12.5, 12.6; proof-of-life-engine 15.5, 15.9
 import { describe, expect, it } from "vitest";
 import { fc, fcConfig, fcParams, numRuns } from "./fc";
 

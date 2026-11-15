@@ -27,34 +27,69 @@ export function setup(project: TestProject): void {
   startedAt = performance.now();
 }
 
-export function teardown(): void {
-  const elapsedMs = performance.now() - startedAt;
-  const seconds = elapsedMs / 1000;
-  const target = BUDGET_SECONDS[projectName];
+export interface BudgetEvaluation {
+  /** false only when the run is over target in strict mode (teardown throws). */
+  ok: boolean;
+  level: "info" | "warn" | "error";
+  /** Text to log (info, warn) or to throw (error). */
+  message: string;
+  /** The always-printed timing line. */
+  line: string;
+}
+
+/** Pure overrun check (Requirement 15.8). `mode` is the value of PROOF_BUDGET_MODE. */
+export function evaluateBudget(input: {
+  project: string;
+  elapsedSeconds: number;
+  targetSeconds: number | undefined;
+  mode: string | undefined;
+}): BudgetEvaluation {
+  const { project, elapsedSeconds: seconds, targetSeconds: target, mode } = input;
   // Projects run in parallel, so this is the whole run's wall-clock, an upper
   // bound for the project, not its own cost.
-  const line = `[budget] ${projectName}: ${seconds.toFixed(1)} s whole-run wall-clock, ` +
+  const line = `[budget] ${project}: ${seconds.toFixed(1)} s whole-run wall-clock, ` +
     "upper bound for this project" +
     (target === undefined ? " (no target)" : ` (target ${target} s)`);
-  console.log(line);
+  if (target === undefined || seconds <= target) return { ok: true, level: "info", message: line, line };
+  const message = `${project} took ${seconds.toFixed(1)} s, over the ${target} s target`;
+  if (mode === "warn") return { ok: true, level: "warn", message: `[budget] WARNING: ${message}`, line };
+  return { ok: false, level: "error", message: `[budget] ${message}. Set PROOF_BUDGET_MODE=warn to downgrade.`, line };
+}
 
-  if (process.env["PROOF_LOG_TIMINGS"] === "1") {
-    const journal = resolve(process.cwd(), "docs", "kiro-journal.md");
-    const date = new Date().toISOString();
-    appendFileSync(
-      journal,
-      `\n- Timing ${date}: project ${projectName}, ${seconds.toFixed(1)} s wall-clock` +
-        (target === undefined ? "" : `, target ${target} s`) +
-        " (includes worker start-up; projects run in parallel, do not sum).\n",
-    );
-  }
+/** Reports one project's timing; throws on a strict overrun. `journal` is called with the timing entry, if given. */
+export function concludeBudget(input: {
+  project: string;
+  elapsedSeconds: number;
+  mode: string | undefined;
+  log: (text: string) => void;
+  warn: (text: string) => void;
+  journal?: (text: string) => void;
+}): void {
+  const target = BUDGET_SECONDS[input.project];
+  const result = evaluateBudget({
+    project: input.project,
+    elapsedSeconds: input.elapsedSeconds,
+    targetSeconds: target,
+    mode: input.mode,
+  });
+  input.log(result.line);
+  input.journal?.(
+    `\n- Timing ${new Date().toISOString()}: project ${input.project}, ${input.elapsedSeconds.toFixed(1)} s wall-clock` +
+      (target === undefined ? "" : `, target ${target} s`) +
+      " (includes worker start-up; projects run in parallel, do not sum).\n",
+  );
+  if (result.level === "warn") input.warn(result.message);
+  if (result.level === "error") throw new Error(result.message);
+}
 
-  if (target !== undefined && seconds > target) {
-    const message = `${projectName} took ${seconds.toFixed(1)} s, over the ${target} s target`;
-    if (process.env["PROOF_BUDGET_MODE"] === "warn") {
-      console.warn(`[budget] WARNING: ${message}`);
-    } else {
-      throw new Error(`[budget] ${message}. Set PROOF_BUDGET_MODE=warn to downgrade.`);
-    }
-  }
+export function teardown(): void {
+  const journalFile = resolve(process.cwd(), "docs", "kiro-journal.md");
+  concludeBudget({
+    project: projectName,
+    elapsedSeconds: (performance.now() - startedAt) / 1000,
+    mode: process.env["PROOF_BUDGET_MODE"],
+    log: (text) => console.log(text),
+    warn: (text) => console.warn(text),
+    ...(process.env["PROOF_LOG_TIMINGS"] === "1" ? { journal: (text: string) => appendFileSync(journalFile, text) } : {}),
+  });
 }

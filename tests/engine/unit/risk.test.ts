@@ -1,4 +1,4 @@
-// Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.7, 8.8, 8.9
+// Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 8.8, 8.9
 import { describe, expect, it } from "vitest";
 import { computeRisk } from "../../../src/engine/core/risk";
 import type { Maybe, VitalSigns } from "../../../src/engine/types";

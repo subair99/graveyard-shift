@@ -1,7 +1,13 @@
 // Requirement trace (light): for each spec, lists which test files cite which acceptance criterion
 // of the spec's requirements.md, and writes docs/traceability.md (one section per spec).
-// Citations are the `// Requirements: N.M, ...` header lines of the spec's test files.
-// Gap classes for the proof-of-life-engine spec come from docs/traceability-gaps.json.
+// Citations are the `// Requirements: ...` header lines of test files. Syntax of one line:
+//   // Requirements: 1.2, 4.3                          bare list: the spec the test belongs to
+//                                                      (tests/engine -> autopsy-engine, tests/proof -> proof-of-life-engine)
+//   // Requirements: proof-of-life-engine 15.5, 15.9   list for the named spec
+//   // Requirements: 1.2, 4.3; proof-of-life-engine 15.5, 15.9   several groups, separated by semicolons
+// A citation credits the criterion in the named spec's table, which shows the citing file path.
+// An unknown spec name or an unknown number is listed under "Cited numbers that do not exist".
+// Gap classes for both specs come from docs/traceability-gaps.json (class and evidence per gap).
 // Reads files only; the single write is docs/traceability.md. Not a test. Run: npm run trace
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
@@ -16,8 +22,6 @@ interface SpecConfig {
   name: string;
   requirements: string;
   testsDir: string;
-  /** True when gaps are classified in docs/traceability-gaps.json. */
-  classified: boolean;
 }
 
 const SPECS: readonly SpecConfig[] = [
@@ -25,13 +29,11 @@ const SPECS: readonly SpecConfig[] = [
     name: "autopsy-engine",
     requirements: ".kiro/specs/autopsy-engine/requirements.md",
     testsDir: "tests/engine",
-    classified: false,
   },
   {
     name: "proof-of-life-engine",
     requirements: ".kiro/specs/proof-of-life-engine/requirements.md",
     testsDir: "tests/proof",
-    classified: true,
   },
 ];
 
@@ -51,6 +53,11 @@ function compareIds(a: Id, b: Id): number {
   const [an = 0, am = 0] = a.split(".").map(Number);
   const [bn = 0, bm = 0] = b.split(".").map(Number);
   return an - bn || am - bm;
+}
+
+function compareAnyId(a: string, b: string): number {
+  const numeric = /^\d+\.\d+$/;
+  return numeric.test(a) && numeric.test(b) ? compareIds(a, b) : compareText(a, b);
 }
 
 function compareText(a: string, b: string): number {
@@ -89,17 +96,46 @@ function listTestFiles(dir: string): string[] {
   return out;
 }
 
-function parseCitations(file: string): Id[] {
-  const ids: Id[] = [];
+interface Citation {
+  /** The spec the citation names (or the file's own spec for a bare list). */
+  spec: string;
+  id: Id;
+}
+
+/** Parses the `// Requirements:` lines of one file: groups separated by ";", each `[spec-name] N.M, N.M`. */
+function parseCitations(file: string, ownSpec: string): Citation[] {
+  const out: Citation[] = [];
   for (const line of readFileSync(file, "utf8").split(/\r?\n/)) {
     const match = /^\/\/ Requirements: (.*)$/.exec(line);
     if (match === null) continue;
-    for (const part of (match[1] ?? "").split(",")) {
-      const id = part.trim();
-      if (id !== "") ids.push(id);
+    for (const group of (match[1] ?? "").split(";")) {
+      const named = /^\s*([A-Za-z][\w-]*)\s+(.+)$/.exec(group);
+      const spec = named === null ? ownSpec : (named[1] ?? ownSpec);
+      const list = named === null ? group : (named[2] ?? "");
+      for (const part of list.split(",")) {
+        const id = part.trim();
+        if (id !== "") out.push({ spec, id });
+      }
     }
   }
-  return ids;
+  return out;
+}
+
+interface FileCitations {
+  file: string;
+  ownSpec: string;
+  citations: Citation[];
+}
+
+function collectCitations(): FileCitations[] {
+  const all: FileCitations[] = [];
+  for (const spec of SPECS) {
+    for (const full of listTestFiles(join(ROOT, spec.testsDir))) {
+      const file = relative(ROOT, full).split("\\").join("/");
+      all.push({ file, ownSpec: spec.name, citations: parseCitations(full, spec.name) });
+    }
+  }
+  return all;
 }
 
 function readGapEntries(): GapEntry[] {
@@ -133,7 +169,7 @@ interface SpecResult {
   messages: string[];
 }
 
-function renderSpec(spec: SpecConfig, entries: readonly GapEntry[], lines: string[]): SpecResult {
+function renderSpec(spec: SpecConfig, entries: readonly GapEntry[], allCitations: readonly FileCitations[], lines: string[]): SpecResult {
   const criteria = parseCriteria(readFileSync(join(ROOT, spec.requirements), "utf8"));
   const known = new Set(criteria);
   const citedBy = new Map<Id, Set<string>>();
@@ -141,12 +177,20 @@ function renderSpec(spec: SpecConfig, entries: readonly GapEntry[], lines: strin
   const files = listTestFiles(join(ROOT, spec.testsDir))
     .map((f) => relative(ROOT, f).split("\\").join("/"))
     .sort(compareText);
-  for (const file of files) {
-    for (const id of parseCitations(join(ROOT, file))) {
-      const target = known.has(id) ? citedBy : unknown;
-      const set = target.get(id) ?? new Set<string>();
-      set.add(file);
-      target.set(id, set);
+  const specNames = new Set(SPECS.map((s) => s.name));
+  const add = (target: Map<Id, Set<string>>, key: Id, file: string): void => {
+    const set = target.get(key) ?? new Set<string>();
+    set.add(file);
+    target.set(key, set);
+  };
+  for (const { file, ownSpec, citations } of allCitations) {
+    for (const c of citations) {
+      if (!specNames.has(c.spec)) {
+        // An unknown spec name is reported in the section of the spec the citing file belongs to.
+        if (ownSpec === spec.name) add(unknown, `${c.spec} ${c.id}`, file);
+      } else if (c.spec === spec.name) {
+        add(known.has(c.id) ? citedBy : unknown, c.id, file);
+      }
     }
   }
 
@@ -181,10 +225,6 @@ function renderSpec(spec: SpecConfig, entries: readonly GapEntry[], lines: strin
   lines.push("### Gaps", "");
   if (gaps.length === 0) {
     lines.push("none", "");
-  } else if (!spec.classified) {
-    lines.push("Criteria that no test file cites. Classification: unclassified (not requested).", "");
-    for (const id of gaps) lines.push(`- ${id}: unclassified (not requested)`);
-    lines.push("");
   } else {
     const mine = entries.filter((e) => e.spec === spec.name);
     const byCriterion = new Map<Id, GapEntry>();
@@ -228,7 +268,7 @@ function renderSpec(spec: SpecConfig, entries: readonly GapEntry[], lines: strin
   if (unknown.size === 0) {
     lines.push("none", "");
   } else {
-    for (const id of [...unknown.keys()].sort(compareIds)) {
+    for (const id of [...unknown.keys()].sort(compareAnyId)) {
       lines.push(`- ${id}: ${[...(unknown.get(id) ?? [])].sort(compareText).map((f) => `\`${f}\``).join(", ")}`);
     }
     lines.push("");
@@ -240,6 +280,7 @@ function renderSpec(spec: SpecConfig, entries: readonly GapEntry[], lines: strin
 function main(): void {
   const entries = readGapEntries();
   const specNames = new Set(SPECS.map((s) => s.name));
+  const allCitations = collectCitations();
   const strangeSpecs = entries.filter((e) => !specNames.has(e.spec));
   const date = new Date().toISOString().slice(0, 10);
   const lines: string[] = [];
@@ -247,17 +288,17 @@ function main(): void {
   lines.push(`Generated on ${date} by \`npm run trace\` (system date; this is documentation, not a measured number).`, "");
   lines.push(NOTE, "");
   lines.push(
-    "One section per spec. Acceptance criteria come from the spec's `requirements.md`; citations are the `// Requirements:` header lines of the spec's test files. Gap classes for proof-of-life-engine are read from `docs/traceability-gaps.json`.",
+    "One section per spec. Acceptance criteria come from the spec's `requirements.md`; citations are the `// Requirements:` header lines of the test files. Gap classes (class and evidence per gap) for both specs are read from `docs/traceability-gaps.json`. An unclassified gap or a stale classification entry in either spec makes `npm run trace` exit with 1.",
+    "",
+    "Header syntax: `// Requirements: 1.2, 4.3` is a bare list and means the spec the test belongs to (`tests/engine` is autopsy-engine, `tests/proof` is proof-of-life-engine). `// Requirements: proof-of-life-engine 15.5, 15.9` cites criteria of another spec, and groups are separated by semicolons: `// Requirements: 1.2, 4.3; proof-of-life-engine 15.5, 15.9`. A citation credits the criterion in the named spec's table, which shows the citing file path. An unknown spec name or an unknown number is listed under \"Cited numbers that do not exist\" in the section of the spec the citing file belongs to.",
     "",
   );
 
   let failed = false;
   const summary: string[] = [];
   for (const spec of SPECS) {
-    const r = renderSpec(spec, entries, lines);
-    const classText = spec.classified
-      ? `, classes: ${CLASSES.map((c) => `${c} ${r.classCounts[c]}`).join("; ")}`
-      : "";
+    const r = renderSpec(spec, entries, allCitations, lines);
+    const classText = `, classes: ${CLASSES.map((c) => `${c} ${r.classCounts[c]}`).join("; ")}`;
     summary.push(
       `${spec.name}: criteria ${r.criteria}, cited ${r.cited}, gaps ${r.gaps}, unknown citations ${r.unknownCitations}${classText}`,
     );

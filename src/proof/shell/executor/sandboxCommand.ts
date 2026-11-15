@@ -31,7 +31,7 @@ export interface SandboxCommandInput {
   runnerEntry: string;
   /** Absolute `fs.realpathSync.native` path of the package directory: grant and `cwd`. */
   packageDir: string;
-  /** Further grants: the created package path when it differs, harness modules or directories. */
+  /** Further grants: harness modules or directories. */
   extraReadPaths: readonly string[];
   /** Heap limit in MB, a positive integer. */
   maxOldSpaceMb: number;

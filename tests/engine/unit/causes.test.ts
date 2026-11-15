@@ -1,4 +1,4 @@
-// Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8
+// Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9
 import { describe, expect, it } from "vitest";
 import { detectCauses, filterOpenVulnerabilities, type CauseSignals } from "../../../src/engine/core/causes";
 

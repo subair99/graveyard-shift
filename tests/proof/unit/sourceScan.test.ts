@@ -28,7 +28,7 @@
  * alias tracking is by name for the whole file (no scopes), so a shadowing
  * local variable named like an alias can produce a false positive.
  */
-// Requirements: 13.25, 13.28, 16.2, 16.3
+// Requirements: 1.6, 3.8, 13.25, 13.28, 16.1, 16.2, 16.3
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, resolve, sep } from "node:path";
 import { parse } from "@babel/parser";
@@ -67,7 +67,7 @@ const CLI_EXCEPTION = {
 
 const OUTPUT_ALLOWED = [EMIT_FILE, RUNNER_EXCEPTION.file, CLI_EXCEPTION.file];
 
-type Rule = "process-env" | "console-or-stdio" | "parse-error";
+type Rule = "process-env" | "console-or-stdio" | "network" | "parse-error";
 export interface Violation {
   file: string;
   line: number;
@@ -351,6 +351,248 @@ function scanProofTree(root: string): Violation[] {
   }
   return violations;
 }
+
+/*
+ * Network and `tar` import scans (Requirements 1.6, 16.1, 3.8).
+ *
+ * Network (R1.6, R16.1): no file under src/proof, the sandbox-side child included, imports a network
+ * module or references a network global. The design (Offline, "Testing Strategy") allows no exception,
+ * so NETWORK_EXCEPTIONS is empty. The tarball recorder lives in scripts/, outside src/proof, and
+ * needs none. Strings and comments are not code nodes, so the sandboxExecutor probe text never matches.
+ * Not handled: computed non-literal keys (`globalThis[k]`), `eval`, and passing a network module through a
+ * function argument. A local binding named like a network global (`fetch`) is a false positive.
+ *
+ * `tar` (R3.8): only the Tarball_Extractor imports the `tar` package.
+ */
+const NETWORK_EXCEPTIONS: readonly { file: string; reason: string }[] = [];
+const TAR_FILE = "src/proof/shell/tarball/tarballExtractor.ts";
+
+const NETWORK_MODULES = new Set([
+  "net", "http", "https", "http2", "dns", "dgram", "tls", "undici", "node-fetch", "axios",
+]);
+const NETWORK_GLOBALS = new Set(["fetch", "XMLHttpRequest", "WebSocket", "EventSource"]);
+
+function specifierBase(spec: string, stripNodePrefix: boolean): string {
+  const bare = stripNodePrefix && spec.startsWith("node:") ? spec.slice(5) : spec;
+  return bare.split("/")[0] ?? bare;
+}
+const isNetworkModule = (spec: string): boolean => NETWORK_MODULES.has(specifierBase(spec, true));
+const isTarModule = (spec: string): boolean => {
+  const base = specifierBase(spec, false);
+  return base === "tar" || base === "node-tar";
+};
+
+type Hit = { line: number; detail: string };
+
+function literalText(node: Node | undefined): string | null {
+  if (!node) return null;
+  if (node.type === "StringLiteral") return node.value as string;
+  if (node.type === "TemplateLiteral" && (node.expressions as unknown[]).length === 0) {
+    return (node.quasis as { value: { cooked?: string | null } }[])[0]?.value.cooked ?? null;
+  }
+  return null;
+}
+
+/** Module specifiers named by import/export-from/require/dynamic import, and network global references. */
+function collectModulesAndGlobals(source: string, file: string): { modules: (Hit & { spec: string })[]; globals: Hit[] } | "parse-error" {
+  let ast: Node;
+  try {
+    const plugins: ("typescript" | "jsx")[] = file.endsWith(".tsx") ? ["typescript", "jsx"] : ["typescript"];
+    ast = parse(source, { sourceType: "unambiguous", plugins, errorRecovery: false }) as unknown as Node;
+  } catch {
+    return "parse-error";
+  }
+  const modules: (Hit & { spec: string })[] = [];
+  const globals: Hit[] = [];
+  const lineOf = (n: Node): number => n.loc?.start.line ?? 0;
+  const addModule = (n: Node, spec: string | null): void => {
+    if (spec !== null) modules.push({ line: lineOf(n), detail: spec, spec });
+  };
+  const addGlobal = (n: Node, name: string): void => {
+    globals.push({ line: lineOf(n), detail: name });
+  };
+  const globalAliases = new Set<string>();
+  const isGlobalObject = (n: Node | null | undefined): boolean =>
+    !!n && n.type === "Identifier" && (GLOBAL_NAMES.has(n.name as string) || globalAliases.has(n.name as string));
+
+  const walk = (node: Node, skipSelfAsKey: boolean): void => {
+    switch (node.type) {
+      case "TSInterfaceDeclaration":
+      case "TSTypeAliasDeclaration":
+      case "TSDeclareFunction":
+        return;
+      case "ImportDeclaration":
+      case "ExportAllDeclaration":
+        addModule(node, literalText(node.source as Node));
+        return;
+      case "ExportNamedDeclaration":
+        if (node.source) addModule(node, literalText(node.source as Node));
+        break;
+      case "TSImportEqualsDeclaration": {
+        const ref = node.moduleReference as Node;
+        if (ref.type === "TSExternalModuleReference") addModule(node, literalText(ref.expression as Node));
+        return;
+      }
+      case "CallExpression": {
+        const callee = node.callee as Node;
+        const first = (node.arguments as Node[])[0];
+        if (callee.type === "Identifier" && callee.name === "require") addModule(node, literalText(first));
+        if (callee.type === "Import") addModule(node, literalText(first));
+        break;
+      }
+      case "ImportExpression":
+        addModule(node, literalText(node.source as Node));
+        break;
+      case "VariableDeclarator": {
+        const id = node.id as Node;
+        const init = node.init as Node | null;
+        if (id.type === "Identifier" && isGlobalObject(init)) globalAliases.add(id.name as string);
+        if (id.type === "ObjectPattern" && isGlobalObject(init)) {
+          for (const prop of id.properties as Node[]) {
+            if (prop.type !== "ObjectProperty") continue;
+            const key = keyName(prop.key as Node, prop.computed === true);
+            if (key !== null && NETWORK_GLOBALS.has(key)) addGlobal(prop, key);
+          }
+        }
+        break;
+      }
+      case "MemberExpression":
+      case "OptionalMemberExpression": {
+        const key = keyName(node.property as Node, node.computed === true);
+        if (key !== null && NETWORK_GLOBALS.has(key) && isGlobalObject(node.object as Node)) addGlobal(node, key);
+        break;
+      }
+      case "Identifier":
+        if (!skipSelfAsKey && NETWORK_GLOBALS.has(node.name as string)) addGlobal(node, node.name as string);
+        return;
+      default:
+    }
+    const computed = node.computed === true;
+    for (const [key, value] of Object.entries(node)) {
+      if (SKIP_KEYS.has(key)) continue;
+      const memberProp = key === "property" && !computed && (node.type === "MemberExpression" || node.type === "OptionalMemberExpression");
+      const objectKey = key === "key" && !computed && /^(ObjectProperty|ObjectMethod|ClassMethod|ClassProperty)$/.test(node.type);
+      if (memberProp || objectKey) continue;
+      if (Array.isArray(value)) {
+        for (const item of value) if (isNode(item)) walk(item, false);
+      } else if (isNode(value)) {
+        walk(value, false);
+      }
+    }
+  };
+  // Twice, so an alias declared after its use still resolves.
+  walk(ast, false);
+  globals.length = 0;
+  modules.length = 0;
+  walk(ast, false);
+  return { modules, globals };
+}
+
+export function scanNetwork(source: string, file: string): Violation[] {
+  const found = collectModulesAndGlobals(source, file);
+  if (found === "parse-error") return [{ file, line: 0, rule: "parse-error", detail: "parse error" }];
+  const out: Violation[] = [];
+  for (const m of found.modules) if (isNetworkModule(m.spec)) out.push({ file, line: m.line, rule: "network", detail: `import of ${m.spec}` });
+  for (const g of found.globals) out.push({ file, line: g.line, rule: "network", detail: `reference to ${g.detail}` });
+  return out;
+}
+
+export function scanTar(source: string, file: string): { imports: boolean; parseError: boolean } {
+  const found = collectModulesAndGlobals(source, file);
+  if (found === "parse-error") return { imports: false, parseError: true };
+  return { imports: found.modules.some((m) => isTarModule(m.spec)), parseError: false };
+}
+
+const proofFiles = (): string[] => listSourceFiles(proofRoot).map((full) => repoPath(full));
+const isExcepted = (path: string): boolean => NETWORK_EXCEPTIONS.some((e) => e.file === path);
+
+describe("network and tar import scans of src/proof", () => {
+  it("no file under src/proof imports a network module or references a network global (R1.6, R16.1)", () => {
+    const violations = proofFiles()
+      .filter((path) => !isExcepted(path))
+      .flatMap((path) => scanNetwork(readFileSync(join(repoRoot, path), "utf8"), path));
+    expect(violations).toEqual([]);
+  });
+
+  it("the design allows no network exception", () => {
+    expect(NETWORK_EXCEPTIONS).toEqual([]);
+    expect(proofFiles().some((path) => path.startsWith("src/proof/child/"))).toBe(true);
+  });
+
+  it("only the Tarball_Extractor imports the tar package, and it does (R3.8)", () => {
+    const files = proofFiles();
+    expect(files).toContain(TAR_FILE);
+    const importers = files.filter((path) => {
+      const r = scanTar(readFileSync(join(repoRoot, path), "utf8"), path);
+      expect(r.parseError).toBe(false);
+      return r.imports;
+    });
+    expect(importers).toEqual([TAR_FILE]);
+  });
+});
+
+describe("network and tar scanner negative tests", () => {
+  const netRules = (source: string): string[] => scanNetwork(source, "probe.ts").map((v) => v.rule);
+
+  it.each([
+    "import net from 'node:net';",
+    "import { request } from 'node:http';",
+    "import https from 'https';",
+    "import http2 from 'node:http2';",
+    "import dns from 'node:dns';",
+    "import { lookup } from 'dns/promises';",
+    "import dgram from 'dgram';",
+    "import tls from 'tls';",
+    "import { fetch } from 'undici';",
+    "import f from 'node-fetch';",
+    "import axios from 'axios';",
+    "export * from 'node:net';",
+    "export { get } from 'http';",
+    "const n = require('node:tls');",
+    "const n = require(`axios`);",
+    "const n = import('node:https');",
+    "import n = require('net');",
+  ])("flags a network module: %s", (source) => {
+    expect(netRules(source)).toEqual(["network"]);
+  });
+
+  it.each([
+    "fetch('x');",
+    "globalThis.fetch('x');",
+    "globalThis['fetch']('x');",
+    "const f = fetch;",
+    "const { fetch } = globalThis;",
+    "const g = globalThis;\nconst { fetch: f } = g;",
+    "const h = global;\nh.fetch('x');",
+    "new XMLHttpRequest();",
+    "new WebSocket('ws://x');",
+    "new EventSource('x');",
+  ])("flags a network global: %s", (source) => {
+    expect(netRules(source)).toContain("network");
+  });
+
+  it("ignores comments, strings, other modules and unrelated members", () => {
+    const source = [
+      "// import http from 'node:http'; fetch('x')",
+      "const probe = \"import net from 'node:net'; fetch(1)\";",
+      "const t = `require('http')`;",
+      "import path from 'node:path';",
+      "import { Parser } from 'tar';",
+      "const o = { fetch: 1, WebSocket: 2 };",
+      "const x = o.fetch + o.WebSocket;",
+      "const n = require(name);",
+      "type F = typeof fetch;",
+    ].join("\n");
+    expect(netRules(source)).toEqual([]);
+  });
+
+  it("flags tar specifiers outside the extractor and ignores node:path", () => {
+    for (const s of ["import * as tar from 'tar';", "import { x } from 'tar/dist/y';", "const t = require('node-tar');", "import('tar');"]) {
+      expect(scanTar(s, "src/proof/shell/other.ts").imports).toBe(true);
+    }
+    expect(scanTar("import path from 'node:path';\nconst s = 'tar';", "src/proof/shell/other.ts").imports).toBe(false);
+  });
+});
 
 const pure = { processEnv: true, output: false };
 const output = { processEnv: false, output: true };

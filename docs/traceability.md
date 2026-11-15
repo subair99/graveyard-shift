@@ -4,7 +4,9 @@ Generated on 2026-11-15 by `npm run trace` (system date; this is documentation, 
 
 A citation shows which tests claim to cover a criterion; it does not prove coverage.
 
-One section per spec. Acceptance criteria come from the spec's `requirements.md`; citations are the `// Requirements:` header lines of the spec's test files. Gap classes for proof-of-life-engine are read from `docs/traceability-gaps.json`.
+One section per spec. Acceptance criteria come from the spec's `requirements.md`; citations are the `// Requirements:` header lines of the test files. Gap classes (class and evidence per gap) for both specs are read from `docs/traceability-gaps.json`. An unclassified gap or a stale classification entry in either spec makes `npm run trace` exit with 1.
+
+Header syntax: `// Requirements: 1.2, 4.3` is a bare list and means the spec the test belongs to (`tests/engine` is autopsy-engine, `tests/proof` is proof-of-life-engine). `// Requirements: proof-of-life-engine 15.5, 15.9` cites criteria of another spec, and groups are separated by semicolons: `// Requirements: 1.2, 4.3; proof-of-life-engine 15.5, 15.9`. A citation credits the criterion in the named spec's table, which shows the citing file path. An unknown spec name or an unknown number is listed under "Cited numbers that do not exist" in the section of the spec the citing file belongs to.
 
 ## Spec: autopsy-engine
 
@@ -16,8 +18,8 @@ A citation shows which tests claim to cover a criterion; it does not prove cover
 
 - Test files scanned: 32
 - Acceptance criteria: 107
-- Criteria cited by at least one test file: 103
-- Criteria with no citing test file (gaps): 4
+- Criteria cited by at least one test file: 106
+- Criteria with no citing test file (gaps): 1
 
 ### Criteria and citing test files
 
@@ -64,7 +66,7 @@ A citation shows which tests claim to cover a criterion; it does not prove cover
 | 4.10 | `tests/engine/unit/status.test.ts` |
 | 4.11 | `tests/engine/unit/status.test.ts` |
 | 4.12 | `tests/engine/unit/status.test.ts` |
-| 4.13 | (none) |
+| 4.13 | `tests/engine/unit/status.test.ts` |
 | 4.14 | `tests/engine/unit/certificate.test.ts`<br>`tests/engine/unit/status.test.ts` |
 | 4.15 | `tests/engine/unit/status.test.ts`<br>`tests/engine/unit/types.test.ts` |
 | 5.1 | `tests/engine/unit/causes.test.ts` |
@@ -75,7 +77,7 @@ A citation shows which tests claim to cover a criterion; it does not prove cover
 | 5.6 | `tests/engine/unit/causes.test.ts` |
 | 5.7 | `tests/engine/unit/causes.test.ts`<br>`tests/engine/unit/osvAffectedFilter.test.ts` |
 | 5.8 | `tests/engine/unit/causes.test.ts` |
-| 5.9 | (none) |
+| 5.9 | `tests/engine/unit/causes.test.ts` |
 | 6.1 | `tests/engine/unit/timeOfDeath.test.ts` |
 | 6.2 | `tests/engine/unit/certificate.test.ts`<br>`tests/engine/unit/timeOfDeath.test.ts` |
 | 6.3 | `tests/engine/unit/certificate.test.ts`<br>`tests/engine/unit/timeOfDeath.test.ts` |
@@ -96,7 +98,7 @@ A citation shows which tests claim to cover a criterion; it does not prove cover
 | 8.3 | `tests/engine/property/p18-risk-monotonicity.test.ts`<br>`tests/engine/unit/risk.test.ts` |
 | 8.4 | `tests/engine/property/p18-risk-monotonicity.test.ts`<br>`tests/engine/unit/risk.test.ts` |
 | 8.5 | `tests/engine/unit/risk.test.ts` |
-| 8.6 | (none) |
+| 8.6 | `tests/engine/unit/risk.test.ts` |
 | 8.7 | `tests/engine/unit/certificate.test.ts`<br>`tests/engine/unit/risk.test.ts` |
 | 8.8 | `tests/engine/unit/certificate.test.ts`<br>`tests/engine/unit/risk.test.ts` |
 | 8.9 | `tests/engine/unit/certificate.test.ts`<br>`tests/engine/unit/risk.test.ts` |
@@ -133,12 +135,22 @@ A citation shows which tests claim to cover a criterion; it does not prove cover
 
 ### Gaps
 
-Criteria that no test file cites. Classification: unclassified (not requested).
+Criteria that no test file cites, with the class and evidence from `docs/traceability-gaps.json`:
 
-- 4.13: unclassified (not requested)
-- 5.9: unclassified (not requested)
-- 8.6: unclassified (not requested)
-- 12.7: unclassified (not requested)
+- 12.7: needs a test. No test or budget covers the 120 s limit for the engine project: README.md (test projects table) lists the engine project with target none, and tests/proof/helpers/budgetGlobalSetup.ts sets targets only for proof-property and proof-integration. design.md (Test strategy) states the limit and docs/kiro-journal.md has no engine-project timing. A test or budget would measure the wall-clock of the tests/engine property files and fail above 120 s.
+
+Gaps per class:
+
+- needs a test: 1
+- documentation only: 0
+- covered, header missing: 0
+
+### Classification check
+
+- Unclassified gaps: none
+- Classified criteria that do not exist in requirements.md: none
+- Stale classification entries (no longer gaps): none
+- Duplicate classification entries: none
 
 ### Cited numbers that do not exist in requirements.md
 
@@ -152,10 +164,10 @@ A citation shows which tests claim to cover a criterion; it does not prove cover
 
 ### Summary
 
-- Test files scanned: 67
+- Test files scanned: 68
 - Acceptance criteria: 165
-- Criteria cited by at least one test file: 142
-- Criteria with no citing test file (gaps): 23
+- Criteria cited by at least one test file: 149
+- Criteria with no citing test file (gaps): 16
 
 ### Criteria and citing test files
 
@@ -166,7 +178,7 @@ A citation shows which tests claim to cover a criterion; it does not prove cover
 | 1.3 | `tests/proof/integration/lodashAlive.integration.test.ts` |
 | 1.4 | `tests/proof/unit/cli.test.ts` |
 | 1.5 | `tests/proof/unit/orchestrator.test.ts` |
-| 1.6 | (none) |
+| 1.6 | `tests/proof/unit/sourceScan.test.ts` |
 | 2.1 | `tests/proof/unit/integrity.test.ts` |
 | 2.2 | `tests/proof/unit/integrity.test.ts`<br>`tests/proof/unit/orchestrator.test.ts` |
 | 2.3 | `tests/proof/unit/integrity.test.ts`<br>`tests/proof/unit/orchestrator.test.ts` |
@@ -178,7 +190,7 @@ A citation shows which tests claim to cover a criterion; it does not prove cover
 | 3.5 | `tests/proof/unit/entry.test.ts`<br>`tests/proof/unit/orchestrator.test.ts` |
 | 3.6 | `tests/proof/integration/lodashAlive.integration.test.ts`<br>`tests/proof/integration/lodashBroken.integration.test.ts`<br>`tests/proof/unit/endToEndIdentity.test.ts`<br>`tests/proof/unit/orchestrator.test.ts`<br>`tests/proof/unit/workDir.test.ts` |
 | 3.7 | (none) |
-| 3.8 | (none) |
+| 3.8 | `tests/proof/unit/sourceScan.test.ts` |
 | 3.9 | `tests/proof/unit/orchestrator.test.ts`<br>`tests/proof/unit/sideRuntime.test.ts` |
 | 3.10 | `tests/proof/unit/orchestrator.test.ts`<br>`tests/proof/unit/tarballExtractor.test.ts` |
 | 3.11 | (none) |
@@ -312,15 +324,15 @@ A citation shows which tests claim to cover a criterion; it does not prove cover
 | 15.2 | `tests/proof/property/p24-same-seed-same-bytes.test.ts`<br>`tests/proof/property/p24b-different-seed-self-consistent.test.ts` |
 | 15.3 | `tests/proof/property/p25a-alive-directory.test.ts`<br>`tests/proof/property/p25b-alive-tarball.test.ts`<br>`tests/proof/property/p25c-unencodable-inconclusive.test.ts`<br>`tests/proof/property/p25d-flaky-negative-control.test.ts` |
 | 15.4 | `tests/proof/property/p26-injected-changes.test.ts`<br>`tests/proof/property/p26b-declared-delta.test.ts` |
-| 15.5 | (none) |
+| 15.5 | `tests/engine/helpers/fc.test.ts` |
 | 15.6 | `tests/proof/integration/envScrubbed.integration.test.ts`<br>`tests/proof/integration/fileReadDenied.integration.test.ts`<br>`tests/proof/integration/networkDenied.integration.test.ts`<br>`tests/proof/integration/spawnDenied.integration.test.ts`<br>`tests/proof/integration/timeoutKill.integration.test.ts` |
-| 15.7 | (none) |
-| 15.8 | (none) |
-| 15.9 | (none) |
+| 15.7 | `tests/proof/unit/budgetReporter.test.ts` |
+| 15.8 | `tests/proof/unit/budgetReporter.test.ts` |
+| 15.9 | `tests/engine/helpers/fc.test.ts`<br>`tests/engine/unit/networkGuard.test.ts` |
 | 15.10 | `tests/proof/unit/syntheticPackage.test.ts` |
 | 15.11 | `tests/proof/property/p26-injected-changes.test.ts`<br>`tests/proof/property/p26b-declared-delta.test.ts`<br>`tests/proof/unit/codec.test.ts` |
 | 15.12 | `tests/proof/unit/codec.test.ts` |
-| 16.1 | (none) |
+| 16.1 | `tests/proof/unit/sourceScan.test.ts` |
 | 16.2 | `tests/proof/unit/determinismLint.test.ts`<br>`tests/proof/unit/sourceScan.test.ts` |
 | 16.3 | `tests/proof/integration/lodashIdentity.integration.test.ts`<br>`tests/proof/unit/endToEndIdentity.test.ts`<br>`tests/proof/unit/sourceScan.test.ts` |
 | 16.4 | `tests/proof/unit/executorTypes.test.ts`<br>`tests/proof/unit/sandboxExecutor.test.ts` |
@@ -331,10 +343,8 @@ A citation shows which tests claim to cover a criterion; it does not prove cover
 
 Criteria that no test file cites, with the class and evidence from `docs/traceability-gaps.json`:
 
-- 1.6: needs a test. No test scans src/proof for network use. design.md (Test strategy, Offline) promises a source scan for node:http, node:https, node:net, node:tls, node:dgram and fetch, but tests/proof/unit/sourceScan.test.ts checks only process.env and console/stdio. A grep of src/proof found no such call today. A test would walk src/proof and fail on those imports and on fetch calls (the same test covers 16.1).
 - 2.4: needs a test. tests/proof/unit/orchestrator.test.ts asserts original.verified and original.integrity, but no test asserts that report.package holds the Original name and exact version. A test would run runProofOfLife and compare report.package with the request's original name and version.
 - 3.7: documentation only. PREEXISTING.md lists tar 7.5.23 with chownr, minipass, yallist, @isaacs/fs-minipass and minizlib, each with license and source URL, and the D9 note on BlueOak-1.0.0. A grep of src and scripts shows only src/proof/shell/tarball/tarballExtractor.ts imports tar; no test enforces it (see 3.8).
-- 3.8: needs a test. No test fails when a file under src/proof other than src/proof/shell/tarball/tarballExtractor.ts imports tar (tests/proof/integration/lodashBroken.integration.test.ts imports tar for its own use, which is outside src/proof). A test would scan src/proof for imports of tar and allow only the extractor.
 - 3.11: documentation only. README.md 'Known limitations' states that ESM is not supported and describes the undetected case (L12). design.md 'unloadable-module detection' states that R3.11 forbids claiming ES module support. A package with type module is rejected as unloadable-module (tests/proof/unit/orchestrator.test.ts, 'type module' case).
 - 6.8: documentation only. design.md section 'Known limitations', item L1 (reference identity), states the consequence for argument aliasing and for functions that return their arguments. README.md 'Known limitations' repeats L1 in short form.
 - 7.10: needs a test. src/proof/core/equal.ts imports only the codec and types, and the determinism lint (tests/proof/unit/determinismLint.test.ts, cited 16.2) bans Date.now, new Date() and Math.random in core, but no test checks that the comparison modules import no node:fs or clock. A test would scan the imports of src/proof/core/equal.ts and its codec dependencies for node:fs and clock access.
@@ -347,19 +357,14 @@ Criteria that no test file cites, with the class and evidence from `docs/traceab
 - 13.15: needs a test. tests/proof/unit/normalize.test.ts and tempRootLeak.test.ts exercise the redaction, and tempRootLeak.test.ts loops over both sides, but no test states that the Path_Redactor is a pure function of text and roots or that both sides get the same treatment. A test would call it twice on equal inputs (inputs unchanged, equal outputs) and compare the output for the Original and Resurrection with swapped roots.
 - 13.17: needs a test. tests/proof/unit/tempRootLeak.test.ts (serialized report and temp roots) and endToEndIdentity.test.ts (home path) cover two of the three. No test builds a serialized report from an error message holding the Node installation directory and checks the text; normalize.test.ts checks the Node directory only on redactErrorText. A test would run the report builder with such a message and assert the serialized text lacks the directory.
 - 14.11: documentation only. PREEXISTING.md lists tar with chownr, minipass, yallist, @isaacs/fs-minipass and minizlib, and the lodash.set@4.3.2 tarball (section 'Third-party material in test fixtures'), with license and source. .kiro/steering/necromancy-laws.md states that the MIT/ISC/BSD/Apache-2.0 list applies to resurrected packages and that project dependencies may use BlueOak-1.0.0.
-- 15.5: covered, header missing. tests/engine/helpers/fc.test.ts asserts numRuns >= 100 for the shared fcParams(), which the proof property tests use (p24 and p24b take max(100, fcParams().numRuns)). The covering file lives under tests/engine and cites the autopsy-engine numbering (12.5), so no proof-of-life-engine header was added.
-- 15.7: documentation only. docs/kiro-journal.md records user-run wall-clock figures for proof-property and proof-integration (for example the entry with 'proof-integration: 49.6 s (target 120 s)'). tests/proof/helpers/budgetGlobalSetup.ts sets the budgets at 60 s and 120 s.
-- 15.8: needs a test. tests/proof/helpers/budgetGlobalSetup.ts fails the run or warns (PROOF_BUDGET_MODE=warn) when a project exceeds its target, and docs/kiro-journal.md records runs that failed with '... over the 60 s target'. No automated test exercises the overrun branch. A test would call the budget check with a fake elapsed time above the target in both modes.
-- 15.9: covered, header missing. tests/engine/unit/networkGuard.test.ts (network blocked in every project through the root setupFiles) and tests/engine/helpers/fc.test.ts ('uses FC_SEED when set') assert it. Both files live under tests/engine and cite the autopsy-engine numbering, so no proof-of-life-engine header was added.
-- 16.1: needs a test. Same gap as 1.6: tests/setup/networkGuard.ts blocks network access while tests run, but no test scans src/proof for LLM or network calls outside scripts/lib/recordTarball.ts. A grep of src/proof found none today. A test would scan src/proof for network imports, fetch and LLM client packages.
 - 16.5: needs a test. Scope exclusions (no attestation signing, pull requests, Kiro agents, native addons) have no test; a grep of src/proof found no such code. Cycles stay unencodable (codec.test.ts cites 6.x) and a type module package is rejected as unloadable-module (orchestrator.test.ts). A source scan test, extending the one for 1.6 and 16.1, would fail on imports of an attestation or GitHub client, Kiro, or a .node addon load.
 - 16.6: documentation only. design.md: the ProofRequest comment 'Reserved for D4 (read-only dependency root)' (the strict schema rejects a dependencyRoot key), the ip harness section naming SideSpec.readPaths as the extension point, and the 'Deliberately not tested' list ('The ip harness (design hook only)'). src/proof contains no dependency root or ip harness.
 
 Gaps per class:
 
-- needs a test: 13
-- documentation only: 8
-- covered, header missing: 2
+- needs a test: 9
+- documentation only: 7
+- covered, header missing: 0
 
 ### Classification check
 

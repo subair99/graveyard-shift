@@ -6,9 +6,11 @@
 // wait for `ready`, send `load`, wait for `loaded`, then one `call` at a time.
 //
 // Paths: the package directory is resolved once with `fs.realpathSync.native`; that string is the
-// `cwd`, the grant and the base of the entry file. The created form is also passed in the extra read
-// paths when it differs, but `buildSandboxArgv` resolves every entry through `fs.realpathSync.native`,
-// so the created form collapses into the real path and no separate grant remains (Requirement 5.17).
+// `cwd`, the grant and the base of the entry file. The created form (`spec.packageDir` as given) is
+// not granted separately (Requirement 5.17): it is used only to rewrite an `entryFile` that starts
+// with it into the real form. The extra read paths are the harness `readPaths` and the `setupModule`;
+// `buildSandboxArgv` resolves every grant through `fs.realpathSync.native`. The Root_Normalizer gets
+// the created form as a root from the orchestrator (`roots.created`), not from this file.
 //
 // Timeouts: the child enforces the per-call timeout for async code (`timeoutMs` in the call
 // message). The parent adds a hard kill after `callTimeoutMs + killGraceMs`, which is the only way
@@ -375,7 +377,6 @@ export class SandboxExecutor implements Executor {
       }
       const created = resolvePath(spec.packageDir);
       const extra: string[] = [];
-      if (created !== real) extra.push(created);
       for (const p of spec.readPaths) extra.push(p);
       if (spec.setupModule !== undefined) extra.push(spec.setupModule);
 
