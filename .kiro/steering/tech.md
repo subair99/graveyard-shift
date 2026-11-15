@@ -7,7 +7,7 @@
 - ts-morph for static analysis (Haunting Radius).
 - `tar` reads package tarballs in the proof engine (only `src/proof/shell/tarball/tarballExtractor.ts` imports it).
 - The autopsy engine is deterministic: no LLM calls. Facts come only from the npm registry, OSV, deps.dev and the GitHub REST API, each stored with its source URL and fetch date.
-- Resurrections run via Kiro CLI headless mode in GitHub Actions; results are signed with GitHub Artifact Attestations.
+- The Medium runs locally (Kiro CLI in WSL). CI does the verification, the Proof of Life, the attestation (GitHub Artifact Attestations) and the pull request.
 
 ## Known external dependencies
 - Data sources: npm registry, OSV, deps.dev, GitHub REST API.
@@ -16,7 +16,7 @@
 - Output: signed, verifiable Proof of Life attached to a pull request.
 
 ## Configuration
-- Secrets live in `.env` (gitignored). Variables are documented in `.env.example`: `GITHUB_TOKEN`, `KIRO_API_KEY`.
+- Secrets live in `.env` (gitignored). Variables are documented in `.env.example`: `GITHUB_TOKEN`.
 - Never commit, log, or print secret values. Add any new variable to `.env.example` with an empty value.
 
 ## Commands

@@ -117,6 +117,24 @@ Proves: the file you hold has the SHA-256 that a run of `<owner>/<repo>` (and th
 
 Does not prove: that the predicate content is true (the workflow author writes it), that the code in the workflow is benign, or, in offline mode, that `<owner>/<repo>` is still the same repository today (use the repository ID check). It says nothing here about differential test results; the real Proof of Life needs the proof report digest in the predicate and a way to re-run the proof.
 
+## Results (user-run, 15 Nov 2026)
+
+Run by the user; copied from the user's report, not re-measured by an agent.
+
+- Run: `spike-attest` run 43759217625 succeeded (build 3 s, attest 9 s).
+- `gh` version: 2.104.0 (the user downloaded the artifacts with it).
+- Verify command run on the unmodified `dummy.txt`:
+  `gh attestation verify .\spike-attest-result\dummy.txt --repo subair99/graveyard-shift --predicate-type https://graveyard-shift.dev/attestation/spike/v1 --signer-workflow subair99/graveyard-shift/.github/workflows/spike-attest.yml`
+  - Result: "Verification succeeded!" for digest `sha256:20c719271a03263ac82c7a4f64de88462e4c3b9763b77794711125b172c059ac`, signer workflow `.github/workflows/spike-attest.yml@refs/heads/main`, OIDC issuer `token.actions.githubusercontent.com`.
+- Modified file (one line appended to `dummy.txt`; this is not the one-byte change of step 4):
+  - New digest `sha256:8c93c519c34c5c99cc9e104a5519dc01c69b846e6955060fd53dccf653fe5049`.
+  - Output: "Loading attestations from GitHub API failed", HTTP 404.
+  - The user's reading: tampering is detected, because the changed file has no attestation for its digest.
+  - Exit code: not provided. Exact JSON: not provided (the first command was run without `--format json`, as pasted).
+- Annotation seen on the run: `ubuntu-latest` will migrate to Ubuntu 26. Both workflows (`ci.yml`, `spike-attest.yml`) now pin `ubuntu-24.04`.
+- Permissions the `attest` job granted in `spike-attest.yml` (the run succeeded with exactly this set): `id-token: write`, `attestations: write`, `contents: read`. The `build` job granted `contents: read`; the workflow-level default is `permissions: {}`. `artifact-metadata: write` was **not** in the file.
+- Not provided / not run: the wrong-predicate-type case, offline verification (`--bundle`, `--custom-trusted-root`), the repository ID check, the JSON field names, and any warning text in the `attest` job log.
+
 ## Cleanup
 
 Delete `.github/workflows/spike-attest.yml` and `spikes/attest/` when done. Attestations remain in the repository's attestation list; see https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations/manage-attestations to delete them.

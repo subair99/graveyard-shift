@@ -44,7 +44,7 @@ env:
 
 jobs:
   test-linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
       # Long and not generic, so identity.ts matches it as a whole word (Requirement 13.27).
@@ -61,7 +61,7 @@ jobs:
       - run: npm test
 
   test-no-identity:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -79,7 +79,7 @@ jobs:
   # environment of the project is Windows, and the sandbox, path and permission-model tests are
   # Windows-sensitive, so a Linux-only CI would not exercise them.
   test-windows:
-    runs-on: windows-latest
+    runs-on: windows-2025
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

@@ -1,6 +1,6 @@
 # Spike 3: draft `medium` agent for Kiro CLI
 
-Draft custom agent for the future Medium role, with a read-only MCP stub and a write guard hook. Nothing here is wired into the project. Every field and its confirmation status is in `FIELDS.md` (docs fetched 2026-11-15; your CLI version is expected to be 3.3.0 and is unverified).
+Draft custom agent for the future Medium role, with a read-only MCP stub and a write guard hook. Nothing here is wired into the project. Spikes 3 and 5 have been run by the user (results below and in `docs/kiro-journal.md`). Every field and its confirmation status is in `FIELDS.md` (docs fetched 2026-11-15; your CLI version is expected to be 3.3.0 and is unverified).
 
 | File | Purpose |
 |---|---|

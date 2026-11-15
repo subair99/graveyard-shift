@@ -1,7 +1,7 @@
 # Spike 4: which attestation action
 
 Research date (fetch date for every source below): 2026-11-15.
-Status: research only. Nothing in this file has been run yet; see "To verify".
+Status: research, plus one user run on 15 Nov 2026 (see "To verify (after the user's run)" and `README.md` "Results"). Everything not listed there as confirmed is unverified.
 
 ## Decision
 
@@ -115,10 +115,16 @@ Does not prove: that the predicate content is true. The workflow author writes i
 
 ## To verify (after the user's run)
 
-1. Run succeeds without `artifact-metadata: write`.
-2. Real JSON field names and `subject.name`.
-3. Failure message and exit code for a modified file.
+Confirmed by the user's run of 15 Nov 2026 (details in `README.md`, "Results"):
+- Item 1: **confirmed.** The run succeeded without `artifact-metadata: write` (the `attest` job had `id-token: write`, `attestations: write`, `contents: read`). Warnings in the job log: not provided.
+- Item 5: **confirmed.** `--signer-workflow subair99/graveyard-shift/.github/workflows/spike-attest.yml` (no ref) was accepted; the result showed the signer workflow as `.github/workflows/spike-attest.yml@refs/heads/main`.
+- The online verify command with `--predicate-type` and `--signer-workflow` succeeds on the unmodified file (gh 2.104.0).
+- Item 3, partly: a modified file fails with "Loading attestations from GitHub API failed", HTTP 404. Exit code: not provided. Exact JSON: not provided. A "no attestations found" style message was expected; the observed text is the one above.
+
+Still to verify:
+2. Real JSON field names and `subject.name` (no `--format json` output provided).
+3. Exit code for a modified file (the message and HTTP 404 are known; see above).
 4. Offline verification with `--bundle` and `--custom-trusted-root` on the downloaded `attestation.sigstore.json` (a single-bundle file; the offline doc shows `.jsonl` from `gh attestation download`; the manual says `--bundle` accepts a single bundle JSON or JSON lines).
-5. Whether `--signer-workflow` accepts `<owner>/<repo>/.github/workflows/spike-attest.yml` without a ref, as the manual's format suggests.
+5. (Confirmed, see above.) `--signer-workflow` accepts `<owner>/<repo>/.github/workflows/spike-attest.yml` without a ref.
 6. SHAs reachable from default branches.
 7. Whether the attest-build-provenance and attest repositories document anything about a predicate size below 16 MB in practice (not tested).

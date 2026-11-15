@@ -1,6 +1,8 @@
 # Spike 2: Kiro CLI headless on GitHub Actions
 
-Throwaway. Delete `.github/workflows/spike-kiro.yml` and this directory when done.
+> **Spike not run. Headless mode is unavailable for this account.** app.kiro.dev shows no "API Keys" page on the user's account (reported by the user, 15 Nov 2026), so no API key can be created. The workflow `.github/workflows/spike-kiro.yml` was removed. This directory is kept only as documentation of what the docs said on 2026-11-15, **unverified**. The steps below were never executed, and the references to `spike-kiro.yml` below point to a removed file. See `docs/kiro-journal.md` ("Spikes 2 and 7: skipped; spike-kiro.yml removed").
+
+Throwaway. The workflow `.github/workflows/spike-kiro.yml` has been removed; delete this directory when it is no longer wanted.
 
 All facts below were fetched on **2026-11-15**. Paraphrased from the cited pages. "To verify" means the docs did not
 confirm it or the spike must measure it.
@@ -15,7 +17,7 @@ Use the account that holds the hackathon credits: a local `kiro-cli` login with 
 2. Whether bonus credits are consumed (and in what order relative to plan credits).
 3. The credit cost of one trivial call, and its elapsed time.
 
-The workflow (`.github/workflows/spike-kiro.yml`) installs the CLI, prints its version, then runs one prompt with no
+The workflow (`.github/workflows/spike-kiro.yml`, removed) installed the CLI, prints its version, then runs one prompt with no
 tools trusted.
 
 ## Research findings
@@ -137,6 +139,7 @@ Under "Environment secrets" > Add environment secret: name `KIRO_API_KEY`, value
 
 The workflow must be on the default branch to appear in the UI. Merge it to `main` first.
 
+- (Not applicable: `spike-kiro.yml` was removed and this step was never run.)
 - UI: Actions > spike-kiro > Run workflow > branch `main` > Run workflow.
 - CLI: `gh workflow run spike-kiro.yml --ref main`, then `gh run watch`, then `gh run view --log`.
 
@@ -155,5 +158,5 @@ Wait a few minutes (the usage display may lag, to verify). Repeat step 1 with a 
 
 1. Revoke the API key in app.kiro.dev (API Keys).
 2. Delete the environment `medium` or its secret.
-3. Delete `.github/workflows/spike-kiro.yml` and `spikes/kiro-headless/`.
+3. `.github/workflows/spike-kiro.yml` is already removed; delete `spikes/kiro-headless/` when no longer wanted.
 4. If you ran `kiro-cli login` locally and no longer need it: `kiro-cli logout`.

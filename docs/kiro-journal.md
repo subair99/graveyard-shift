@@ -1076,3 +1076,54 @@ Run by the user in WSL on 15 Nov 2026. Copied from the user's report; not re-mea
   2. The PreToolUse hook, which was shown to hold even with writes trusted (`guardtest-hookonly` run).
 - The layers are not equal: only the hook is enforcement. The refusal is behavior and must not be cited as a guarantee. The demo can show the guard log (ALLOW/DENY lines).
 - Nothing is claimed here about headless mode, the credit cost or the meter (meter before/after: not provided).
+
+## 2026-11-15: Spike 4: attestation (user-run)
+Run by the user; copied from the user's report, not re-measured by an agent. Details: `spikes/attest/README.md` ("Results").
+- `spike-attest` run 43759217625 succeeded (build 3 s, attest 9 s). Artifacts downloaded with gh 2.104.0.
+- `gh attestation verify .\spike-attest-result\dummy.txt --repo subair99/graveyard-shift --predicate-type https://graveyard-shift.dev/attestation/spike/v1 --signer-workflow subair99/graveyard-shift/.github/workflows/spike-attest.yml` printed "Verification succeeded!" for digest `sha256:20c719271a03263ac82c7a4f64de88462e4c3b9763b77794711125b172c059ac`, signer workflow `.github/workflows/spike-attest.yml@refs/heads/main`, OIDC issuer `token.actions.githubusercontent.com`.
+- After one line was appended to `dummy.txt`: new digest `sha256:8c93c519c34c5c99cc9e104a5519dc01c69b846e6955060fd53dccf653fe5049`; output "Loading attestations from GitHub API failed", HTTP 404. The user's reading: tampering is detected, because the changed file has no attestation for its digest. Exit code and exact JSON: not provided.
+- Permissions in `spike-attest.yml` (run succeeded with exactly these): `attest` job `id-token: write`, `attestations: write`, `contents: read`; `build` job `contents: read`; workflow default `permissions: {}`. `artifact-metadata: write` was not in the file.
+- Annotation seen: `ubuntu-latest` will migrate to Ubuntu 26.
+- Still to verify: offline verification (`--bundle`, `--custom-trusted-root`), JSON field names, exit code of the failing case, the wrong-predicate-type case, the CVE-2025-25204 claim.
+
+## 2026-11-15: Spikes 2 and 7: skipped; spike-kiro.yml removed
+- app.kiro.dev has no "API Keys" page on the user's account (reported by the user), so headless Kiro in GitHub Actions is not available. Spikes 2 and 7 are skipped.
+- `.github/workflows/spike-kiro.yml` was deleted so no workflow depends on a secret that cannot exist. `KIRO_API_KEY` and the GitHub environment `medium` are not needed; no environment or secret was created for them.
+- `spikes/kiro-headless/` is kept as documentation of what the docs said on 2026-11-15, unverified; its README now says so at the top.
+- The 2026-11-15 "Spike 2: headless Kiro" entry above describes the workflow as prepared; it was never run and the file no longer exists.
+- Open for the user: `.env.example` still lists `KIRO_API_KEY`, the tech steering rule lists it, and `README.md` says to fill it in "for resurrections". Not edited here.
+
+## 2026-11-15: Spike 8 and credits (user-run)
+- Spike 8: the user created the `@graveyard-shift` npm org.
+- Credit meter, as read by the user: 1,055.73 / 4,000 bonus credits used at 21:36 (934.37 at 17:58). That window includes IDE planning and spike prep, so it is not a per-run cost.
+- Discrepancy, not reconciled: the "Pipeline plan (final)" entry assumed 3,000 credits until 30 Nov; the user's meter shows a 4,000 bonus-credit total.
+- Consequence: in local mode the pipeline has no CLI-reported usage, so the cost of a run must be read from the meter by hand. To verify: whether the CLI prints usage in local mode.
+- `spikes/kiro-agent/make-guardtest-agents.mjs` (earlier noted as not run): the user ran it in WSL; it created both agents and `--clean` removed them. Its `TEST ONLY` description stays (decision).
+
+## 2026-11-15: Plan update: Medium is local mode only
+- The Medium runs in local mode only, on the user's machine in WSL. There is no GitHub environment and no `KIRO_API_KEY`. The "Pipeline plan (final)" items about mode 1 (headless in Actions) are superseded.
+- Attestation path confirmed by spike 4: signing in Actions with `actions/attest` and a custom predicate works, and verification with `--signer-workflow` and `--predicate-type` works.
+- CI runs through `workflow_dispatch` on `main` and checks out only the data paths of the `resurrect/<package>` branch. Still to be built.
+- The README mode label becomes "local".
+- The credit cap per run (150 in the earlier plan) becomes a manual discipline. The pipeline cannot enforce a cap on a local Medium run. To be decided in spec (a).
+- Runner pin: `ci.yml` and `spike-attest.yml` use `ubuntu-24.04` instead of `ubuntu-latest`, so the image does not change mid-hackathon (reason: the annotation that `ubuntu-latest` will migrate to Ubuntu 26). `windows-latest` in the `test-windows` job of `ci.yml` is unchanged; decision pending.
+## 2026-11-15: Corrections (credits, guardtest agents)
+- Credits: the bonus total is 4,000. The "3,000" in the "Pipeline plan (final)" entry was the amount remaining at that time. At 21:36 the meter showed 1,055.73 used, so about 2,944 are left (4,000 - 1,055.73 = 2,944.27). This resolves the discrepancy recorded in the "Spike 8 and credits" entry, which is left unedited.
+- Correction to the spike 3 line "has not been run": `make-guardtest-agents.mjs` was later run by the user; it created both agents and `--clean` removed them. The `TEST ONLY` description stays.
+## 2026-11-15: Final plan for spec (a) resurrection-pipeline (user decisions)
+1. Who runs what: the Medium runs locally in WSL; nothing else needs to. CI re-runs the Coroner and Gravedigger itself (deterministic, no secrets) and never trusts certificates or tarballs from the user's machine. From the branch, CI takes only `resurrection/`, `deltas.json` and `harness.json`, as untrusted data, with a path allowlist and size limits. CI then runs the Proof of Life, the attestation and the pull request.
+2. Hand-off: one local command, `npm run resurrect -- <package>`, runs the Medium. Then `push-resurrection.ts` pushes to branch `resurrect/<package>` and triggers the workflow with `gh workflow run` (the user's gh is logged in). The workflow is `workflow_dispatch` on `main` with the branch as input. No environment, no secrets.
+3. Cap and ledger: one Medium attempt per package per run. The resurrect script asks the user for the credit meter reading before and after and records both in `ledger.json` with the date and package. If the CLI prints usage, that is recorded too. The 150-credit ceiling is a documented rule, not enforced.
+4. Overnight: a scheduled nightly CI job (no LLM, no credits) re-verifies every committed resurrection. It replays the Proof of Life with the recorded seed and checks that the report is byte-identical, verifies each attestation with `gh attestation verify`, and re-runs the Coroner to flag new advisories. Results go to a nightly report. The README and the demo describe exactly this: the Medium runs on demand, the Undertaker checks the graveyard every night.
+5. Demo set: one resurrection each for lodash.set and ip, each with a signed Proof of Life, and a rest-in-peace card for inflight. A Restless or Inconclusive outcome is shown as such, never hidden or signed.
+6. Committed outputs: after the PR merges, everything lives in `graveyard/<package>/` on `main`: certificate, eligibility, `deltas.json`, `harness.json`, the resurrection tarball, the proof report and the attestation bundle (`.sigstore.json`). `resurrect/` branches are temporary. The UI reads only `graveyard/`.
+7. Attestation: subjects are the resurrection tarball, the proof report and the certificate. Predicate type: `https://github.com/subair99/graveyard-shift/attestation/resurrection/v1` (a URI under the user's repo, not a domain the user does not own). Use the action and permissions confirmed in spike 4: `actions/attest` pinned to `1e69f48acb82d1966a394da916b4c1698aa569d6` (v4.2.2, as in `spike-attest.yml`), with `id-token: write`, `attestations: write`, `contents: read`.
+8. ip: version 2.0.1 only; the export shape must stay identical. The first task of spec (a) measures what the Original returns for `isPublic` on the five advisory addresses. If it already returns false for all five, there is no delta to prove: drop ip from the demo and record why. The deltas are not adjusted to make it pass.
+9. Publishing: out of spec (a) entirely, no stub.
+### Consequences to carry into the spec
+- The predicate URI differs from the spike's `https://graveyard-shift.dev/attestation/spike/v1`. When spec (a) is written, references to the predicate type in the Proof of Life engine and the docs need updating. `graveyard-shift.dev` currently appears in `spikes/attest/README.md`, `spikes/attest/DECISION.md`, `.github/workflows/spike-attest.yml` and this journal; not in `src/`, `tests/` or the proof-of-life-engine spec. The spike files are a record of the spike and may stay as they are.
+- The nightly replay needs a byte-identical report across runs. The proof-of-life-engine spec states this for the same seed, request and executor (requirement 15.2) and for the same seed on the same tool versions (assumption A8: the report includes the Node version). Across days on the GitHub runner this holds only if the Node and tool versions do not change: to verify, and the nightly job must pin them or handle a mismatch as a distinct result.
+- The nightly job and the PR step need permissions (`pull-requests: write`, `contents: write`). To be decided in the spec.
+- The Verify page's `gh attestation verify` command depends on item 7 (predicate type and signer workflow).
+- Sign only when the verdict is alive (standing rule).
+- Open question for spec (a), not a decision: does a Restless or Inconclusive run also get a `graveyard/<package>/` entry? The honesty rules say Restless is shown, never hidden.
