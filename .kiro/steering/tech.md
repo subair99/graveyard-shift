@@ -5,6 +5,7 @@
 - Node.js LTS; npm as package manager.
 - fast-check for property-based and differential testing.
 - ts-morph for static analysis (Haunting Radius).
+- `tar` reads package tarballs in the proof engine (only `src/proof/shell/tarball/tarballExtractor.ts` imports it).
 - The autopsy engine is deterministic: no LLM calls. Facts come only from the npm registry, OSV, deps.dev and the GitHub REST API, each stored with its source URL and fetch date.
 - Resurrections run via Kiro CLI headless mode in GitHub Actions; results are signed with GitHub Artifact Attestations.
 
@@ -23,7 +24,22 @@
 - Dev server: `npm run dev`
 - Build: `npm run build`
 - Typecheck: `npm run typecheck`
-- Test: `npm test` (vitest --run; tests in `tests/**/*.test.ts`; set `FC_SEED` to replay a fast-check seed)
+- Lint: `npm run lint`
+- Test: `npm test` (vitest --run; tests in `tests/**/*.test.ts`; set `FC_SEED` to replay a fast-check seed). Tests are run by the user, not by agents; see `testing-workflow.md`. Agents may run typecheck, lint and one test file at a time.
+- One vitest project: `npx vitest run --project engine` (or `proof-property`, `proof-integration`). Projects are defined in `vitest.config.mts`: `engine` (`tests/engine`), `proof-property` (`tests/proof/property` and `tests/proof/unit`, target 60 s), `proof-integration` (`tests/proof/integration`, target 120 s).
+- Proof of Life run: `npm run proof:run -- <options>` (`tsx src/proof/cli.ts`; exit codes 0 alive, 1 restless, 2 inconclusive, 64 usage error)
+- Record the lodash.set tarball: `npm run fixtures:record-tarball` (manual; needs network, no credentials)
+- Record engine fixtures: `npm run fixtures:record` (manual; needs network)
+
+## Test environment variables
+Not secrets and not in `.env.example`; set them in the shell for a run.
+- `PROOF_BUDGET_MODE=warn`: a proof project that exceeds its wall-clock target prints a warning instead of failing the run.
+- `PROOF_LOG_TIMINGS=1`: appends the measured wall-clock of each proof project to `docs/kiro-journal.md`.
+- `PROOF_TEST_OTHER_DRIVE`: optional writable directory on another drive, read only by `scripts/spike/otherDrive.ts` (no vitest test reads it yet).
+
+## Proof engine notes
+- The sandbox runs the package in a child process under Node's permission model (`node --permission` with exact `--allow-fs-read` grants, no network, no child processes, scrubbed environment). It is a seat belt against accidental access, not a security boundary against malicious code.
+- `tar` (runtime) and `@babel/parser` (dev, used by the `sourceScan` test) are listed in `PREEXISTING.md` with their licenses.
 
 ## Conventions
 - License is MIT. Keep dependencies permissively licensed (MIT-compatible); each is listed in `PREEXISTING.md` with its license. The MIT/ISC/BSD/Apache-2.0 list in the necromancy laws applies only to resurrected packages.

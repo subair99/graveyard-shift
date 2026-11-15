@@ -12,7 +12,8 @@
     "test": "vitest --run",
     "lint": "eslint src tests",
     "fixtures:record": "tsx --env-file=.env scripts/recordFixtures.ts",
-    "fixtures:record-tarball": "tsx scripts/recordTarball.ts"
+    "fixtures:record-tarball": "tsx scripts/recordTarball.ts",
+    "proof:run": "tsx src/proof/cli.ts"
   },
   "dependencies": {
     "next": "^16.4.6",

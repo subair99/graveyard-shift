@@ -1,0 +1,87 @@
+# Continuous integration (task 20.2 of the proof-of-life-engine spec).
+#
+# Runs typecheck, lint and the full vitest suite. The testing-workflow rule (agents never run the
+# full suite) binds agents only; CI runs it.
+#
+# Each of the three tests that skip on a machine without the right environment runs in a job:
+#   (a) treeHash.test.ts 'rejects a symbolic link with unsafe-archive'       -> test-linux
+#       (symlink creation is allowed on the Linux runner; it can skip on Windows without the privilege)
+#   (b) identitySafety.test.ts 'is skipped because neither a home path variable nor USERNAME is set'
+#       (the it.runIf(!runnable) placeholder)                                -> test-no-identity
+#   (c) endToEndIdentity.test.ts 'shows <user> for the bare user name in the thrown message ...'
+#                                                                            -> test-linux
+#       (USERNAME is set to a long, non-generic name; the runner provides HOME)
+# The job test-windows is an addition to the task text; see the comment on that job.
+#
+# Notes:
+# - The proof-integration tests start sandbox children under `node --permission`. Node 26 has the
+#   permission model, so the Node version below must stay at 26 or newer.
+# - No secrets, no .env, no live recorders (fixtures:record, fixtures:record-tarball), and no step
+#   prints environment variables. Do not add one.
+# - PROOF_BUDGET_MODE=warn: the 60 s and 120 s targets were set for the maintainer's machine. A
+#   slower hosted runner prints the budget lines but does not fail the build because of them.
+#   Correctness failures still fail the build.
+# - timeout-minutes values are generous upper limits, not measurements.
+
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PROOF_BUDGET_MODE: warn
+
+jobs:
+  test-linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      # Long and not generic, so identity.ts matches it as a whole word (Requirement 13.27).
+      # HOME is provided by the runner and must stay set.
+      USERNAME: graveyard_ci_runner
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+
+  test-no-identity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26
+      # npm needs HOME (cache, config), so the install runs with the normal environment.
+      - run: npm ci
+      # Only this step runs without the four identity variables. The local vitest binary is called
+      # directly instead of through npx, because npx is npm and npm expects HOME.
+      - name: identitySafety with no identity variables
+        run: env -u USERNAME -u USERPROFILE -u HOME -u HOMEPATH node_modules/.bin/vitest run tests/proof/unit/identitySafety.test.ts
+
+  # Addition to the task text (the task lists only the two Linux jobs). Justification: the primary
+  # environment of the project is Windows, and the sandbox, path and permission-model tests are
+  # Windows-sensitive, so a Linux-only CI would not exercise them.
+  test-windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26
+      - run: npm ci
+      - run: npm test

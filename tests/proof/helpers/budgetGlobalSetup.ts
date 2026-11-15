@@ -31,7 +31,10 @@ export function teardown(): void {
   const elapsedMs = performance.now() - startedAt;
   const seconds = elapsedMs / 1000;
   const target = BUDGET_SECONDS[projectName];
-  const line = `[budget] ${projectName}: ${seconds.toFixed(1)} s wall-clock` +
+  // Projects run in parallel, so this is the whole run's wall-clock, an upper
+  // bound for the project, not its own cost.
+  const line = `[budget] ${projectName}: ${seconds.toFixed(1)} s whole-run wall-clock, ` +
+    "upper bound for this project" +
     (target === undefined ? " (no target)" : ` (target ${target} s)`);
   console.log(line);
 

@@ -11,7 +11,7 @@ Verified on npmjs.com, 14 Nov 2026. Re-check figures before recording the demo.
 ## Declared deltas (the only allowed behavior changes)
 - ip: isPublic / isPrivate / isLoopback classify the CVE-2024-29415 forms correctly
   (127.1, 01200034567, 012.1.2.3, 000:0:0000::01, ::fFFf:127.0.0.1, 0, 017700000001).
-- lodash.set: path segments __proto__, constructor and prototype are ignored.
+- lodash.set: for a path that contains `__proto__`, `constructor` or `prototype` as a segment, the resurrected `set` must not modify Object.prototype (or other built-in prototypes). It stops at the offending segment and returns the object, so assignments for earlier segments stay (as `baseSet` does in lodash 4.17.20; source: https://raw.githubusercontent.com/lodash/lodash/4.17.20/lodash.js, fetched 2026-11-15). For example, `set({}, 'a.__proto__.x', 1)` returns `{ a: {} }`.
 
 ## Alternatives (shown honestly on each Death Certificate)
 - ip: community security fork @eggjs/ip. Resurrection targets transitive use via npm overrides.

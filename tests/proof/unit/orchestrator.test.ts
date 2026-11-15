@@ -296,13 +296,26 @@ describe("runProofOfLife (InProcess_Executor)", () => {
     expect(readdirSync(f.tempRoot)).toEqual([]);
   });
 
-  it("without an executorFactory: sandbox-unavailable, nothing runs", async () => {
+  it("an executor whose probe fails: sandbox-unavailable, nothing runs", async () => {
     const f = fixture(original);
     const req = request(f, original, { kind: "directory", path: resurrectionDir(original) });
-    delete req.executorFactory;
+    let opens = 0;
+    req.executorFactory = {
+      create: (): Executor => ({
+        mechanism: "node-permission",
+        probe: () =>
+          Promise.resolve({ ok: false, error: { kind: "sandbox-unavailable", message: "the permission model is not usable" } }),
+        open: () => {
+          opens += 1;
+          return Promise.reject(new Error("open must not be called"));
+        },
+        dispose: () => Promise.resolve(),
+      }),
+    };
     const run = await runProofOfLife(req, deps(f));
     expect(run.report.harnessErrors.map((e) => e.kind)).toEqual(["sandbox-unavailable"]);
     expect(run.report.verdict).toBe("inconclusive");
+    expect(opens).toBe(0);
   });
 
   it("same seed: byte-identical report across two runs", async () => {

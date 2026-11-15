@@ -44,6 +44,7 @@ import {
 import { runFunction, type NonDeterministicFinding } from "./driver";
 import { createEmitter, stderrSink, type Emitter } from "./emit";
 import { resolveEntry } from "./entry";
+import { createSandboxExecutorFactory } from "./executor/sandboxExecutor";
 import { createRestartBudget } from "./executor/types";
 import type { Executor, ExecutorError, Side, SideHandle } from "./executor/types";
 import { verifyIntegrity } from "./integrity";
@@ -421,28 +422,20 @@ async function execute(ctx: Ctx): Promise<void> {
 
   // The executor object is created first so the report names its mechanism; creating it starts
   // nothing. Nothing is opened before the integrity check passed.
-  const factory = request.executorFactory;
-  if (factory !== undefined) {
-    try {
-      ctx.executor = factory.create({ restartBudget: createRestartBudget(harness.maxRestarts) });
-    } catch (e) {
-      addError(ctx, "sandbox-unavailable", `the executor could not be created: ${messageOf(e)}`, { redactPaths: true });
-      return;
-    }
+  // Default: the Sandbox_Executor. Tests inject another factory.
+  const factory = request.executorFactory ?? createSandboxExecutorFactory();
+  try {
+    ctx.executor = factory.create({ restartBudget: createRestartBudget(harness.maxRestarts) });
+  } catch (e) {
+    addError(ctx, "sandbox-unavailable", `the executor could not be created: ${messageOf(e)}`, { redactPaths: true });
+    return;
   }
 
   const entries = await prepareSides(ctx);
   if (entries === undefined) return;
 
   const executor = ctx.executor;
-  if (executor === undefined) {
-    addError(
-      ctx,
-      "sandbox-unavailable",
-      "no Sandbox_Executor is available in this build and no executorFactory was given; the package is never run unsandboxed",
-    );
-    return;
-  }
+  if (executor === undefined) return;
   if (!(await openSides(ctx, executor, entries))) return;
 
   const originalEntries = await listEntries(ctx, "original");

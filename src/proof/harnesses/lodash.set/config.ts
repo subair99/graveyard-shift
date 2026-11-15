@@ -3,9 +3,12 @@
 // The only lodash-specific code of the Proof of Life Engine lives in this directory.
 //
 // Declared delta: lodash.set@4.3.2 (CVE-2020-8203) writes through the path segments `__proto__`,
-// `constructor` and `prototype`, which pollutes Object.prototype. The resurrection ignores these
-// segments (docs/demo-packages.md). The property module (sandbox/pollution.cjs) reports
-// `ok: false` when a call changed a tracked prototype. A resurrection is expected to show
+// `constructor` and `prototype`, which pollutes Object.prototype. For a path with such a segment, the
+// resurrection must not modify Object.prototype or the other tracked prototypes: it stops at the
+// offending segment and returns the object, so assignments for earlier segments stay, as in
+// lodash 4.17.20 `baseSet` (docs/demo-packages.md). The property is only that no tracked prototype
+// is modified (Prototype_Delta empty); it does not constrain the rest of the result. The property
+// module (sandbox/pollution.cjs) reports `ok: false` when a call changed a tracked prototype. A resurrection is expected to show
 // `ok: true` on every in-predicate case while the original shows `ok: false`.
 //
 // Path resolution: the property module lives next to this file, so its absolute path is derived
@@ -188,7 +191,8 @@ export const deltaExplicitCases: readonly (readonly unknown[])[] = [
 
 export const prototypePollutionDelta: DeclaredDelta = {
   id: "lodash.set-prototype-pollution",
-  function: "set",
+  // lodash.set's `module.exports` IS the function; the engine lists that export as `default`.
+  function: "default",
   predicate: pathHasDangerousSegment,
   propertyModule: POLLUTION_MODULE_PATH,
   explicitCases: deltaExplicitCases,
@@ -210,7 +214,8 @@ export const lodashSetHarness: HarnessConfig = {
   maxRestarts: 20,
   shrinkBudget: 500,
   functions: {
-    set: {
+    // lodash.set's `module.exports` IS the function; the engine lists that export as `default`.
+    default: {
       args: ordinaryArgs,
       explicitCases: ordinaryExplicitCases,
       caseCount: 100,

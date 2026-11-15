@@ -19,7 +19,7 @@ Required versus optional: property tests 4, 7, 8, 11, 20, 21, 24, 25, 26 are req
 
 Testing workflow rule (workspace rule `testing-workflow`): agents never run `npm test`, `npm run test:*` or the full vitest suite. They may run `npm run typecheck`, `npm run lint` and one test file at a time (`npx vitest run <path>`) when it takes under about 30 s, one run per change, never in a loop. Any step that needs the full suite says "Ready for you to run: <exact command>" and the agent then waits for the user's pasted output. Timings in `docs/kiro-journal.md` come from the user's pasted runs, not from agent runs.
 
-Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (spike review), task 12 (the three timing runs), task 14 (run `npm run fixtures:record-tarball`; the recorder writes into the subfolder `tests/proof/fixtures/lodash.set/`), the full-suite runs in tasks 19 and 21, and the final review in task 21.
+Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (spike review), task 12 (the three timing runs), task 14 (run `npm run fixtures:record-tarball`; the recorder writes into the subfolder `tests/proof/fixtures/lodash.set/`), the full-suite runs in tasks 19 and 21, and the final review in task 21. Task 20.2 writes the CI workflow (`.github/workflows/ci.yml`), which runs the full suite on GitHub Actions.
 
 ## Tasks
 
@@ -139,7 +139,7 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - Kept files are moved into `tests/proof/integration/` by task 18.11; until then they stay in `scripts/spike/` and are not imported by any other code
     - _Requirements: 5.2_
 
-- [ ] 2. CHECKPOINT: spike review (STOP for the user)
+- [x] 2. CHECKPOINT: spike review (STOP for the user)
   - STOP here. Present the logged results to the user: for each of the six "Risks to verify" and for each extra item (vitest key, `tar` API, `,`/`*` rules, child start cost), state in one line whether it passed, failed or was not tested, with the journal entry that holds the evidence
   - List every edit made to `design.md` in 1.14 and every conflict with `requirements.md` that needs a decision
   - Ask the user whether to continue (and, if needed, how to resolve the conflicts). Do NOT start task 3 or any later task until the user approves
@@ -502,17 +502,17 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - Required (added so the recorder is trustworthy before the human runs it)
     - _Requirements: 14.1, 14.2_
 
-- [ ] 14. MANUAL STEP: record the lodash.set@4.3.2 tarball (STOP for the user)
+- [x] 14. MANUAL STEP: record the lodash.set@4.3.2 tarball (STOP for the user)
   - STOP here. The orchestrator must stop at this task and must NOT continue to task 15 or later until the user confirms that the files exist. Ask the user to run `npm run fixtures:record-tarball` from the repository root with network access, and to confirm that `tests/proof/fixtures/lodash.set/lodash.set-4.3.2.tgz` and `tests/proof/fixtures/lodash.set/lodash.set-4.3.2.meta.json` exist
   - Do not run the script, do not download the tarball and do not create these files by hand
   - After the user confirms, read the metadata file, record the fetch date and source URL in `docs/kiro-journal.md` (observed values only), and check that `PREEXISTING.md` names the tarball URL
   - Tasks 15 to 18 depend on this step
   - _Requirements: 14.1, 14.11_
 
-- [ ] 15. Create the lodash.set fixtures
+- [x] 15. Create the lodash.set fixtures
   - [x] 15.1 Write the hand-written alive resurrection `tests/proof/fixtures/lodash.set-alive/`
     - Extract the Original with `extractTarball` (or `tar -xzf` by hand once) as the starting point; keep the `LICENSE` text, `package.json` author and contributors, `module.exports = set`, function `name` `set` and `length` 3
-    - Add the guard in `baseSet`: when a path segment (after key conversion) equals `__proto__`, `constructor` or `prototype`, `set` returns the object unchanged at that point; assignments for earlier segments stay
+    - Add the guard in `baseSet`: when a path segment (after key conversion) equals `__proto__`, `constructor` or `prototype`, `set` stops at the offending segment and returns the object; earlier-segment assignments stay (this is lodash 4.17.20's `baseSet` behavior)
     - Check the guard against the real lodash 4.17.20 `baseSet` source (the design flags this): fetch the file with `web_fetch` from the lodash GitHub tag 4.17.20 as an agent action (not from a test), compare the guard with the fixture, and write the exact source URL, fetch date and any difference in a comment in the fixture and in `docs/kiro-journal.md`; if the source differs from the design's description, make the fixture document its own rule and update the design text in "Fixtures"
     - The only differences from the Original must be inside the delta region (paths with a dangerous segment)
     - _Requirements: 14.4_
@@ -520,10 +520,14 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
   - [x] 15.2 Write the deliberately broken resurrection `tests/proof/fixtures/lodash.set-broken/`
     - Same as the alive fixture, plus one change outside the delta: intermediate containers are always `{}` and never `[]` for a numeric next segment, so `set({}, 'a[0]', 1)` returns `{ a: { '0': 1 } }`; the export surface stays unchanged
     - Keep the license and author credits
+    - Keep the unused `isIndex` helper in the file, with a comment saying it is intentionally unused (the break removes its use only)
     - _Requirements: 14.5_
 
-  - [ ] 15.3 Write the fixture integrity test
+  - [x] 15.3 Write the fixture integrity test
     - `tests/proof/unit/fixtureIntegrity.test.ts`: the sha512 digest of `tests/proof/fixtures/lodash.set/lodash.set-4.3.2.tgz` equals `dist.integrity` in `tests/proof/fixtures/lodash.set/lodash.set-4.3.2.meta.json`, and that equals `versions['4.3.2'].dist.integrity` of the recorded packument `tests/engine/fixtures/lodash.set/npm-449996e32bd2.json`; reads committed files only
+    - The test also pins the sha512 of every fixture file under `tests/proof/fixtures/**` in a table inside the test (refreshable with `npx tsx scripts/printFixtureHashes.ts`; this script is written with this task and only prints the table, it changes no file), so any change to a fixture file fails the test until the table is refreshed on purpose
+    - It guards line endings: the repository's `.gitattributes` has `tests/**/fixtures/** -text`, so Git never changes fixture bytes; the test fails when `.gitattributes` lacks that line, and the hashes are computed over the raw bytes, so a checkout that converted line endings fails the pinned table
+    - It checks that the `LICENSE` copies in `lodash.set-alive` and `lodash.set-broken` are byte-identical to the `LICENSE` of the original package (extracted from the recorded tarball)
     - Required (makes the lodash verdict tests meaningful: they would otherwise run against an unpinned tarball)
     - _Requirements: 14.2, 14.3_
 
@@ -542,7 +546,7 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - **Property 28: Delta generators satisfy their predicate**
     - **Validates: Requirements 14.6**
 
-- [ ] 17. Implement the Sandbox_Executor
+- [x] 17. Implement the Sandbox_Executor
   - [x] 17.1 Implement `src/proof/shell/executor/sandboxCommand.ts`
     - `buildSandboxArgv(spec, runnerDir)` (pure): `--permission`, one `--allow-fs-read=<path>` flag per path (repeated flags, never a comma-joined flag) for the runner DIRECTORY (`src/proof/child`, not a single file), the `fs.realpath.native` package directory (and the created path as well when it differs), and each harness path (`readPaths`, setup module); `--max-old-space-size`; the runner entry file; no `--allow-net`, `--allow-child-process`, `--allow-worker`, `--allow-addons`, `--allow-fs-write`, `--allow-inspector`, `--allow-wasi`, `--allow-ffi` or `--allow-openssl-store`. Reject (as `sandbox-unavailable`, message without the path) any path containing `*` (observed to widen the grant), and conservatively `?`, `[`, `]`, `{` and `}` (untested); allow `,`. Spawn options use `cwd` equal to the package directory in the same path form as its grant
     - `buildSandboxEnv(platform, parentEnv)` (pure): returns only `{ TZ: 'UTC' }`, copies nothing from `parentEnv`, never `NODE_OPTIONS`; a comment documents that on Windows the launcher adds 11 OS-supplied names which the engine does not rely on (Requirement 5.19)
@@ -557,48 +561,48 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - NDJSON loop over `SideRuntime`, saves the original `process.stdout.write` for its own messages, then replaces `process.stdout.write`, `process.stderr.write` and `console` methods with no-ops before the package loads, `ready`, `load`, `exports`, `call`, `shutdown`, `fatal`; erasable TypeScript syntax only
     - _Requirements: 5.4, 5.8, 5.10_
 
-  - [ ] 17.4 Implement `src/proof/shell/executor/sandboxExecutor.ts`
+  - [x] 17.4 Implement `src/proof/shell/executor/sandboxExecutor.ts`
     - One child per side with `spawn` options of the design (`shell: false`, `cwd` equal to the package directory in the form used for its grant), a `loaded { ok: false }` reply (any load exception) mapped to `unloadable-module`, `probe` (`sandbox-unavailable`), child-side timeout plus parent hard kill after the grace period, `crash`, output-limit kill, respawn, `restoreVerified: false` restart, `SideCounters`, shared `RestartBudget` (`too-many-crashes`), mechanism `node-permission`
     - _Requirements: 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9, 5.12, 5.13, 5.14, 16.4_
 
-  - [ ] 17.5 Wire the default executor, the CLI and the `proof:run` script
-    - Make the Sandbox_Executor the default `executorFactory` in `orchestrator.ts`; write `src/proof/cli.ts` (thin; every message goes through `emit` of `shell/emit.ts`; `--config`, `--out`, exit codes 0 alive, 1 restless, 2 inconclusive, never writes a report that failed the leak check); add `"proof:run": "tsx src/proof/cli.ts"` to `package.json`
+  - [x] 17.5 Wire the default executor, the CLI and the `proof:run` script
+    - Make the Sandbox_Executor the default `executorFactory` in `orchestrator.ts`; write `src/proof/cli.ts` (thin; options `--original`, `--integrity` or `--meta` (not both), `--name`, `--version`, `--resurrection`, `--harness` (built-in registry name or module path), `--seed`, `--cases`, `--radius`, `--out`, `--timeout`, `--help`, no `--config`; the final report goes to `--out` or stdout, only cli.ts may write to stdout and only the final report, logs and errors go to stderr through `emit` of `shell/emit.ts`; exit codes 0 alive, 1 restless, 2 inconclusive (also run failure, report write failure, leak-check failure), 64 usage error or invalid request; never writes a report that failed the leak check); add `"proof:run": "tsx src/proof/cli.ts"` to `package.json`
     - _Requirements: 1.3, 1.4, 5.7, 13.23_
 
-- [ ] 18. Write the sandbox integration tests
-  - [ ] 18.1 Create the integration helpers and sandbox fixture packages
+- [x] 18. Write the sandbox integration tests
+  - [x] 18.1 Create the integration helpers and sandbox fixture packages
     - `tests/proof/helpers/sandbox.ts` (create a package in a temp directory, open a side with the Sandbox_Executor, cleanup) and `tests/proof/fixtures/sandbox/` with small CommonJS packages for the tests below
     - _Requirements: 15.1, 15.6_
 
-  - [ ] 18.2 Write the network-denied test
+  - [x] 18.2 Write the network-denied test
     - `tests/proof/integration/network-denied.test.ts`: a local TCP server in the test process never receives a connection from a package function that tries to connect; the call reports the denial error
     - _Requirements: 15.6_
 
-  - [ ] 18.3 Write the file-read-denied test
+  - [x] 18.3 Write the file-read-denied test
     - `tests/proof/integration/fs-denied.test.ts`: reading a file outside the package directory fails with `ERR_ACCESS_DENIED`; a read inside the package succeeds; `process.permission.has` is `false` for write, net, child and worker
     - _Requirements: 15.6_
 
-  - [ ] 18.4 Write the child-process and worker denial tests
+  - [x] 18.4 Write the child-process and worker denial tests
     - `tests/proof/integration/child-and-worker-denied.test.ts`: spawning a process fails, creating a worker thread fails (two separate test cases)
     - _Requirements: 15.6_
 
-  - [ ] 18.5 Write the environment-scrubbed test
+  - [x] 18.5 Write the environment-scrubbed test
     - `tests/proof/integration/env-scrubbed.test.ts`: set the sentinel `GS_TEST_SECRET` and a second variable with a random name in the parent; a package function returning `Object.keys(process.env)` shows that neither name is in the child's environment, and the report contains no environment value. The test does NOT assert that the child's environment is empty or equals an allowlist, and does not use `PATH`, `TEMP` or `USERNAME` as the probe, because on Windows the launcher adds 11 OS-supplied names (Requirement 5.19)
     - _Requirements: 5.3, 5.19, 15.6, 16.3_
 
-  - [ ] 18.6 Write the timeout test
+  - [x] 18.6 Write the timeout test
     - `tests/proof/integration/timeout.test.ts`: an async function that never resolves is answered by the child as `timeout` with a Prototype_Delta; a synchronous infinite loop is killed by the parent and recorded as `timeout`; the next call works on a fresh child
     - _Requirements: 5.4, 15.6_
 
-  - [ ] 18.7 Write the `__proto__` isolation test
+  - [x] 18.7 Write the `__proto__` isolation test
     - `tests/proof/integration/prototype-isolation.test.ts` (Requirement 5.15): lodash.set on the Original with path `__proto__.polluted` lists the added `Object.prototype` property in the Prototype_Delta of that call; the next call in the same child sees a clean `Object.prototype` and an empty Prototype_Delta; the test process's own `Object.prototype` stays unchanged
     - _Requirements: 5.10, 5.11, 5.15_
 
-  - [ ] 18.8 Write the lodash.set alive test
+  - [x] 18.8 Write the lodash.set alive test
     - `tests/proof/integration/lodash-alive.test.ts`: Original tarball (fixture) against `lodash.set-alive` with the Sandbox_Executor and the lodash harness gives Verdict `alive` with a Demonstration (property false on the Original, true on the Resurrection, first explicit case `[{}, '__proto__.polluted', 'yes']`)
     - _Requirements: 14.7_
 
-  - [ ] 18.9 Write the lodash.set broken test
+  - [x] 18.9 Write the lodash.set broken test
     - `tests/proof/integration/lodash-broken.test.ts`: Original against `lodash.set-broken` gives Verdict `restless` with at least one `unexplained` Divergence that has a shrunk counterexample and Replay_Parameters
     - Measure whether the default 100 cases at the default seed find the divergence and log the result (cases, seed, whether found) in `docs/kiro-journal.md`; if not found, add an explicit case or raise `caseCount` in the harness and log why, never weaken the assertion
     - _Requirements: 14.8_
@@ -607,7 +611,7 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - `tests/proof/integration/lodash-self.test.ts`: Original against itself leaves the test process `Object.prototype` unchanged
     - _Requirements: 14.9_
 
-  - [ ]* 18.11 Move the spike scripts into integration tests
+  - [x]* 18.11 Move the spike scripts into integration tests
     - `smoke` (type stripping under `--permission`), `env-minimum`, `paths-spaces`, and the conditional `other-drive` (reports `skipped: other drive not available` when no other drive exists, never claims it as verified)
     - _Requirements: 5.2, 5.3, 15.1_
 
@@ -619,23 +623,23 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - A function that freezes `Object.prototype` forces a Restart_Event counted in `restartEvents`; `maxRestarts` exceeded gives `too-many-crashes`
     - _Requirements: 5.12, 5.13, 5.14, 16.4_
 
-  - [ ] 18.14 Write the identity test for the lodash.set run
+  - [x] 18.14 Write the identity test for the lodash.set run
     - `tests/proof/integration/identity-lodash.test.ts` (Requirement 13.29 (d)): run the Original fixture against `lodash.set-alive` and `lodash.set-broken` with the Sandbox_Executor and the lodash harness, with the Identity_Values read from the parent environment at test time and every log line and error message captured through `emit`; assert that no serialized report, log line or error message contains an Identity_Value (including the `USERNAME` and `USERPROFILE` values that the Windows launcher puts into the child's environment, which the engine neither relies on nor reports)
     - Add a case in which the harness passes a string that contains the USERPROFILE value and the `USERNAME` value as a path segment as the `value` argument of an explicit Case, against a test-only divergent resurrection variant under `tests/proof/fixtures/` that returns a different result for that Case: assert Verdict `restless` (not `inconclusive`), the Divergence listed, `<user-home>` and `<user>` in the counterexample, no harness error `identity-leak`, and no serialized report, log line or error message that contains the real `USERNAME` or `USERPROFILE` value
     - Reports `skipped: fixture tarball not recorded` when `tests/proof/fixtures/lodash.set/lodash.set-4.3.2.tgz` is absent, and a skip is never counted as verified; reads committed files only, no network
     - Required
     - _Requirements: 13.25, 13.26, 13.28, 13.29, 13.30, 16.3_
 
-- [ ] 19. Measure and log the time budgets
-  - [ ] 19.1 Take the first measurement and record it
+- [x] 19. Measure and log the time budgets
+  - [x] 19.1 Take the first measurement and record it
     - The agent does not run the suite. Write "Ready for you to run: `$env:PROOF_LOG_TIMINGS='1'; $env:PROOF_BUDGET_MODE='warn'; npm test; Remove-Item Env:PROOF_LOG_TIMINGS, Env:PROOF_BUDGET_MODE`" and wait; continue only after the user pastes the output
     - From the pasted output only, record in `docs/kiro-journal.md`: command, date, Node version, environment, and the wall-clock time of `proof-property` and `proof-integration` as printed
     - Compare against the targets (at most 60 s and at most 120 s). If a target is exceeded, flag the overrun in the journal with the measured value and report it; do not raise the targets and do not state a time that was not measured
     - Also log the child start cost seen by the integration suite next to the spike measurement of 1.13
     - _Requirements: 15.7, 15.8_
 
-- [ ] 20. Update documentation and steering
-  - [ ] 20.1 Update README, structure.md and tech.md
+- [x] 20. Update documentation and steering
+  - [x] 20.1 Update README, structure.md and tech.md
     - `README.md`: quick start for `npm run proof:run` and `npm run fixtures:record-tarball`, the three vitest projects, and the sandbox statement (a seat belt against accidental access, not a security boundary against malicious code)
     - `.kiro/steering/structure.md`: add `src/proof/` (modules of the design), `tests/proof/`, `scripts/recordTarball.ts`, `scripts/lib/recordTarball.ts`, `docs/proof-of-life-ordering.md`
     - `.kiro/steering/tech.md`: add `tar` to the stack and the `PROOF_BUDGET_MODE`, `PROOF_LOG_TIMINGS`, `PROOF_TEST_OTHER_DRIVE` test variables; `.env.example` needs no change (no new secrets)
@@ -643,7 +647,20 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - Check that `PREEXISTING.md` is complete (including `chownr`, `minipass`, `yallist`, `@isaacs/fs-minipass`, `minizlib` with licenses) and that `.kiro/steering/necromancy-laws.md` carries the license distinction of 3.1
     - _Requirements: 3.11, 8.14, 13.26, 14.11, 16.5_
 
-- [ ] 21. Final checkpoint
+  - [x] 20.2 Write the CI workflow `.github/workflows/ci.yml`
+    - Jobs run `npm run typecheck`, `npm run lint` and the full test suite (`npm test`). The testing-workflow rule (agents never run the full suite) applies to agents, not to CI: CI runs the full suite
+    - Common setup: `actions/checkout`, `actions/setup-node` with `node-version: 26` (the Node major recorded in the journal environment, v26), `npm ci` (never `npm install`), no secrets and no `.env` (the tests need none), and no step that prints environment variables (no `env`, `printenv` or `set` without arguments, no `run` echoing a variable)
+    - The workflow must NOT run the live recorders (`npm run fixtures:record`, `npm run fixtures:record-tarball`) or any script that fetches from the network
+    - Matrix and jobs, so that each of the three tests that skip on Windows-with-identity runs in at least one job:
+      - (a) Job `test-linux` (`ubuntu-latest`, full suite): runs the symlink test `tests/proof/unit/treeHash.test.ts` 'rejects a symbolic link with unsafe-archive'
+      - (c) The same `test-linux` job sets, in the job's `env`, `USERNAME: graveyard_ci_runner` (a long, non-generic name, so it is matched as a whole word, Requirement 13.27); the Linux runner already provides `HOME` and `identityValuesFromEnv` (`src/proof/core/identity.ts`) reads `USERPROFILE`, `HOMEPATH`, `HOME` and `USERNAME` on every platform (on posix without case-insensitive lookup), so `HOME` is the home variable on Linux and the job must not unset it. This job runs `tests/proof/unit/endToEndIdentity.test.ts` 'shows <user> for the bare user name in the thrown message (name is long and not generic)'
+      - (b) Job `test-no-identity` (`ubuntu-latest`): runs `tests/proof/unit/identitySafety.test.ts` with `USERNAME`, `USERPROFILE`, `HOME` and `HOMEPATH` all unset for the test process (for example `env -u USERNAME -u USERPROFILE -u HOME -u HOMEPATH npx vitest run tests/proof/unit/identitySafety.test.ts`; setting them to empty strings is also ignored by `identityValuesFromEnv`, but unsetting is explicit). This runs the `it.runIf(!runnable)` placeholder 'is skipped because neither a home path variable nor USERNAME is set'
+    - Check the three test names against the current test files when writing the workflow; if a name changed, use the current name
+    - Journal: when the workflow exists, write an entry in `docs/kiro-journal.md` listing which job runs which of the three tests. Until the workflow exists the entry reads "planned, workflow pending". Record only what the workflow file declares; no CI result is stated until the user pastes a run
+    - Scope of this task: it writes the workflow file and the journal entry; it does not push, run the workflow or change repository settings
+    - _Requirements: 13.27, 13.29, 16.3_
+
+- [-] 21. Final checkpoint
   - The agent runs `npm run typecheck`, `npm run lint` and `npm run build` itself (build only if it finishes in a reasonable time; otherwise ask the user to run it). The agent does not run the full suite
   - Write "Ready for you to run: `npm test`" and wait; continue only after the user pastes the output. Ask the user if questions arise
   - Record the commands, date, environment and the wall-clock times of the two proof suites in `docs/kiro-journal.md` from the user's pasted output only (measured values only; flag any overrun of the 60 s and 120 s targets)
@@ -659,6 +676,9 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
 - Manual steps: 1.7 (optional second drive), 2 (spike review), 14 (user runs `npm run fixtures:record-tarball`), 21 (final review). Waves 23 and later also depend on the user having completed task 14.
 - `src/proof/child/` and `child/codec/` use erasable TypeScript syntax only (no enums, parameter properties or namespaces), because Node strips the types natively in the sandbox.
 - The InProcess_Executor is used only by tests. The CLI and the default `runProofOfLife` use the Sandbox_Executor.
+- The alive fixture (15.1) keeps lodash 4.17.20's `baseSet` behavior: at a `__proto__`, `constructor` or `prototype` segment `set` stops and returns the object, and assignments for earlier segments stay. The broken fixture (15.2) keeps the unused `isIndex` helper, with a comment saying it is intentionally unused.
+- Tasks 15.1, 15.2, 16.1, 17.1 and 17.3 are otherwise unchanged by this revision (15.1 and 15.2 only gained the wording above).
+- CI (20.2) runs the full suite; the testing-workflow rule binds agents only. The journal records which CI job runs which of the three environment-dependent tests ("planned, workflow pending" until the workflow exists).
 - Each property test file runs at least 100 generated cases and carries the tag `Feature: proof-of-life-engine, Property N: <text>`.
 
 ## Task Dependency Graph
@@ -693,7 +713,8 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     { "id": 24, "tasks": ["15.3", "15.4", "16.2", "17.2", "17.4"] },
     { "id": 25, "tasks": ["17.5", "18.1"] },
     { "id": 26, "tasks": ["18.2", "18.3", "18.4", "18.5", "18.6", "18.7", "18.8", "18.9", "18.10", "18.11", "18.12", "18.13", "18.14"] },
-    { "id": 27, "tasks": ["19.1", "20.1"] }
+    { "id": 27, "tasks": ["19.1", "20.1"] },
+    { "id": 28, "tasks": ["20.2"] }
   ]
 }
 ```

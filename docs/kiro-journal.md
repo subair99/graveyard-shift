@@ -632,10 +632,23 @@ $env:FC_SEED=12345; npm test; Remove-Item Env:FC_SEED
 
 All 78 files passed in each run. Slowest files reported by the user: `p24` 34.7 s to 38.4 s in the property, `p26b` 23.4 s to 34.7 s, `p26` 25.6 s to 28.9 s. All three runs are under the 60 s target, so option (d) (a separate `proof-heavy` project) was not needed and was not done.
 
-**The 3 skipped tests** (determined by reading the code, no run; the user's verbose run output will confirm if the user pastes `--reporter=verbose` output later):
+**The 3 skipped tests** (determined by reading the code, no run; confirmed by the user's `--reporter=verbose` run, see the block below; item 2 corrected after the user's verbose run):
 1. `tests/proof/unit/treeHash.test.ts`, the symlink test: `ctx.skip` when symlink creation fails (Windows without the privilege).
-2. `tests/proof/unit/endToEndIdentity.test.ts`, the `it.runIf(!wordMatchable)` placeholder: skipped when the user name is long and not generic.
+2. `tests/proof/unit/endToEndIdentity.test.ts`, the bare-name `<user>` test (`it.skipIf(!wordMatchable || homes.length === 0)`): skipped when the user name is short or generic. (Corrected after the user's verbose run: the earlier text named the `it.runIf(!wordMatchable)` placeholder as skipped for a long, non-generic name. That was the wrong way round.)
 3. `tests/proof/unit/identitySafety.test.ts`, the `it.runIf(!runnable)` placeholder: skipped when `USERNAME` or a home variable is set.
+
+**Full-suite run after tasks 15.1 to 17.3 (user-run)**
+
+Measured by the user in their own PowerShell; copied from the user's message; not re-measured. The user ran `npm test`.
+- 84 files passed; 1097 tests passed, 3 skipped (1100 total).
+- Duration: 39.64 s. Budget line: `[budget] proof-property: 39.6 s (target 60 s)`.
+- Slowest files reported by the user: `p24` 31.4 s in the property, `p26b` 29.7 s, `p26` 23.7 s.
+- The new files `p23b`, `lodashAliveFixture`, `lodashBrokenFixture`, `lodashHarness`, `runner` and `sandboxCommand` all pass.
+
+**The 3 skipped tests, confirmed by the user's `--reporter=verbose` run** (as told by the user; not re-measured):
+1. `identitySafety.test.ts` > real machine identity (L14) > "is skipped because neither a home path variable nor USERNAME is set": the placeholder `it.runIf(!runnable)`; skipped because an identity variable IS set.
+2. `treeHash.test.ts` > computeDirectoryTreeHash > "rejects a symbolic link with unsafe-archive": skipped because symlink creation is not permitted on that Windows account.
+3. `endToEndIdentity.test.ts` > "diverging sides carry identity values (cases a and c)" > "shows <user> for the bare user name in the thrown message (name is long and not generic)": `it.skipIf(!wordMatchable || homes.length === 0)`; skipped because the user's name is short or generic (the L14 case). On that machine the test that runs instead is the placeholder `it.runIf(!wordMatchable)` in `tests/proof/unit/endToEndIdentity.test.ts` ("the bare-name check is not made: the user name is short, generic or unset, so a bare occurrence may remain (L14); path-context checks still run"); it runs when the user's name is short, generic or unset (checked by reading the code, line 237).
 
 **Decisions**
 - The p26 main property keeps `caseCount` 4 (not 3). Reason: with 3 generated cases the engine could not be shown to still catch every non-witness mutation (no measurement exists for `caseCount` 3). The user decided to keep 4.
@@ -711,3 +724,66 @@ Written from reading the fixture files and READMEs; nothing was run.
 - The only difference of the alive `index.js` from the original 4.3.2 is the guard block.
 - Broken fixture (`tests/proof/fixtures/lodash.set-broken/`): changes ordinary behavior. Intermediate containers are always `{}`, so `set({}, 'a[0]', 1)` gives `{ a: { '0': 1 } }`, not `{ a: [1] }`. It also carries the same guard. It still contains the unused `isIndex` helper from the original.
 - Not checked: whether `.gitattributes` affects the line endings of the `LICENSE` copies in the fixtures.
+- Task 18.9 detail (as told by the user/agent report; not re-measured here): the default 100 cases at seed 20260101 found the divergence in the generated phase with the numeric explicit cases removed.
+
+## Proof of Life: decisions after tasks 15.1 to 17.3 (user, 2026-11-15)
+
+1. The alive fixture keeps the real lodash 4.17.20 `baseSet` behavior (return at the offending segment; earlier assignments stay). `docs/demo-packages.md` and the declared-delta wording are updated by another agent to describe exactly that.
+2. The broken fixture keeps the unused `isIndex` helper; a one-line comment in `tests/proof/fixtures/lodash.set-broken/index.js` says why.
+3. `.gitattributes` has `tests/**/fixtures/** -text` (added by the user; `git check-attr` shows `text: unset` for the tarball), so Git never changes fixture bytes. Task 15.3 checks fixture bytes against recorded hashes, so a line-ending change fails loudly.
+4. CI plan (written, not yet run on GitHub Actions; `.github/workflows/ci.yml`, task 20.2): each of the 3 skipped tests runs in at least one CI job. No CI result is stated here; the workflow has not run.
+   - Symlink test (`treeHash.test.ts`, 'rejects a symbolic link with unsafe-archive'): job `test-linux` (ubuntu-latest; full suite after `npm run typecheck` and `npm run lint`).
+   - L14 placeholder test (`identitySafety.test.ts`, 'is skipped because neither a home path variable nor USERNAME is set'): job `test-no-identity` (ubuntu-latest). `npm ci` runs with the normal environment (npm needs HOME for its cache). Only the vitest step runs under `env -u USERNAME -u USERPROFILE -u HOME -u HOMEPATH`, and it calls `node_modules/.bin/vitest run tests/proof/unit/identitySafety.test.ts` instead of `npx`, because npx is npm and expects HOME. Read from the test file: with the four variables unset, `identityValuesFromEnv` returns no path values and no name, so `runnable` is false, the real-machine test skips and the `it.runIf(!runnable)` placeholder runs.
+   - Bare-name `<user>` test (`endToEndIdentity.test.ts`, 'shows <user> for the bare user name in the thrown message (name is long and not generic)'): job `test-linux`, with job `env` `USERNAME: graveyard_ci_runner`. Read from the code: `defaultProofDeps()` copies `process.env`; `identity.ts` reads `USERPROFILE`, `HOMEPATH`, `HOME` and `USERNAME` on every platform (exact names on posix); the runner's `HOME` gives `homes.length > 0`; `graveyard_ci_runner` has 18 characters and is not in `GENERIC_USER_NAMES`, so `wordMatchable` is true and the skip condition `!wordMatchable || homes.length === 0` is false. That HOME is set on GitHub Linux runners is an assumption about the runner, not checked here.
+   - Addition not in the task text: job `test-windows` (windows-latest, `npm ci`, `npm test`), because the project's primary environment is Windows and the sandbox and path tests are Windows-sensitive. It is not needed for any of the three tests.
+   - Actions pinned to a major version tag: `actions/checkout@v7` (latest release v7.0.1, published 2026-07-20, https://github.com/actions/checkout/releases/tag/v7.0.1) and `actions/setup-node@v7` (latest release v7.1.0, published 2026-10-08, https://github.com/actions/setup-node/releases/tag/v7.1.0). Source: the GitHub releases API (`/releases/latest` of each repository), fetched 2026-11-15. Whether the floating `v7` tags exist was not checked separately. `node-version: 26`.
+   - `PROOF_BUDGET_MODE: warn` is set for all jobs: the 60 s and 120 s targets were set for the user's machine, and a slower hosted runner should print the budget lines without failing the build. This is a decision, not a measurement.
+   - `timeout-minutes` (30, 15, 45), `concurrency` (cancel superseded runs per ref) and `permissions: contents: read` are set. The timeout values are generous limits, not measurements.
+   - The workflow uses no secrets and no `.env`, runs no recorder and prints no environment variables.
+
+## Proof of Life: time budgets, first measurement (task 19.1, user-run)
+
+Measured by the user in their own PowerShell; copied from the user's message; not re-measured.
+- Command: `$env:PROOF_LOG_TIMINGS='1'; $env:PROOF_BUDGET_MODE='warn'; npm test; Remove-Item Env:PROOF_LOG_TIMINGS, Env:PROOF_BUDGET_MODE`.
+- Environment: Node v26.13.1, Microsoft Windows 11 Pro 10.0.26300, vitest 5.1.0 (from "Environment (task 1.1)" above, observed 2026-11-14; not re-observed for this run).
+- 97 files passed; 1180 tests passed, 3 skipped (1183 total); duration 49.61 s. All integration files pass.
+- Budget lines: `[budget] proof-integration: 49.6 s (target 120 s)` and `[budget] proof-property: 49.6 s (target 60 s)`.
+- Child environment printed by the integration test (names only): HOMEDRIVE, HOMEPATH, LOGONSERVER, PATH, SYSTEMDRIVE, SYSTEMROOT, TEMP, TZ, USERDOMAIN, USERNAME, USERPROFILE, WINDIR. These are the 11 launcher names plus TZ.
+- Both budget lines show the same 49.6 s because each project's `globalSetup` measures the whole run's wall-clock, and the projects run in parallel. They are whole-run wall-clock upper bounds and do not show the cost of each project. The reporter text now says so (`whole-run wall-clock, upper bound for this project`) and, from `vitest.config.mts`, it also prints a second line per proof project with the sum of the file durations (`TestModule.diagnostic().duration`, the accumulated duration of the tests and hooks in each file; files run in parallel, so the sum can exceed the wall-clock). The per-project sum comes with the next user run. Targets are unchanged (60 s proof-property, 120 s proof-integration), and the pass/fail check still uses the whole-run wall-clock.
+
+Timing lines appended automatically by `PROOF_LOG_TIMINGS=1` during this run (moved here from the end of the "lodash.set harness key (default)" section; text unchanged):
+
+- Timing 2026-11-15T13:10:13.925Z: project proof-integration, 49.6 s wall-clock, target 120 s (includes worker start-up; projects run in parallel, do not sum).
+
+- Timing 2026-11-15T13:10:13.931Z: project proof-property, 49.6 s wall-clock, target 60 s (includes worker start-up; projects run in parallel, do not sum).
+
+## Proof of Life: lodash.set harness key (default)
+
+Finding: `lodashSetHarness` keyed the function and the declared delta as `set`, but lodash.set@4.3.2 has `module.exports = set`, which the engine lists as the export `default` (design, "Exports"). Against the real tarball this produced `missing-generator: default` and a `harness-config-error` for the delta, so the verdict was `inconclusive`. Three integration tests (alive, broken, identity) found it; the last two had worked around it with local harness copies. Decision: the design wins, so the harness now uses `default` for both. The broken and identity tests use the shipped harness key, and the alive test expects `functionsTested` to equal `["default"]`.
+
+## Proof of Life: optional integration tests: built and skipped (task 18.11 partial, user decision)
+
+Built (each file run once on its own; both passed; typecheck and lint clean):
+- `env-minimum`: `tests/proof/integration/envMinimum.integration.test.ts`. It asserts that `buildSandboxEnv()` has exactly one key, `TZ=UTC`, and that the real Sandbox_Executor started with that environment starts, loads a package, lists exports and answers (child `TZ` is `UTC`, offset 0). It also runs the spike's candidate sets `{}`, `{TZ}`, `{SystemRoot}`, `{SystemRoot, TZ}` under `--permission` with a small CommonJS runner: each starts, exits 0 with empty stderr, loads the package and echoes `ping`; the two `TZ` sets give offset 0. The two `SystemRoot` sets are skipped on non-Windows platforms (the variable is a Windows one). The test does not assert which set is the smallest that starts: the spike observed `{}` starts too, because Windows supplies defaults. `TZ=UTC` is the only entry with an observed effect, and `{TZ}` and `{SystemRoot, TZ}` observe the same, so the production set is the minimal one the engine passes. That the parent's variables do not reach the child stays in `envScrubbed.integration.test.ts` (18.5).
+- `paths-spaces`: `tests/proof/integration/pathsSpaces.integration.test.ts`. For the directory names `gs space`, `gs-ünï-é`, `gs#hash`, `gs%pct` and `gs%20pct` (each in its own temp parent), the real Sandbox_Executor starts, loads, lists exports and calls a function. The child's `process.cwd()` equals the package `realpathSync.native` path (case-insensitive on Windows). A thrown `__dirname` message carries the native path unencoded; a thrown `pathToFileURL(__dirname).href` message is percent-encoded (`%20`, `%23`, `%25`, `%2520`, UTF-8 bytes in uppercase hex); `normalizeOutcome` turns both into `at <package>`. One full `runProofOfLife` run uses a temp root named `gs space` with a Resurrection that throws both path forms: the report has `<package>` and none of the temp root, its base, `gs space`, `gs%20space` in native, forward-slash, JSON-escaped or URL form. Not covered: names with `?`, a trailing space or dot, very long paths (as in the spike).
+- Spike files moved into these tests and deleted: `scripts/spike/envMinimum.ts`, `scripts/spike/envChild/`, `scripts/spike/pathsSpaces.ts`, `scripts/spike/spacesChild/`. Kept: `scripts/spike/lib.ts` and `scripts/spike/cjsChild/` (still used by `otherDrive.ts`), `scripts/spike/otherDrive.ts`, `scripts/spike/child/`.
+
+Not built (skipped by user decision):
+- `smoke` (type stripping under `--permission`): every sandbox integration test already runs the `.ts` runner (`src/proof/child/runner.ts`) under `--permission`, so a dedicated smoke test adds nothing. `scripts/spike/child/` stays in place as its basis.
+- `other-drive`: only drive `C:` exists on this machine (spike 1.7), so the case stays "not verified"; the spike entry says so. `scripts/spike/otherDrive.ts` (with `lib.ts` and `cjsChild/`) remains as its basis.
+- 18.10 lodash self-run (the Original against itself with the real sandbox): partially covered. `lodashAlive.integration.test.ts` runs the Original against the hand-written alive fixture through the real engine and sandbox and checks that `Object.prototype` has the same keys before and after (so the user's own prototype check is covered). The properties `p25a` to `p25d` use `aliveAgainstItself.ts` with synthetic packages and the InProcess_Executor, not lodash.set. Missing: lodash.set@4.3.2 compared with itself.
+- 18.12 crash and output-too-large: covered by `tests/proof/unit/sandboxExecutor.test.ts`, which uses real children for a crash (exit code 7, `crash` outcome, next call served after restart) and for `output-too-large` (child survives, no restart counted).
+- 18.13 restart events and budget: restart events are covered by `tests/proof/integration/protoIsolation.integration.test.ts` (frozen prototype gives `restoreVerified: false`, counters `restartEvents: 1` then 2, shared budget `used()` 1 then 2) and by `sandboxExecutor.test.ts` (`restart()` counted separately from other restarts). The budget limit is covered by `sandboxExecutor.test.ts` (`too-many-crashes` with a budget of 1). Partially covered: I did not find a test that exhausts a budget shared by both sides with a larger maximum.
+- These coverage claims come from reading the test files and grepping them; I did not run the other test files for this entry.
+
+## Proof of Life: final checkpoint (task 21): typecheck/lint/build and audit
+
+- `npm run typecheck`: exit 0, no output beyond the command banner. The earlier `phases` error in lodashBroken is gone.
+- `npm run lint`: exit 0, no warnings.
+- `npm run build` (Next.js 16.4.6): exit 0, no warnings; routes `/` and `/_not-found` prerendered.
+- design.md: replaced the "Deviation from the requirements text" paragraph (CLI section) with one sentence saying requirement 1.4 and task 17.5 now match the implemented options. Searches for `--config`, the `set` function key, "ignores the whole assignment", the old index tie-break and `restart-budget-exhausted` found no other stale statements.
+- Audit (read-only): all required property, integration and unit test files exist (p04, p07, p08, p11, p20, p21, p23b, p24, p24b, p25a to p25d, p26, p26b; the eleven integration tests; the seven unit tests). All files in `tests/proof/property` use `fcParams()` (numRuns 100; p24 and p24b use max(100, fcParams)). Exceptions to numRuns >= 100 outside the property directory: `tests/proof/unit/sandboxCommand.test.ts` (numRuns 50) and `lodashHarness.test.ts` (`fc.sample`, not a property run).
+- Grep checks: no `process.env` in `src/proof/core`, `serialize` or `child/codec`; no import leaving `src/proof/child/`; no console or process.stdout/stderr use outside `shell/emit.ts`, `child/runner.ts` and `cli.ts` (only a comment in `core/report.ts` and a probe string in `shell/executor/sandboxExecutor.ts`, which runs in a child). `.env` is read by `tests/engine/unit/fixtureSecrets.test.ts` (the engine suite, to find the token for a secrets check); no proof test references it.
+- Optional property tests with no file (unchecked in tasks.md): P1, P2, P3, P5, P6, P9, P10, P12 to P19, P22, P27 to P29; also optional tasks 17.2, 18.10, 18.12, 18.13 and the other-drive test (the other-drive case is unverified, journal Risk 5b).
+- Open limitations: L12 (ES module syntax without `"type": "module"` is not detected), L13 (an unbounded `.filter` is not detected), L14 (a redacted counterexample cannot be pasted back as an explicit Case). The sandbox is a seat belt, not a security boundary. `.github/workflows/ci.yml` has not been run on GitHub.
+- full-suite numbers: pending the user's run

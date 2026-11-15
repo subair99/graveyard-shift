@@ -595,6 +595,7 @@ function getNative(object, key) {
  * @param {number} [length=MAX_SAFE_INTEGER] The upper bounds of a valid index.
  * @returns {boolean} Returns `true` if `value` is a valid index, else `false`.
  */
+// Kept although unused: this fixture stays as close to lodash.set 4.3.2 as possible; only the container type and the pollution guard differ.
 function isIndex(value, length) {
   length = length == null ? MAX_SAFE_INTEGER : length;
   return !!length &&

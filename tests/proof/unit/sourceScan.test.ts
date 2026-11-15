@@ -54,7 +54,17 @@ const RUNNER_EXCEPTION = {
   reason: "sandbox-side protocol channel on the child's own stdout; not an engine log line or error message",
 };
 
-const OUTPUT_ALLOWED = [EMIT_FILE, RUNNER_EXCEPTION.file];
+/**
+ * Documented exception (task 17.5): the CLI hands the canonical report to the caller on standard
+ * output, which `emit` (one line on standard error) does not offer. Its log lines and error messages
+ * still go through `emit`, and the report text is checked by the Identity_Scanner before it is written.
+ */
+const CLI_EXCEPTION = {
+  file: "src/proof/cli.ts",
+  reason: "the CLI writes the canonical report to standard output; its messages still go through emit",
+};
+
+const OUTPUT_ALLOWED = [EMIT_FILE, RUNNER_EXCEPTION.file, CLI_EXCEPTION.file];
 
 type Rule = "process-env" | "console-or-stdio" | "parse-error";
 export interface Violation {
@@ -357,9 +367,10 @@ describe("source scan of src/proof", () => {
     expect(scanProofTree(proofRoot)).toEqual([]);
   });
 
-  it("states the one documented exception and its reason", () => {
-    expect(OUTPUT_ALLOWED).toEqual([EMIT_FILE, "src/proof/child/runner.ts"]);
+  it("states the documented exceptions and their reasons", () => {
+    expect(OUTPUT_ALLOWED).toEqual([EMIT_FILE, "src/proof/child/runner.ts", "src/proof/cli.ts"]);
     expect(RUNNER_EXCEPTION.reason).toContain("protocol channel");
+    expect(CLI_EXCEPTION.reason).toContain("standard output");
   });
 
   it("passes when a directory is missing or empty", () => {

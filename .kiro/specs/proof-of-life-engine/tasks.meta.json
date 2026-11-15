@@ -855,6 +855,16 @@
         "executionId": "047db4e1-9bbf-4ef3-b545-c355b905c509",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794742458676
+      },
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794743702800
+      },
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794744110675
       }
     ],
     "15.2 Write the deliberately broken resurrection `tests/proof/fixtures/lodash.set-broken/`": [
@@ -867,6 +877,16 @@
         "executionId": "047db4e1-9bbf-4ef3-b545-c355b905c509",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794742458822
+      },
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794743703004
+      },
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794744110892
       }
     ],
     "16.1 Implement `src/proof/harnesses/lodash.set/config.ts` and `sandbox/pollution.cjs`": [
@@ -879,6 +899,16 @@
         "executionId": "047db4e1-9bbf-4ef3-b545-c355b905c509",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794742459393
+      },
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794747599402
+      },
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794748030017
       }
     ],
     "16. Implement the lodash.set harness": [
@@ -910,6 +940,276 @@
         "executionId": "047db4e1-9bbf-4ef3-b545-c355b905c509",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794742957586
+      }
+    ],
+    "15.3 Write the fixture integrity test": [
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794743703139
+      },
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794744285730
+      }
+    ],
+    "17.4 Implement `src/proof/shell/executor/sandboxExecutor.ts`": [
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794743703524
+      },
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794744111015
+      }
+    ],
+    "15. Create the lodash.set fixtures": [
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794744285849
+      }
+    ],
+    "17.5 Wire the default executor, the CLI and the `proof:run` script": [
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794744293165
+      },
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794744707694
+      }
+    ],
+    "18.1 Create the integration helpers and sandbox fixture packages": [
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794744293286
+      },
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794744708083
+      }
+    ],
+    "17. Implement the Sandbox_Executor": [
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794744707933
+      }
+    ],
+    "18.2 Write the network-denied test": [
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794744718111
+      },
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794744972706
+      }
+    ],
+    "18.3 Write the file-read-denied test": [
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794744718353
+      },
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794744973048
+      }
+    ],
+    "18.4 Write the child-process and worker denial tests": [
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794744718483
+      },
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794744973189
+      }
+    ],
+    "18.5 Write the environment-scrubbed test": [
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794744718623
+      },
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794744973620
+      }
+    ],
+    "18.6 Write the timeout test": [
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794744718807
+      },
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794744974245
+      }
+    ],
+    "18.7 Write the `__proto__` isolation test": [
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794744974951
+      },
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794748030147
+      }
+    ],
+    "18.8 Write the lodash.set alive test": [
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794744975731
+      },
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794748030356
+      }
+    ],
+    "18.9 Write the lodash.set broken test": [
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794744976261
+      },
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794748030607
+      },
+      {
+        "executionId": "747fa6f6-e717-4a28-ab38-8ad5ad381f8b",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794748493644
+      },
+      {
+        "executionId": "747fa6f6-e717-4a28-ab38-8ad5ad381f8b",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794748872665
+      }
+    ],
+    "18.14 Write the identity test for the lodash.set run": [
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794744976839
+      },
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794748031414
+      }
+    ],
+    "18. Write the sandbox integration tests": [
+      {
+        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794748031487
+      }
+    ],
+    "18.11 Move the spike scripts into integration tests": [
+      {
+        "executionId": "747fa6f6-e717-4a28-ab38-8ad5ad381f8b",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794748493888
+      },
+      {
+        "executionId": "747fa6f6-e717-4a28-ab38-8ad5ad381f8b",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794748872888
+      }
+    ],
+    "19.1 Take the first measurement and record it": [
+      {
+        "executionId": "747fa6f6-e717-4a28-ab38-8ad5ad381f8b",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794748494025
+      },
+      {
+        "executionId": "747fa6f6-e717-4a28-ab38-8ad5ad381f8b",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794748873013
+      }
+    ],
+    "20.1 Update README, structure.md and tech.md": [
+      {
+        "executionId": "747fa6f6-e717-4a28-ab38-8ad5ad381f8b",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794748494161
+      },
+      {
+        "executionId": "747fa6f6-e717-4a28-ab38-8ad5ad381f8b",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794749189356
+      }
+    ],
+    "19. Measure and log the time budgets": [
+      {
+        "executionId": "747fa6f6-e717-4a28-ab38-8ad5ad381f8b",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794748873093
+      }
+    ],
+    "20.2 Write the CI workflow `.github/workflows/ci.yml`": [
+      {
+        "executionId": "747fa6f6-e717-4a28-ab38-8ad5ad381f8b",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794748873318
+      },
+      {
+        "executionId": "747fa6f6-e717-4a28-ab38-8ad5ad381f8b",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794749057493
+      }
+    ],
+    "20. Update documentation and steering": [
+      {
+        "executionId": "747fa6f6-e717-4a28-ab38-8ad5ad381f8b",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794749189514
+      }
+    ],
+    "2. CHECKPOINT: spike review (STOP for the user)": [
+      {
+        "executionId": "747fa6f6-e717-4a28-ab38-8ad5ad381f8b",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794749233855
+      }
+    ],
+    "21. Final checkpoint": [
+      {
+        "executionId": "747fa6f6-e717-4a28-ab38-8ad5ad381f8b",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794749234107
+      }
+    ],
+    "14. MANUAL STEP: record the lodash.set@4.3.2 tarball (STOP for the user)": [
+      {
+        "executionId": "747fa6f6-e717-4a28-ab38-8ad5ad381f8b",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794749241245
       }
     ]
   }

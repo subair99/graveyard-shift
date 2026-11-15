@@ -47,12 +47,12 @@ describe("lodash.set harness config", () => {
     expect(() => validateRequest(request)).not.toThrow();
   });
 
-  it("has set with arity 3 arguments, the delta, and an absolute readable module path", () => {
-    expect(Object.keys(lodashSetHarness.functions)).toEqual(["set"]);
+  it("has default (the module.exports function) with arity 3 arguments, the delta, and an absolute readable module path", () => {
+    expect(Object.keys(lodashSetHarness.functions)).toEqual(["default"]);
     expect(path.isAbsolute(POLLUTION_MODULE_PATH)).toBe(true);
     expect(lodashSetHarness.readPaths).toContain(POLLUTION_MODULE_PATH);
     expect(prototypePollutionDelta.propertyModule).toBe(POLLUTION_MODULE_PATH);
-    expect(prototypePollutionDelta.function).toBe("set");
+    expect(prototypePollutionDelta.function).toBe("default");
     for (const args of ordinaryExplicitCases) expect(args).toHaveLength(3);
   });
 
