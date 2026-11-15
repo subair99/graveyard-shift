@@ -16,6 +16,20 @@ scripts/recordFixtures.ts, scripts/lib/recordFixtures.ts  Manual fixture recordi
 scripts/recordTarball.ts, scripts/lib/recordTarball.ts  Manual lodash.set@4.3.2 tarball recording (npm run fixtures:record-tarball); verifies integrity against the recorded packument, then writes tests/proof/fixtures/lodash.set/lodash.set-4.3.2.tgz and .meta.json
 tests/proof/unit/recordTarball.test.ts  Offline tests for the tarball recorder (fake fetch, temp dirs)
 tests/engine/unit/  Engine unit tests (types.test.ts, http.test.ts, ...)
+src/proof/index.ts, types.ts  Proof of Life Engine public API; zod schemas and shared types (Proof_Report, Outcome, encoded nodes, harness errors, Result)
+src/proof/core/  Pure core (determinism lint scope): seeds, equal (comparison), normalize (Root_Normalizer), redact (Path_Redactor, Identity_Redactor over nodes), identity (Identity_Values, scanner), delta (classification), apiSurface, verdict, report (buildReport, fallbackReport)
+src/proof/serialize/  Pure: canonicalReport.ts (REPORT_KEY_ORDER, canonical JSON), deserialize.ts (zod)
+src/proof/shell/  I/O shell: driver, orchestrator, emit (the single output path), entry, integrity, treeHash, workDir
+src/proof/shell/tarball/  tarballExtractor.ts, the only importer of `tar`
+src/proof/shell/executor/  Executor interface (types.ts) and inProcessExecutor.ts (tests only); the Sandbox_Executor is planned here
+src/proof/child/  Sandbox side, self-contained, erasable TypeScript syntax only: protocol, prototypes, sideRuntime, stubs, package.json ({"type":"module"}); runner.ts is planned
+src/proof/child/codec/  Pure Value_Codec (determinism lint scope): nodes, order, encode, decode, canonical; imports nothing outside this directory
+tests/proof/unit/  Proof engine unit tests (one file per module, sourceScan.test.ts, determinismLint.test.ts, ...)
+tests/proof/property/  Proof engine property tests, named p*-*.test.ts (fast-check, one file per design property)
+tests/proof/integration/  Planned: real child process (sandbox) tests; does not exist yet
+tests/proof/helpers/  Shared test helpers (arbitraries, synthetic packages, tarball builders, runners)
+tests/proof/fixtures/  Planned: recorded tarballs (written by npm run fixtures:record-tarball); does not exist yet
+scripts/spike/  Sandbox spike scripts (task 1; results in docs/kiro-journal.md)
 package.json      Scripts and dependencies (npm)
 tsconfig.json     TypeScript config (strict)
 next.config.mjs   Next.js config

@@ -16,6 +16,7 @@ Third-party libraries and data sources used are listed here as they are added.
 - lodash.set 4.3.2 tarball (MIT), used as a test input for tar handling. Source: https://registry.npmjs.org/lodash.set/-/lodash.set-4.3.2.tgz
 - ESLint, @eslint/js (MIT), dev dependencies for the determinism lint rule (task 9.6)
 - @babel/eslint-parser, @babel/core, @babel/preset-typescript (MIT), dev dependencies that parse TypeScript in ESLint. typescript-eslint (MIT) was not used because its peer range is typescript <6.1.0 and this project uses TypeScript 7.
+- @babel/parser 8.1.2 (MIT), dev dependency used by the proof tests (the `sourceScan` test) to parse source files. Source: https://github.com/babel/babel/tree/main/packages/babel-parser. License read from `node_modules/@babel/parser/package.json`.
 - tsx (MIT), dev dependency that runs the fixture recording script `scripts/recordFixtures.ts` (task 9.1).
 
 ## Data sources

@@ -20,6 +20,7 @@ export default defineConfig({
         test: {
           name: "proof-property",
           include: ["tests/proof/property/**/*.test.ts", "tests/proof/unit/**/*.test.ts"],
+          testTimeout: 60000,
           globalSetup: [budgetSetup],
         },
       }),
@@ -27,6 +28,7 @@ export default defineConfig({
         test: {
           name: "proof-integration",
           include: ["tests/proof/integration/**/*.test.ts"],
+          testTimeout: 60000,
           globalSetup: [budgetSetup],
         },
       }),

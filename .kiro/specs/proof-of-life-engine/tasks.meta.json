@@ -800,6 +800,25 @@
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794735443843
       }
+    ],
+    "13.2 Write offline tests for the recorder logic": [
+      {
+        "executionId": "6e7cbda7-a02b-41e5-a52f-6062fdecef58",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794740018724
+      },
+      {
+        "executionId": "6e7cbda7-a02b-41e5-a52f-6062fdecef58",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794740092839
+      }
+    ],
+    "13. Implement the tarball recorder (manual script)": [
+      {
+        "executionId": "6e7cbda7-a02b-41e5-a52f-6062fdecef58",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794740092909
+      }
     ]
   }
 }

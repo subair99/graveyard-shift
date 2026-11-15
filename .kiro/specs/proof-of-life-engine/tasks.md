@@ -17,7 +17,9 @@ Test files go in `tests/proof/{unit,property,integration,helpers,fixtures}/`. Ea
 
 Required versus optional: property tests 4, 7, 8, 11, 20, 21, 24, 25, 26 are required. All other property tests are optional (`*`). The required integration tests are the sandbox denials (network, file read outside the package, environment scrubbing by sentinel and random-name variables, timeout kill, child-process spawn, worker spawn), the `__proto__` isolation test (Requirement 5.15), and the two lodash.set verdict tests. Eight more tests are required because they make those items meaningful or are cheap safety checks: the fixture tarball integrity test (15.3), the recorder offline-logic test (13.2), the determinism lint test (3.3), the source scan for `process.env` in the pure directories and for output outside `shell/emit.ts` (3.5), the temp-root-leak safety test (8.6), the Identity_Scanner unit and safety tests (8.9), and the two end-to-end identity tests, one engine-level with the InProcess_Executor (11.12) and one with the lodash.set fixtures and the Sandbox_Executor (18.14). All remaining test sub-tasks are optional. Unit tests that the requirements list as "SHALL" (for example Requirement 15.12) are optional here because the task brief says so; each implementation task still has to pass the checks it needs to be useful.
 
-Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (spike review), task 14 (run `npm run fixtures:record-tarball`), and the final review in task 21.
+Testing workflow rule (workspace rule `testing-workflow`): agents never run `npm test`, `npm run test:*` or the full vitest suite. They may run `npm run typecheck`, `npm run lint` and one test file at a time (`npx vitest run <path>`) when it takes under about 30 s, one run per change, never in a loop. Any step that needs the full suite says "Ready for you to run: <exact command>" and the agent then waits for the user's pasted output. Timings in `docs/kiro-journal.md` come from the user's pasted runs, not from agent runs.
+
+Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (spike review), task 12 (the three timing runs), task 14 (run `npm run fixtures:record-tarball`; the recorder writes into the subfolder `tests/proof/fixtures/lodash.set/`), the full-suite runs in tasks 19 and 21, and the final review in task 21.
 
 ## Tasks
 
@@ -156,7 +158,7 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - In `eslint.config.mjs` add `src/proof/core/**`, `src/proof/serialize/**` and `src/proof/child/codec/**` to `deterministicFiles` (keep `src/engine/core`, `src/engine/serialize`); make sure `src/proof/child/stubs.ts` stays outside the scope
     - In `vitest.config.mts` define the projects `engine` (existing tests, unchanged behavior), `proof-property` (`tests/proof/property` and `tests/proof/unit`) and `proof-integration` (`tests/proof/integration`), using the keys confirmed in 1.10; attach `tests/setup/networkGuard.ts` to every project; keep `FC_SEED` handling
     - Create `tests/proof/helpers/budgetGlobalSetup.ts`: measures the wall-clock time of the project in its teardown (the measurement may read the clock because it lives in test helpers, outside the lint scope), prints it, fails the run when the target (60 s for `proof-property`, 120 s for `proof-integration`) is exceeded unless `PROOF_BUDGET_MODE=warn`, and appends the measured value to `docs/kiro-journal.md` when `PROOF_LOG_TIMINGS=1`
-    - Confirm `npm test` still runs the existing engine suite
+    - Confirm that the existing engine tests are still selected by the `engine` project (do not run the full suite; run `npx vitest run <one engine test file>` once, or write "Ready for you to run: `npm test`" and wait for the user's output)
     - _Requirements: 15.5, 15.7, 15.8, 15.9, 16.2_
 
   - [x] 3.3 Write the determinism lint test for the proof scope
@@ -201,7 +203,7 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - **Validates: Requirements 5.6, 6.9**
 
   - [ ]* 4.6 Write unit tests for the codec
-    - Depth boundary 1,000 and 1,001, `[o, o]`, `{a: x, b: x}`, `o.self = o`, a twice-reachable acyclic value, the `orderParity.test.ts` check of `compareCodePoints` against `src/engine/serialize`
+    - Depth boundary 1,000 and 1,001, `[o, o]`, `{a: x, b: x}`, `o.self = o`, a twice-reachable acyclic value, a parity check of `compareCodePoints` against `src/engine/serialize` (in `tests/proof/unit/codec.test.ts`)
     - _Requirements: 6.3, 6.7, 15.12_
 
 - [x] 5. Implement comparison and seeds
@@ -268,7 +270,7 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - File: `tests/proof/property/p20-delta-classification.test.ts`; required (not optional)
 
   - [x] 7.3 Implement `src/proof/core/apiSurface.ts`
-    - `compareExports`: removed, added, type, name, arity and primitive differences give `api-surface` Divergences naming the export
+    - `compareApiSurface`: removed, added, type, name, arity and primitive differences give `api-surface` Divergences naming the export
     - _Requirements: 10.1, 10.2, 10.3, 10.4_
 
   - [ ]* 7.4 Write property test for the API-surface check
@@ -292,7 +294,7 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - _Requirements: 2.4, 8.6, 8.11, 12.3, 13.2, 13.3, 13.4, 13.5, 13.17, 13.23, 13.25, 13.26, 13.30_
 
   - [x] 8.2 Implement `src/proof/serialize/canonicalReport.ts` and `deserialize.ts`
-    - `REPORT_KEY_ORDER`, `canonicalizeReport`, `canonicalReportJson`, `deserializeReport` returning `Result<ProofReport, { issues: string[] }>` with failing paths
+    - `REPORT_KEY_ORDER`, `canonicalizeReport`, `canonicalReportJson`, `deserializeReport` returning `Result<ProofReport, DeserializeError>`, where `DeserializeError` is `{ kind: 'malformed-json' | 'invalid-report', message: string, issues: { path: string, message: string }[] }` (`path` is the dotted failing field path, `(root)` for the document itself)
     - `REPORT_KEY_ORDER` also covers the Divergence object, with `redactionMaskedDifference` as its last key (Requirement 13.2)
     - _Requirements: 1.2, 13.1, 13.2, 13.3, 13.6, 13.7_
 
@@ -309,7 +311,7 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - **Validates: Requirements 13.4, 13.17, 13.23, 15.11**
 
   - [x] 8.6 Write the temp-root-leak safety test
-    - `tests/proof/unit/leakCheck.test.ts`: a serialized report that still contains a temporary root (native, JSON-escaped, `file://` forms) makes the leak check yield `temp-root-leak`; the fallback report passes the same check; and a deliberately broken leak check (test double that never finds a root) makes the test fail
+    - `tests/proof/unit/tempRootLeak.test.ts`: a serialized report that still contains a temporary root (native, JSON-escaped, `file://` forms) makes the leak check yield `temp-root-leak`; the fallback report passes the same check; and a deliberately broken leak check (test double that never finds a root) makes the test fail
     - Required (cheap safety check added beyond the brief's list)
     - _Requirements: 13.23, 13.24, 16.3_
 
@@ -322,7 +324,7 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - _Requirements: 13.1_
 
   - [x] 8.9 Write the Identity_Scanner unit tests and the identity safety test
-    - `tests/proof/unit/identityScan.test.ts`: matching rules of Requirement 13.27 (path forms of a home directory including `file://` percent-encoded and doubled back-slash, a boundary case where the home directory is a prefix of a longer sibling name, a user name of fewer than 4 characters matched only in path context, a name from the generic list matched only in path context, a long name matched as a whole word and not inside a longer word, empty and separator-only values ignored, case-insensitive on Windows and case-sensitive otherwise); redaction output `<user-home>` and `<user>`, longest form first
+    - `tests/proof/unit/identity.test.ts` (scanner and redactor matching rules) and `tests/proof/unit/identitySafety.test.ts` (the `buildReport` safety test with test-double scanner and redactor): matching rules of Requirement 13.27 (path forms of a home directory including `file://` percent-encoded and doubled back-slash, a boundary case where the home directory is a prefix of a longer sibling name, a user name of fewer than 4 characters matched only in path context, a name from the generic list matched only in path context, a long name matched as a whole word and not inside a longer word, empty and separator-only values ignored, case-insensitive on Windows and case-sensitive otherwise); redaction output `<user-home>` and `<user>`, longest form first
     - Comparison before redaction (Requirement 13.29 (e), (f), 13.30): with an Identity_Value snapshot that contains only `USERNAME=alice`, outcomes returning `C:\Users\alice\x` and `C:\Users\bob\x` are a Divergence, shown as `C:\Users\<user>\x` and `C:\Users\bob\x`, `redactionMaskedDifference` false; on Windows rules, `C:\Users\alice` against `c:\users\ALICE` with that path as USERPROFILE is a Divergence, both shown as `<user-home>`, `redactionMaskedDifference` true; equal strings on both sides redact to equal text
     - A serialized report that still contains an Identity_Value after redaction makes `buildReport` yield `identity-leak` and the fallback report, which passes the same scan; a test double scanner that never matches makes the safety test fail, and a test double redactor that changes nothing makes a returned Identity_Value reach the backstop and yields `identity-leak` (the test proves that both are wired in, as 8.6 does for the temp root)
     - Identity_Values here are fixed synthetic strings passed in; the end-to-end test with real environment values is 11.12
@@ -431,17 +433,17 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
   - [x] 11.4 Write property test for same seed, same bytes
     - **Property 24: Same seed, same bytes**
     - **Validates: Requirements 15.2**
-    - File: `tests/proof/property/p24-same-seed.test.ts`; InProcess_Executor; 100 generated packages with about 10 inner Cases each; required (not optional)
+    - File: `tests/proof/property/p24-same-seed-same-bytes.test.ts`; InProcess_Executor; 100 generated packages with about 10 inner Cases each; required (not optional)
 
   - [x] 11.5 Write property test for alive against itself
     - **Property 25: A package is alive against itself**
     - **Validates: Requirements 15.3**
-    - File: `tests/proof/property/p25-alive-against-itself.test.ts`; required (not optional)
+    - Files (four, all required, not optional): `tests/proof/property/p25a-alive-directory.test.ts` (directory form), `tests/proof/property/p25b-alive-tarball.test.ts` (tarball form), `tests/proof/property/p25c-unencodable-inconclusive.test.ts` (unencodable results give `inconclusive`, never `alive`) and `tests/proof/property/p25d-flaky-negative-control.test.ts` (negative control with a flaky package); each carries the tag for Property 25
 
   - [x] 11.6 Write property test for injected behavior changes
     - **Property 26: Injected behavior changes are detected**
     - **Validates: Requirements 15.4, 15.11, 7.7, 7.8, 10.2**
-    - File: `tests/proof/property/p26-injected-changes.test.ts`; required (not optional)
+    - Files (two, both required, not optional): `tests/proof/property/p26-injected-changes.test.ts` (injected behavior changes) and `tests/proof/property/p26b-declared-delta.test.ts` (the declared-delta variant, at numRuns 100); each carries the tag for Property 26
 
   - [ ]* 11.7 Write property test for request validation
     - **Property 1: Invalid requests are rejected before any child starts**
@@ -464,7 +466,7 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 12.7, 15.12, 16.3, 16.4_
 
   - [x] 11.12 Write the end-to-end identity test (engine level)
-    - `tests/proof/unit/identityLeak.test.ts` (Requirement 13.29): runs `runProofOfLife` with the real report builder, Path_Redactor, Identity_Redactor and Identity_Scanner and the InProcess_Executor on synthetic packages; the Identity_Values come from the parent `process.env` at test time (`USERNAME`, `USERPROFILE`, `HOMEPATH`, `HOME` where set); WHEN none of them is set the test injects fixed synthetic values through the environment snapshot and prints that it did; the test captures every log line and error message emitted through `emit` with an injected `ProofDeps.sink` collector
+    - `tests/proof/unit/endToEndIdentity.test.ts` (Requirement 13.29): runs `runProofOfLife` with the real report builder, Path_Redactor, Identity_Redactor and Identity_Scanner and the InProcess_Executor on synthetic packages; the Identity_Values come from the parent `process.env` at test time (`USERNAME`, `USERPROFILE`, `HOMEPATH`, `HOME` where set); WHEN none of them is set the test injects fixed synthetic values through the environment snapshot and prints that it did; the test captures every log line and error message emitted through `emit` with an injected `ProofDeps.sink` collector
     - Case (a): a function throws an Error whose message contains the home directory (native, forward-slash and `file://` forms) and the user name (as a whole word and inside a path segment); assert that the serialized report, every log line and every error message contain no Identity_Value, and that the error text in the report shows `<user-home>` and `<user>`
     - Case (b): a function returns the same string containing the home directory on both sides: Verdict `alive`, report without any Identity_Value
     - Case (c): a synthetic package returns a string containing the USERPROFILE value and a string containing the `USERNAME` value as a path segment, in a way that makes the two sides diverge: assert Verdict `restless` (not `inconclusive`), no harness error `identity-leak`, the Divergence listed, the counterexample or Outcome rendering contains `<user-home>` and `<user>`, and the serialized report, every captured log line and every error message contain neither the real `USERNAME` nor the real `USERPROFILE` value
@@ -476,24 +478,32 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - _Requirements: 8.12, 8.13, 8.14, 8.15, 11.3, 12.3_
 
 - [-] 12. Checkpoint: pure core and in-process engine
-  - Ensure all tests pass, ask the user if questions arise.
-  - Run `npm run typecheck`, `npm run lint` and `npm test`; report failures before the sandbox is built
+  - Agents do not run `npm test` or the full suite. Run `npm run typecheck`, `npm run lint` and, where a change needs it, one test file at a time (`npx vitest run <path>`, under about 30 s each); report failures before the sandbox is built
+  - Budget work: finish the time-budget work for `proof-property` (the 60 s target is never changed silently)
+  - Then write: "Ready for you to run:" followed by the three timing runs (PowerShell), and wait for the user to paste the output of all three; continue only after the output is pasted:
+    - `Remove-Item Env:PROOF_BUDGET_MODE -ErrorAction SilentlyContinue; npm test` (first run)
+    - `Remove-Item Env:PROOF_BUDGET_MODE -ErrorAction SilentlyContinue; npm test` (second run)
+    - `$env:FC_SEED=12345; npm test; Remove-Item Env:FC_SEED` (third run, fixed seed)
+  - Fill the "User-run timings" table in `docs/kiro-journal.md` only from the pasted output (replace the "pending" marker); do not use agent-run numbers
+  - If `proof-property` is still over 60 s in the three runs, the next step is moving the `p24`, `p25` and `p26` files (`tests/proof/property/p24-same-seed-same-bytes.test.ts`, the `p25*` files and the `p26*` files) to a separate `proof-heavy` vitest project with its own stated target, and logging the reason and the measurements in `docs/kiro-journal.md`. The 60 s target of `proof-property` is never changed silently
+  - Ask the user if questions arise; the checkpoint closes only after the user has reviewed the pasted timings
 
-- [ ] 13. Implement the tarball recorder (manual script)
+- [x] 13. Implement the tarball recorder (manual script)
   - [x] 13.1 Write `scripts/recordTarball.ts` and `scripts/lib/recordTarball.ts`
     - Pure, offline-testable logic in `scripts/lib/recordTarball.ts`: read `dist.tarball` and `dist.integrity` of 4.3.2 from the recorded packument `tests/engine/fixtures/lodash.set/npm-449996e32bd2.json`, verify downloaded bytes against that integrity, read author and contributors from the tarball's own `package.json`, build the metadata object (name, version, tarball URL, integrity, source URL, fetch date, license `MIT`, author credits)
-    - `scripts/recordTarball.ts`: the only code that performs the download; writes `tests/proof/fixtures/lodash.set-4.3.2.tgz` and `lodash.set-4.3.2.meta.json`; refuses to write when the digest does not match
+    - `scripts/recordTarball.ts`: the only code that performs the download; writes `tests/proof/fixtures/lodash.set/lodash.set-4.3.2.tgz` and `tests/proof/fixtures/lodash.set/lodash.set-4.3.2.meta.json` (subfolder `lodash.set/`); refuses to write when the digest does not match
     - Add the script `"fixtures:record-tarball": "tsx scripts/recordTarball.ts"` to `package.json` (add `--env-file=.env` only if the script needs a variable)
     - Do NOT run the script and do not fetch anything live in this task
     - _Requirements: 14.1_
 
-  - [ ] 13.2 Write offline tests for the recorder logic
+  - [x] 13.2 Write offline tests for the recorder logic
+    - Already written with 13.1; verify only (the offline tests are in `tests/proof/unit/recordTarball.test.ts`; confirm that they exist and pass with a single-file run, add nothing unless a case below is missing)
     - `tests/proof/unit/recordTarball.test.ts`: integrity verification (accepts matching bytes, rejects a changed byte), metadata building from a small in-test tarball, no network access (the network guard stays active)
     - Required (added so the recorder is trustworthy before the human runs it)
     - _Requirements: 14.1, 14.2_
 
 - [ ] 14. MANUAL STEP: record the lodash.set@4.3.2 tarball (STOP for the user)
-  - STOP here. Ask the user to run `npm run fixtures:record-tarball` from the repository root with network access, and to confirm that `tests/proof/fixtures/lodash.set-4.3.2.tgz` and `lodash.set-4.3.2.meta.json` exist
+  - STOP here. The orchestrator must stop at this task and must NOT continue to task 15 or later until the user confirms that the files exist. Ask the user to run `npm run fixtures:record-tarball` from the repository root with network access, and to confirm that `tests/proof/fixtures/lodash.set/lodash.set-4.3.2.tgz` and `tests/proof/fixtures/lodash.set/lodash.set-4.3.2.meta.json` exist
   - Do not run the script, do not download the tarball and do not create these files by hand
   - After the user confirms, read the metadata file, record the fetch date and source URL in `docs/kiro-journal.md` (observed values only), and check that `PREEXISTING.md` names the tarball URL
   - Tasks 15 to 18 depend on this step
@@ -513,7 +523,7 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - _Requirements: 14.5_
 
   - [ ] 15.3 Write the fixture integrity test
-    - `tests/proof/unit/fixtureIntegrity.test.ts`: the sha512 digest of `lodash.set-4.3.2.tgz` equals `dist.integrity` in `lodash.set-4.3.2.meta.json`, and that equals `versions['4.3.2'].dist.integrity` of the recorded packument `tests/engine/fixtures/lodash.set/npm-449996e32bd2.json`; reads committed files only
+    - `tests/proof/unit/fixtureIntegrity.test.ts`: the sha512 digest of `tests/proof/fixtures/lodash.set/lodash.set-4.3.2.tgz` equals `dist.integrity` in `tests/proof/fixtures/lodash.set/lodash.set-4.3.2.meta.json`, and that equals `versions['4.3.2'].dist.integrity` of the recorded packument `tests/engine/fixtures/lodash.set/npm-449996e32bd2.json`; reads committed files only
     - Required (makes the lodash verdict tests meaningful: they would otherwise run against an unpinned tarball)
     - _Requirements: 14.2, 14.3_
 
@@ -612,13 +622,14 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
   - [ ] 18.14 Write the identity test for the lodash.set run
     - `tests/proof/integration/identity-lodash.test.ts` (Requirement 13.29 (d)): run the Original fixture against `lodash.set-alive` and `lodash.set-broken` with the Sandbox_Executor and the lodash harness, with the Identity_Values read from the parent environment at test time and every log line and error message captured through `emit`; assert that no serialized report, log line or error message contains an Identity_Value (including the `USERNAME` and `USERPROFILE` values that the Windows launcher puts into the child's environment, which the engine neither relies on nor reports)
     - Add a case in which the harness passes a string that contains the USERPROFILE value and the `USERNAME` value as a path segment as the `value` argument of an explicit Case, against a test-only divergent resurrection variant under `tests/proof/fixtures/` that returns a different result for that Case: assert Verdict `restless` (not `inconclusive`), the Divergence listed, `<user-home>` and `<user>` in the counterexample, no harness error `identity-leak`, and no serialized report, log line or error message that contains the real `USERNAME` or `USERPROFILE` value
-    - Reports `skipped: fixture tarball not recorded` when `tests/proof/fixtures/lodash.set-4.3.2.tgz` is absent, and a skip is never counted as verified; reads committed files only, no network
+    - Reports `skipped: fixture tarball not recorded` when `tests/proof/fixtures/lodash.set/lodash.set-4.3.2.tgz` is absent, and a skip is never counted as verified; reads committed files only, no network
     - Required
     - _Requirements: 13.25, 13.26, 13.28, 13.29, 13.30, 16.3_
 
 - [ ] 19. Measure and log the time budgets
   - [ ] 19.1 Take the first measurement and record it
-    - Run `npm test` with `PROOF_LOG_TIMINGS=1 PROOF_BUDGET_MODE=warn` (PowerShell: `$env:PROOF_LOG_TIMINGS='1'; $env:PROOF_BUDGET_MODE='warn'; npm test`), once, and record in `docs/kiro-journal.md`: command, date, Node version, environment, and the wall-clock time of `proof-property` and `proof-integration` as printed
+    - The agent does not run the suite. Write "Ready for you to run: `$env:PROOF_LOG_TIMINGS='1'; $env:PROOF_BUDGET_MODE='warn'; npm test; Remove-Item Env:PROOF_LOG_TIMINGS, Env:PROOF_BUDGET_MODE`" and wait; continue only after the user pastes the output
+    - From the pasted output only, record in `docs/kiro-journal.md`: command, date, Node version, environment, and the wall-clock time of `proof-property` and `proof-integration` as printed
     - Compare against the targets (at most 60 s and at most 120 s). If a target is exceeded, flag the overrun in the journal with the measured value and report it; do not raise the targets and do not state a time that was not measured
     - Also log the child start cost seen by the integration suite next to the spike measurement of 1.13
     - _Requirements: 15.7, 15.8_
@@ -633,13 +644,16 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - _Requirements: 3.11, 8.14, 13.26, 14.11, 16.5_
 
 - [ ] 21. Final checkpoint
-  - Ensure all tests pass, ask the user if questions arise.
-  - Run the full suite (`npm test`), `npm run typecheck`, `npm run lint` and `npm run build`; record the commands, date, environment and the measured wall-clock times of the two proof suites in `docs/kiro-journal.md` (measured values only; flag any overrun of the 60 s and 120 s targets)
+  - The agent runs `npm run typecheck`, `npm run lint` and `npm run build` itself (build only if it finishes in a reasonable time; otherwise ask the user to run it). The agent does not run the full suite
+  - Write "Ready for you to run: `npm test`" and wait; continue only after the user pastes the output. Ask the user if questions arise
+  - Record the commands, date, environment and the wall-clock times of the two proof suites in `docs/kiro-journal.md` from the user's pasted output only (measured values only; flag any overrun of the 60 s and 120 s targets)
   - Ask the user to review the report of the two lodash.set runs and the journal before the spec is considered done
 
 ## Notes
 
-- Tasks marked with `*` are optional sub-tasks. The property tests for Properties 4, 7, 8, 11, 20, 21, 24, 25 and 26 (sub-tasks 9.4, 10.2, 4.3, 5.2, 7.2, 7.6, 11.4, 11.5, 11.6) carry no `*` and are required. The required integration tests are 18.2 to 18.9 and 18.14. The required extras are 3.3, 3.5, 8.6, 8.9, 11.12, 13.2 and 15.3.
+- Tasks marked with `*` are optional sub-tasks. The property tests for Properties 4, 7, 8, 11, 20, 21, 24, 25 and 26 (sub-tasks 9.4, 10.2, 4.3, 5.2, 7.2, 7.6, 11.4, 11.5, 11.6) carry no `*` and are required. The required integration tests are 18.2 to 18.9 and 18.14. The required extras are 3.3, 3.5, 8.6, 8.9, 11.12, 13.2 and 15.3. The required property-test files, one per sub-task unless listed: `p04-tree-hash`, `p07-prototype-delta`, `p08-codec-roundtrip`, `p11-strict-comparison`, `p20-delta-classification`, `p21-verdict`, `p24-same-seed-same-bytes`, four files for Property 25 (`p25a-alive-directory`, `p25b-alive-tarball`, `p25c-unencodable-inconclusive`, `p25d-flaky-negative-control`) and two for Property 26 (`p26-injected-changes`, `p26b-declared-delta`, the latter at numRuns 100), all under `tests/proof/property/` with the suffix `.test.ts`.
+- Testing workflow: agents never run `npm test`, `npm run test:*` or the full vitest suite. They may run `npm run typecheck`, `npm run lint` and one test file at a time under about 30 s. Any step that needs the full suite says "Ready for you to run: <command>" and waits for the user's pasted output (tasks 3.2, 12, 19.1, 21). Timings in `docs/kiro-journal.md` come from the user's pasted runs.
+- The recorder writes the tarball and metadata into `tests/proof/fixtures/lodash.set/` (`lodash.set-4.3.2.tgz`, `lodash.set-4.3.2.meta.json`). The orchestrator stops at task 14 until the user confirms these files exist.
 - Task 1 (spike) must finish and task 2 (checkpoint) must be approved before anything in tasks 3 to 21 starts. In the dependency graph this is expressed by wave order: no task of tasks 3 to 21 is in a wave earlier than wave 15.
 - Spike sub-tasks all append to `docs/kiro-journal.md`, so they run in separate waves.
 - Manual steps: 1.7 (optional second drive), 2 (spike review), 14 (user runs `npm run fixtures:record-tarball`), 21 (final review). Waves 23 and later also depend on the user having completed task 14.

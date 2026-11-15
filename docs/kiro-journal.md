@@ -610,7 +610,25 @@ Not touched: the journal entries above, `design.md`, the `tsconfig.json` change.
 
 ## Proof of Life: pure core and in-process engine checkpoint (task 12)
 
+> **Status:** the full-suite figures below were measured by an agent run before the testing-workflow rule was adopted (2026-11-15). Per the rule and the honesty rules they are NOT accepted as journal timings. They are kept for reference only and will be superseded by the three runs the user pastes (two default seeds, one FC_SEED=12345). Do not cite them as results.
+
 Date 2026-11-15, Node v26.13.1, Windows, working directory `C:\dev\graveyard-shift`, vitest 5.1.0. No agents were running and no network command was run. Every number below was read from the output of these runs. Per-file durations are the vitest JSON reporter's `endTime - startTime` per test file (includes import time); files run in parallel, so they do not sum to the wall-clock.
+
+**User-run timings (pending)**
+
+Fill only from output the user pastes. Commands the user was asked to run (PowerShell):
+
+```
+Remove-Item Env:PROOF_BUDGET_MODE -ErrorAction SilentlyContinue; npm test
+Remove-Item Env:PROOF_BUDGET_MODE -ErrorAction SilentlyContinue; npm test
+$env:FC_SEED=12345; npm test; Remove-Item Env:FC_SEED
+```
+
+| run | command | vitest duration | proof-property budget line | files | tests | failures |
+|---|---|---|---|---|---|---|
+| 1 | | | | | | |
+| 2 | | | | | | |
+| 3 | | | | | | |
 
 **Static checks**
 - `npm run typecheck`: exit 0, no output after the script banner.
@@ -618,7 +636,7 @@ Date 2026-11-15, Node v26.13.1, Windows, working directory `C:\dev\graveyard-shi
 - `npm run build`: exit 0, routes `/` and `/_not-found` prerendered.
 - `npx tsx scripts/recordTarball.ts --dry-run`: exit 0, printed "no network requests made, nothing written."
 
-**First three `npm test` runs (before any change; not official)**
+**First three `npm test` runs (before any change; not official) (agent-run, superseded)**
 - Run A, run B and run C (C with `FC_SEED=12345`): each 73 files, 1 failed file, 1043 tests: 1039 passed, 1 failed, 3 skipped. The failure was `tests/proof/unit/syntheticPackage.test.ts` "extracts through the real extractor and verifies against its SRI" ("Test timed out in 5000ms"; 6709 ms and 7474 ms in two runs where the duration was shown, one 76-test file taking 22.4 s to 24.3 s). Budget lines: `proof-property: 60.9 s`, `69.0 s`, `62.3 s`.
 - These three runs were made with `PROOF_BUDGET_MODE=warn` set in the shell environment of the tool session, which I did not set and only noticed afterwards (`echo` showed `warn`). They are reported for the failure only, not as official budget numbers.
 - Each of these runs left two `gs-synth-test-*` directories in the temp directory (six directories after three runs: `gs-synth-test-CwuCqy`, `-gQChWz`, `-kH4Nam`, `-uANlAS`, `-VwgDcT`, `-ZuRp0q`). I removed those six after the runs.
@@ -626,7 +644,7 @@ Date 2026-11-15, Node v26.13.1, Windows, working directory `C:\dev\graveyard-shi
 
 **Change made in this task**: `tests/proof/unit/syntheticPackage.test.ts`, the "extracts through the real extractor" test now has an explicit 60 s timeout (it runs a 100-run fast-check property and the default 5 s timeout is shorter than its measured 6.7 s to 7.5 s under load).
 
-**Official runs after the change** (`PROOF_BUDGET_MODE` unset inside the command, `npx vitest --run --reporter=default --reporter=json`)
+**Official runs after the change (agent-run, superseded)** (`PROOF_BUDGET_MODE` unset inside the command, `npx vitest --run --reporter=default --reporter=json`)
 | Run | Command env | Exit | Files | Tests | Duration (vitest) | Budget line |
 |---|---|---|---|---|---|---|
 | 1 | default seed | 0 | 73 passed | 1040 passed, 3 skipped (1043) | 55.46 s | `[budget] proof-property: 55.6 s wall-clock (target 60 s)` |
@@ -635,9 +653,34 @@ Date 2026-11-15, Node v26.13.1, Windows, working directory `C:\dev\graveyard-shi
 | 4 | `PROOF_BUDGET_MODE=warn`, default seed | 0 | 73 passed | 1040 passed, 3 skipped | 56.14 s | `[budget] proof-property: 56.1 s wall-clock (target 60 s)` (no warning, under the target) |
 - Per project from the JSON reporter (identical in runs 1 to 3): engine 32 files, 302 tests, 0 failed, 0 skipped; proof-property 41 files, 741 tests, 0 failed, 3 skipped. There is no `tests/proof/integration/` directory yet, so the proof-integration project has no files and printed no budget line.
 - Skipped tests: "real machine identity (L14) is skipped because neither a home path variable nor USERNAME is set"; "computeDirectoryTreeHash rejects a symbolic link with unsafe-archive"; "diverging sides carry identity values (cases a and c) shows <user> for the bare user name ...".
-- Slowest proof-property files, run 1 / run 2 / run 3 (ms): `p25-alive-against-itself` 49490 / 55476 / 55286; `p24-same-seed-same-bytes` 41276 / 48819 / 49223; `p26-injected-changes` 34068 / 41454 / 41915; `unit/syntheticPackage` 19082 / 23199 / 23244; `p04-tree-hash` 10588 / 14278 / 11797. Every other file took 2.5 s or less in all three runs.
-- `[p26]` lines: injected-change property 27182 / 34077 / 34175 ms; delta variant 6881 / 7370 / 7735 ms.
+- (agent-run, superseded) Per-project counts, skipped tests and the per-file durations below come from the same agent-run full-suite runs.
+- Slowest proof-property files, run 1 / run 2 / run 3 (ms) (agent-run, superseded): `p25-alive-against-itself` (this file was later deleted and split into `p25a` to `p25d`) 49490 / 55476 / 55286; `p24-same-seed-same-bytes` 41276 / 48819 / 49223; `p26-injected-changes` 34068 / 41454 / 41915; `unit/syntheticPackage` 19082 / 23199 / 23244; `p04-tree-hash` 10588 / 14278 / 11797. Every other file took 2.5 s or less in all three runs.
+- `[p26]` lines (agent-run, superseded): injected-change property 27182 / 34077 / 34175 ms; delta variant 6881 / 7370 / 7735 ms.
 
-**Temp directory (`gs-*` in the OS temp dir)**
+**Temp directory (`gs-*` in the OS temp dir)** (observed around the agent-run suite runs above; not timings)
 - Before the first run: `gs-ZUFLfO` (not created by this task; left in place).
 - After official runs 1, 3 and 4: only `gs-ZUFLfO`. The temp state after run 2 was not listed.
+
+## Proof of Life: core modules built (tasks 3 to 11)
+
+Written at the task 12 follow-up. Module lists and file counts come from a directory listing of `src/proof` and `tests/proof` on this date. No timings are recorded here; timings come only from the user's pasted runs.
+
+**Modules present in `src/proof`**
+- `types.ts`, `index.ts`.
+- `core/`: `seeds`, `equal`, `normalize`, `redact`, `identity`, `delta`, `apiSurface`, `verdict`, `report`.
+- `serialize/`: `canonicalReport`, `deserialize`.
+- `shell/`: `driver`, `orchestrator`, `emit`, `entry`, `integrity`, `treeHash`, `workDir`, `tarball/tarballExtractor`, `executor/types`, `executor/inProcessExecutor`.
+- `child/`: `protocol`, `prototypes`, `sideRuntime`, `stubs`, `package.json`, and `codec/` (`nodes`, `order`, `encode`, `decode`, `canonical`).
+
+**Not present yet (by listing):** `child/runner.ts`, the Sandbox_Executor and `sandboxCommand`, `cli.ts`, `harnesses/`, `tests/proof/integration/`, `tests/proof/fixtures/`.
+
+**Tests (count of files by directory listing, not test counts):** `tests/proof/unit` 32 files, `tests/proof/property` 14 files (`p04`, `p07`, `p08`, `p11`, `p20`, `p21`, `p24`, `p24b`, `p25a` to `p25d`, `p26`, `p26b`, named `p*-*.test.ts`), `tests/proof/helpers` 10 files. The former `p25-alive-against-itself.test.ts` no longer exists; its cases are in `p25a` to `p25d`.
+
+**Decisions and deviations recorded in this follow-up**
+- `@babel/parser` 8.1.2 (MIT, the version already installed) was added as an exact-version devDependency and listed in PREEXISTING.md. It is used by the `sourceScan` test.
+- Delta classification, rule 3: the `unexplained` divergence is added only when no delta is applicable. With applicable deltas whose properties all fail on the Resurrection, only the `delta-violation` is reported. The code already did this; design.md and Property 20 now say so.
+- Tarball_Extractor: the extractor gunzips with `node:zlib` and `maxOutputLength`, rejects a nested gzip or zstd layer, and creates the parser with `{ zstd: false, brotli: false }`. A truncated gzip gives `corrupt` before any entry is parsed. design.md now matches `tarballExtractor.ts`. The per-entry allowance in the code is `(maxEntries + 2) * 1536`.
+- `child/runner.ts` (not yet written) is the second allowed user of process streams besides `shell/emit.ts`, as the `sourceScan` test already encodes. design.md states this.
+- `PathContext` in design.md now matches `core/redact.ts` (`caseInsensitive`, `knownPaths`, `identityPaths`). `Difference` in design.md is `{part, path}`; the richer `NodeDifference` from `firstDifference` is not in the report.
+- Ordering discrepancies 2 to 6 of `docs/proof-of-life-ordering.md`: the code was judged reasonable and design.md was changed to match it.
+- Open code gap (code not changed): `canonicalReport` is not permutation-invariant for Divergences that tie on function, kind and rendered counterexample but differ in content, and for harness errors that tie on kind and message but differ in function. R13.3 breaks ties by original index, so the code follows the requirement text, but Property 23 and the "same data gives same bytes" goal would need extra tie-breakers. This is listed in `docs/proof-of-life-ordering.md` under "Discrepancies" for the orchestrator.

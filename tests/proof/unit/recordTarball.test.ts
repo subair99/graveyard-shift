@@ -136,6 +136,15 @@ describe("recordTarball", () => {
     expect(existsSync(outDir)).toBe(false);
   });
 
+  it("rejects a download larger than 5 MiB even when its integrity matches, and writes nothing", async () => {
+    const big = new Uint8Array(5 * 1024 * 1024 + 1);
+    writePackument(TARBALL_URL, computeSri(big));
+    await expect(recordTarball({ fetch: fakeFetch(big).fetch, clock, packumentPath, outDir })).rejects.toThrow(
+      /larger than 5242880 bytes/,
+    );
+    expect(existsSync(outDir)).toBe(false);
+  });
+
   it("validates registry URLs", () => {
     expect(() => assertRegistryUrl(TARBALL_URL)).not.toThrow();
     expect(() => assertRegistryUrl("http://registry.npmjs.org/x.tgz")).toThrow();
