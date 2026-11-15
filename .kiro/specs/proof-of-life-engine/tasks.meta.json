@@ -1046,16 +1046,6 @@
     ],
     "17.4 Implement `src/proof/shell/executor/sandboxExecutor.ts`": [
       {
-        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
-        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
-        "timestamp": 1794743703524
-      },
-      {
-        "executionId": "cd1ec273-8bb5-436e-b21b-5649066e6d50",
-        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
-        "timestamp": 1794744111015
-      },
-      {
         "executionId": "f353f8d3-ef5f-46de-aa16-6e8a6208f4c2",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794766991811
@@ -1094,6 +1084,16 @@
         "executionId": "a2bc75d9-640b-4c7a-8265-6a0e1e54a787",
         "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
         "timestamp": 1794769655858
+      },
+      {
+        "executionId": "1c3e291f-f837-438c-adea-a983dd5319d9",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794771948948
+      },
+      {
+        "executionId": "1c3e291f-f837-438c-adea-a983dd5319d9",
+        "chatSessionId": "sess_26c6e3a2-14dc-40f6-802c-3338416e0198",
+        "timestamp": 1794772096993
       }
     ],
     "15. Create the lodash.set fixtures": [

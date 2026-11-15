@@ -1028,3 +1028,11 @@ Source: `spikes/secret-scan/REPORT.md`. The scan was run by an agent, so every n
 - The note that D4 ("resurrection blocked: runtime dependencies not supported yet") applies to `ip` is retired.
 - The "Rejected" item "A dependency-root extension for `ip`" no longer has a reason for `ip`; it stays rejected.
 - Updated demo set: `lodash.set`, `ip`, `inflight` (rest-in-peace card). Sketch of the `ip` work: `spikes/candidates/IP-SKETCH.md`.
+
+### Advisory text for ip (user-checked)
+- Date 2026-11-15. The user checked GHSA-2p57-rm9w-gvfp (https://github.com/advisories/GHSA-2p57-rm9w-gvfp) and NVD CVE-2024-29415 (https://nvd.nist.gov/vuln/detail/CVE-2024-29415) on 15 Nov and pasted the text. The agent did not fetch either page.
+- Quoted: the `ip` package through 2.0.1 "might allow SSRF" because some addresses are "improperly categorized as globally routable via isPublic". Examples listed: `127.1`, `01200034567`, `012.1.2.3`, `000:0:0000::01`, `::fFFf:127.0.0.1`. Note: the issue exists because of an "incomplete fix for CVE-2023-42282".
+- First deltas (in `spikes/candidates/IP-SKETCH.md`): `isPublic(x)` must return `false` for each of the five addresses. The expected value comes from the advisory's wording. Only these five inputs are deltas.
+- Only `isPublic` is named. `isPrivate` and `isLoopback` are secondary-source "to verify" items; the earlier "isPublic/isPrivate" wording (decision 2 above) is not confirmed by the advisory.
+- GitLab advisory database says no fixed version exists (user-stated, not verified by the agent).
+- New to-verify items: (a) what the Original returns for `isPublic` on each of the five (run in the spike; do not assume `true`); (b) whether CVE-2023-42282 is fixed in `ip@2.0.1`; (c) the GitLab "no fixed version" claim.
