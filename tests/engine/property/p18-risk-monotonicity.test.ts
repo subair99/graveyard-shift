@@ -1,3 +1,4 @@
+// Requirements: 8.3, 8.4, 12.2
 import { describe, it } from "vitest";
 import { computeRisk } from "../../../src/engine/core/risk";
 import type { CauseOfDeath, Maybe, VitalSigns, Vulnerability } from "../../../src/engine/types";

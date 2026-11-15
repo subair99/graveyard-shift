@@ -547,8 +547,8 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - **Validates: Requirements 14.6**
 
 - [x] 17. Implement the Sandbox_Executor
-  - [x] 17.1 Implement `src/proof/shell/executor/sandboxCommand.ts`
-    - `buildSandboxArgv(spec, runnerDir)` (pure): `--permission`, one `--allow-fs-read=<path>` flag per path (repeated flags, never a comma-joined flag) for the runner DIRECTORY (`src/proof/child`, not a single file), the `fs.realpath.native` package directory (and the created path as well when it differs), and each harness path (`readPaths`, setup module); `--max-old-space-size`; the runner entry file; no `--allow-net`, `--allow-child-process`, `--allow-worker`, `--allow-addons`, `--allow-fs-write`, `--allow-inspector`, `--allow-wasi`, `--allow-ffi` or `--allow-openssl-store`. Reject (as `sandbox-unavailable`, message without the path) any path containing `*` (observed to widen the grant), and conservatively `?`, `[`, `]`, `{` and `}` (untested); allow `,`. Spawn options use `cwd` equal to the package directory in the same path form as its grant
+  - [-] 17.1 Implement `src/proof/shell/executor/sandboxCommand.ts`
+    - `buildSandboxArgv(spec, runnerDir)` (pure): `--permission`, one `--allow-fs-read=<path>` flag per path (repeated flags, never a comma-joined flag) for the runner DIRECTORY (`src/proof/child`, not a single file), the package directory, and each harness path (`readPaths`, setup module), each canonicalised with `fs.realpath.native` through the injected `realpath` (a path that cannot be resolved stays as given); the created (unresolved) form is NOT granted separately; `--max-old-space-size`; the runner entry file; no `--allow-net`, `--allow-child-process`, `--allow-worker`, `--allow-addons`, `--allow-fs-write`, `--allow-inspector`, `--allow-wasi`, `--allow-ffi` or `--allow-openssl-store`. Reject (as `sandbox-unavailable`, message without the path) any path containing `*` (observed to widen the grant), and conservatively `?`, `[`, `]`, `{` and `}` (untested); allow `,`. Spawn options use `cwd` equal to the resolved package directory, which is also its grant and the base of the module load path (spike 1.5: a read through the short 8.3 or link form fails when only the long form is granted)
     - `buildSandboxEnv(platform, parentEnv)` (pure): returns only `{ TZ: 'UTC' }`, copies nothing from `parentEnv`, never `NODE_OPTIONS`; a comment documents that on Windows the launcher adds 11 OS-supplied names which the engine does not rely on (Requirement 5.19)
     - _Requirements: 5.2, 5.3, 5.16, 5.17, 5.18, 5.19, 16.3_
 
@@ -562,7 +562,7 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - _Requirements: 5.4, 5.8, 5.10_
 
   - [x] 17.4 Implement `src/proof/shell/executor/sandboxExecutor.ts`
-    - One child per side with `spawn` options of the design (`shell: false`, `cwd` equal to the package directory in the form used for its grant), a `loaded { ok: false }` reply (any load exception) mapped to `unloadable-module`, `probe` (`sandbox-unavailable`), child-side timeout plus parent hard kill after the grace period, `crash`, output-limit kill, respawn, `restoreVerified: false` restart, `SideCounters`, shared `RestartBudget` (`too-many-crashes`), mechanism `node-permission`
+    - One child per side with `spawn` options of the design (`shell: false`, `cwd` equal to the resolved package directory, which is also the grant and the base of the module load path; the created form is not granted), a `loaded { ok: false }` reply (any load exception) mapped to `unloadable-module`, `probe` (`sandbox-unavailable`), child-side timeout plus parent hard kill after the grace period, `crash`, output-limit kill, respawn, `restoreVerified: false` restart, `SideCounters`, shared `RestartBudget` (`too-many-crashes`), mechanism `node-permission`
     - _Requirements: 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9, 5.12, 5.13, 5.14, 16.4_
 
   - [x] 17.5 Wire the default executor, the CLI and the `proof:run` script
@@ -660,7 +660,7 @@ Manual steps that need the user: task 1.7 (optional, a second drive), task 2 (sp
     - Scope of this task: it writes the workflow file and the journal entry; it does not push, run the workflow or change repository settings
     - _Requirements: 13.27, 13.29, 16.3_
 
-- [x] 21. Final checkpoint
+- [-] 21. Final checkpoint
   - The agent runs `npm run typecheck`, `npm run lint` and `npm run build` itself (build only if it finishes in a reasonable time; otherwise ask the user to run it). The agent does not run the full suite
   - Write "Ready for you to run: `npm test`" and wait; continue only after the user pastes the output. Ask the user if questions arise
   - Record the commands, date, environment and the wall-clock times of the two proof suites in `docs/kiro-journal.md` from the user's pasted output only (measured values only; flag any overrun of the 60 s and 120 s targets)

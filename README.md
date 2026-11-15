@@ -111,7 +111,7 @@ Each side (Original and Resurrection) runs in a child process under Node's permi
 - An unbounded `.filter` in a harness arbitrary hangs the run and cannot be detected by the engine (L13). Use `accept` or `fc.pre` with a skip budget, and constructive generators.
 - The user's home directory and name are replaced in the report after the comparison (`<user-home>`, `<user>`). A bare short or generic user name outside a path context is not redacted; home paths and the name as a path segment are (L14).
 - Reference identity is not compared: two values that differ only in which slots share one object compare as equal (L1).
-- A package directory on a different drive than the runner directory is not verified locally; exercised on the GitHub Windows runner (checkout D:, temp C:), pending CI confirmation of the next run. The result of the first CI run is recorded in `docs/kiro-journal.md`.
+- Verified: the other-drive case (checkout and temp on different drives) is exercised in CI on the GitHub Windows runner (CI runs 1 and 2, recorded in `docs/kiro-journal.md`). It is not verified on the author's own machine, which has drive `C:` only.
 - A report is withheld as `identity-leak` only when the backstop still finds an identity value after redaction (D10). An identity key collision gives the fallback report without Divergences (D11).
 ## How Kiro is used
 See [`.kiro/`](.kiro/) for specs, steering, hooks and agents. A full write-up will follow.

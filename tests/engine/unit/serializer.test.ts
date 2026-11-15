@@ -1,3 +1,4 @@
+// Requirements: 10.4, 10.5, 10.6, 10.7
 import { describe, expect, it } from "vitest";
 import { canonicalJson, canonicalize } from "../../../src/engine/serialize/canonicalJson";
 import { deserialize } from "../../../src/engine/serialize/deserialize";

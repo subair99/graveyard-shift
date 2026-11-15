@@ -1,3 +1,4 @@
+// Requirements: 6.1, 6.2, 6.3, 6.5
 import { describe, expect, it } from "vitest";
 import { timeOfDeath } from "../../../src/engine/core/timeOfDeath";
 

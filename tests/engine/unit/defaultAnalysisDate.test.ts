@@ -1,3 +1,4 @@
+// Requirements: 10.2
 import { describe, expect, it } from "vitest";
 import { runAutopsy } from "../../../src/engine/autopsy";
 import { createMemoryCache } from "../../../src/engine/cache/cache";

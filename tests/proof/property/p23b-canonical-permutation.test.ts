@@ -1,4 +1,4 @@
-// Requirements: 13.1, 13.3
+// Requirements: 13.1, 13.3, 13.7
 import { describe, expect, it } from 'vitest';
 import { canonicalReport, canonicalizeReport } from '../../../src/proof/serialize/canonicalReport';
 import { deserializeReport } from '../../../src/proof/serialize/deserialize';

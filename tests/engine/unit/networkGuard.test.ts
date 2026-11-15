@@ -1,3 +1,4 @@
+// Requirements: 10.1, 11.4
 import { describe, expect, it } from "vitest";
 import http from "node:http";
 import { NetworkGuardError, isLlmHost } from "../../setup/networkGuard";

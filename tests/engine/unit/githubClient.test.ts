@@ -1,3 +1,4 @@
+// Requirements: 2.4, 2.6, 2.7, 2.8, 2.11, 2.12
 import { describe, expect, it } from "vitest";
 import { createMemoryCache } from "../../../src/engine/cache/cache";
 import { createGitHubClient, parseGitHubRepo } from "../../../src/engine/sources/github";

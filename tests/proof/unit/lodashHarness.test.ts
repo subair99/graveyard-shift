@@ -1,4 +1,4 @@
-// Requirements: 8.14, 10.1, 11.9, 14.6, 14.10
+// Requirements: 8.14, 10.1, 11.1, 11.9, 14.6, 14.10
 import { createRequire } from "node:module";
 import * as path from "node:path";
 import * as fc from "fast-check";

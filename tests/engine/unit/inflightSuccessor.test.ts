@@ -1,3 +1,4 @@
+// Requirements: 4.1, 4.2, 4.5, 4.8, 11.3
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";

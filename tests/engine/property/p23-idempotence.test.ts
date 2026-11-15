@@ -1,3 +1,4 @@
+// Requirements: 8.2, 10.3, 11.7, 12.1
 import { describe, it } from "vitest";
 import { createMemoryCache } from "../../../src/engine/cache/cache";
 import { runAutopsy } from "../../../src/engine/autopsy";

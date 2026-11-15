@@ -1,3 +1,4 @@
+// Requirements: 1.4, 1.5, 1.6, 1.7, 1.8, 1.11
 import { describe, expect, it } from "vitest";
 import { resolveVersion } from "../../../src/engine/resolve/versionResolver";
 

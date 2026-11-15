@@ -36,7 +36,7 @@
 Not secrets and not in `.env.example`; set them in the shell for a run.
 - `PROOF_BUDGET_MODE=warn`: a proof project that exceeds its wall-clock target prints a warning instead of failing the run.
 - `PROOF_LOG_TIMINGS=1`: appends the measured wall-clock of each proof project to `docs/kiro-journal.md`.
-- `PROOF_TEST_OTHER_DRIVE`: optional writable directory on another drive, read only by `scripts/spike/otherDrive.ts` (no vitest test reads it yet). The other-drive case is not verified locally; exercised on the GitHub Windows runner (checkout D:, temp C:), pending CI confirmation of the next run.
+- `PROOF_TEST_OTHER_DRIVE`: optional writable directory on another drive, read only by `scripts/spike/otherDrive.ts` (no vitest test reads it yet). The other-drive case is verified in CI on the GitHub Windows runner (checkout D:, temp C:; CI runs 1 and 2); it is not verified on the user's own machine (drive C: only).
 
 ## Proof engine notes
 - The sandbox runs the package in a child process under Node's permission model (`node --permission` with exact `--allow-fs-read` grants, no network, no child processes, scrubbed environment). It is a seat belt against accidental access, not a security boundary against malicious code.

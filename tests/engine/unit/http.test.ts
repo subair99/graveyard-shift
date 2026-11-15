@@ -1,3 +1,4 @@
+// Requirements: 2.8, 2.9, 2.11, 3.2, 3.3, 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.9
 import { describe, expect, it } from "vitest";
 import { createMemoryCache } from "../../../src/engine/cache/cache";
 import { createHttpClient, requestCacheKey } from "../../../src/engine/sources/http";

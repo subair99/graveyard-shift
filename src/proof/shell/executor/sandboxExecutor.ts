@@ -6,8 +6,9 @@
 // wait for `ready`, send `load`, wait for `loaded`, then one `call` at a time.
 //
 // Paths: the package directory is resolved once with `fs.realpathSync.native`; that string is the
-// `cwd`, the grant and the base of the entry file. The created form goes into the extra grants when
-// it differs (Requirement 5.17).
+// `cwd`, the grant and the base of the entry file. The created form is also passed in the extra read
+// paths when it differs, but `buildSandboxArgv` resolves every entry through `fs.realpathSync.native`,
+// so the created form collapses into the real path and no separate grant remains (Requirement 5.17).
 //
 // Timeouts: the child enforces the per-call timeout for async code (`timeoutMs` in the call
 // message). The parent adds a hard kill after `callTimeoutMs + killGraceMs`, which is the only way

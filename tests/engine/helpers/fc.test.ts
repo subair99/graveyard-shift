@@ -1,3 +1,4 @@
+// Requirements: 12.5, 12.6
 import { describe, expect, it } from "vitest";
 import { fc, fcConfig, fcParams, numRuns } from "./fc";
 

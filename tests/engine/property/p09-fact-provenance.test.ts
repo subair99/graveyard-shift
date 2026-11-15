@@ -1,3 +1,4 @@
+// Requirements: 3.1, 3.4, 3.6, 12.4
 import { describe, expect, it } from "vitest";
 import { buildCertificate, type Signals } from "../../../src/engine/core/certificate";
 import { DeathCertificateSchema, type Provenance } from "../../../src/engine/types";

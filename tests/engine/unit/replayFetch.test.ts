@@ -1,3 +1,4 @@
+// Requirements: 11.4, 11.6
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";

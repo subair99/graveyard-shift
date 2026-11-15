@@ -1,3 +1,4 @@
+// Requirements: 4.1, 4.10, 4.11, 4.12, 4.14, 4.15
 import { describe, expect, it } from "vitest";
 import { assignStatus } from "../../../src/engine/core/status";
 

@@ -1,3 +1,4 @@
+// Requirements: 10.6, 12.3
 import { describe, it, expect } from "vitest";
 import {
   CERTIFICATE_KEY_ORDER,

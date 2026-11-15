@@ -1,4 +1,4 @@
-// Requirements: 3.9, 5.4, 5.6, 5.10, 5.12, 7.8, 9.1, 11.7
+// Requirements: 3.9, 5.4, 5.6, 5.10, 5.12, 7.8, 8.2, 9.1, 11.7
 import { spawnSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'

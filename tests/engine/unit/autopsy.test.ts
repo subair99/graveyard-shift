@@ -1,3 +1,4 @@
+// Requirements: 1.7, 1.8, 1.10, 2.8, 2.10, 3.1, 4.1, 4.5, 9.8, 10.4
 import { describe, expect, it } from "vitest";
 import { createMemoryCache } from "../../../src/engine/cache/cache";
 import { compareCertificates, runAutopsy } from "../../../src/engine/autopsy";

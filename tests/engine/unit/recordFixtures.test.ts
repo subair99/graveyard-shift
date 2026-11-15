@@ -1,3 +1,4 @@
+// Requirements: 2.7, 2.8, 9.6, 11.4
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";

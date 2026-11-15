@@ -1,3 +1,4 @@
+// Requirements: 1.1, 1.2, 1.3, 1.8, 1.9, 1.10
 import { describe, expect, it } from "vitest";
 import { parseInput } from "../../../src/engine/parse/inputParser";
 import { isValidPackageName } from "../../../src/engine/parse/packageName";

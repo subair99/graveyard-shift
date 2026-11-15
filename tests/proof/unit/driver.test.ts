@@ -1,4 +1,4 @@
-// Requirements: 7.9, 8.6, 8.7, 8.8, 8.11, 8.12, 8.13, 9.3, 11.3, 12.3
+// Requirements: 7.9, 8.6, 8.7, 8.8, 8.11, 8.12, 8.13, 9.2, 9.3, 11.3, 12.3, 13.9
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'

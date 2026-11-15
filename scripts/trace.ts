@@ -1,15 +1,51 @@
-// Requirement trace (light): lists which proof test files cite which acceptance criterion of
-// .kiro/specs/proof-of-life-engine/requirements.md, and writes docs/traceability.md.
-// Reads files only; the single write is docs/traceability.md. Run: npm run trace
-import { readdirSync, readFileSync, writeFileSync } from "node:fs";
+// Requirement trace (light): for each spec, lists which test files cite which acceptance criterion
+// of the spec's requirements.md, and writes docs/traceability.md (one section per spec).
+// Citations are the `// Requirements: N.M, ...` header lines of the spec's test files.
+// Gap classes for the proof-of-life-engine spec come from docs/traceability-gaps.json.
+// Reads files only; the single write is docs/traceability.md. Not a test. Run: npm run trace
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 
 const ROOT = resolve(import.meta.dirname, "..");
-const REQUIREMENTS = join(ROOT, ".kiro", "specs", "proof-of-life-engine", "requirements.md");
-const TESTS_DIR = join(ROOT, "tests", "proof");
 const OUTPUT = join(ROOT, "docs", "traceability.md");
+const GAPS_FILE = join(ROOT, "docs", "traceability-gaps.json");
 
 type Id = string;
+
+interface SpecConfig {
+  name: string;
+  requirements: string;
+  testsDir: string;
+  /** True when gaps are classified in docs/traceability-gaps.json. */
+  classified: boolean;
+}
+
+const SPECS: readonly SpecConfig[] = [
+  {
+    name: "autopsy-engine",
+    requirements: ".kiro/specs/autopsy-engine/requirements.md",
+    testsDir: "tests/engine",
+    classified: false,
+  },
+  {
+    name: "proof-of-life-engine",
+    requirements: ".kiro/specs/proof-of-life-engine/requirements.md",
+    testsDir: "tests/proof",
+    classified: true,
+  },
+];
+
+const CLASSES = ["needs a test", "documentation only", "covered, header missing"] as const;
+type GapClass = (typeof CLASSES)[number];
+
+interface GapEntry {
+  spec: string;
+  criterion: Id;
+  class: GapClass;
+  evidence: string;
+}
+
+const NOTE = "A citation shows which tests claim to cover a criterion; it does not prove coverage.";
 
 function compareIds(a: Id, b: Id): number {
   const [an = 0, am = 0] = a.split(".").map(Number);
@@ -66,12 +102,43 @@ function parseCitations(file: string): Id[] {
   return ids;
 }
 
-function main(): void {
-  const criteria = parseCriteria(readFileSync(REQUIREMENTS, "utf8"));
+function readGapEntries(): GapEntry[] {
+  if (!existsSync(GAPS_FILE)) return [];
+  const raw: unknown = JSON.parse(readFileSync(GAPS_FILE, "utf8"));
+  if (!Array.isArray(raw)) throw new Error("docs/traceability-gaps.json must be an array");
+  return raw.map((item: unknown, index: number): GapEntry => {
+    const e = item as Partial<GapEntry> | null;
+    if (
+      e === null ||
+      typeof e !== "object" ||
+      typeof e.spec !== "string" ||
+      typeof e.criterion !== "string" ||
+      typeof e.evidence !== "string" ||
+      e.evidence === "" ||
+      !CLASSES.includes(e.class as GapClass)
+    ) {
+      throw new Error(`docs/traceability-gaps.json entry ${index} is not { spec, criterion, class, evidence }`);
+    }
+    return { spec: e.spec, criterion: e.criterion, class: e.class as GapClass, evidence: e.evidence };
+  });
+}
+
+interface SpecResult {
+  criteria: number;
+  cited: number;
+  gaps: number;
+  unknownCitations: number;
+  classCounts: Record<GapClass, number>;
+  problems: number;
+  messages: string[];
+}
+
+function renderSpec(spec: SpecConfig, entries: readonly GapEntry[], lines: string[]): SpecResult {
+  const criteria = parseCriteria(readFileSync(join(ROOT, spec.requirements), "utf8"));
   const known = new Set(criteria);
   const citedBy = new Map<Id, Set<string>>();
   const unknown = new Map<Id, Set<string>>();
-  const files = listTestFiles(TESTS_DIR)
+  const files = listTestFiles(join(ROOT, spec.testsDir))
     .map((f) => relative(ROOT, f).split("\\").join("/"))
     .sort(compareText);
   for (const file of files) {
@@ -85,41 +152,79 @@ function main(): void {
 
   const sortedCriteria = [...criteria].sort(compareIds);
   const gaps = sortedCriteria.filter((id) => !citedBy.has(id));
-  const date = new Date().toISOString().slice(0, 10);
-  const lines: string[] = [];
-  lines.push("# Traceability: proof-of-life-engine", "");
-  lines.push(`Generated on ${date} by \`npm run trace\` (system date; this is documentation, not a measured number).`, "");
-  lines.push("A citation shows which tests claim to cover a criterion; it does not prove coverage.", "");
-  lines.push(
-    "Sources: acceptance criteria from `.kiro/specs/proof-of-life-engine/requirements.md`; citations are the `// Requirements:` header lines of `tests/proof/**/*.test.ts`.",
-    "",
-  );
-  lines.push("## Summary", "");
+  const classCounts: Record<GapClass, number> = {
+    "needs a test": 0,
+    "documentation only": 0,
+    "covered, header missing": 0,
+  };
+  let problems = 0;
+  const messages: string[] = [];
+
+  lines.push(`## Spec: ${spec.name}`, "");
+  lines.push(`Requirements: \`${spec.requirements}\`. Tests: \`${spec.testsDir}/**/*.test.ts\`.`, "");
+  lines.push(NOTE, "");
+  lines.push("### Summary", "");
   lines.push(`- Test files scanned: ${files.length}`);
   lines.push(`- Acceptance criteria: ${criteria.length}`);
   lines.push(`- Criteria cited by at least one test file: ${criteria.length - gaps.length}`);
   lines.push(`- Criteria with no citing test file (gaps): ${gaps.length}`, "");
-  lines.push("## Criteria and citing test files", "");
+
+  lines.push("### Criteria and citing test files", "");
   lines.push("| Criterion | Test files |", "| --- | --- |");
   for (const id of sortedCriteria) {
     const set = citedBy.get(id);
     const cell = set === undefined ? "(none)" : [...set].sort(compareText).map((f) => `\`${f}\``).join("<br>");
     lines.push(`| ${id} | ${cell} |`);
   }
-  lines.push("", "## Gaps", "");
+  lines.push("");
+
+  lines.push("### Gaps", "");
   if (gaps.length === 0) {
     lines.push("none", "");
-  } else {
-    lines.push("Criteria that no test file cites:", "");
-    const byRequirement = new Map<string, Id[]>();
-    for (const id of gaps) {
-      const n = id.split(".")[0] ?? "";
-      byRequirement.set(n, [...(byRequirement.get(n) ?? []), id]);
-    }
-    for (const [n, ids] of byRequirement) lines.push(`- Requirement ${n}: ${ids.join(", ")}`);
+  } else if (!spec.classified) {
+    lines.push("Criteria that no test file cites. Classification: unclassified (not requested).", "");
+    for (const id of gaps) lines.push(`- ${id}: unclassified (not requested)`);
     lines.push("");
+  } else {
+    const mine = entries.filter((e) => e.spec === spec.name);
+    const byCriterion = new Map<Id, GapEntry>();
+    for (const e of mine) byCriterion.set(e.criterion, e);
+    lines.push("Criteria that no test file cites, with the class and evidence from `docs/traceability-gaps.json`:", "");
+    for (const id of gaps) {
+      const e = byCriterion.get(id);
+      if (e === undefined) {
+        lines.push(`- ${id}: UNCLASSIFIED`);
+      } else {
+        classCounts[e.class] += 1;
+        lines.push(`- ${id}: ${e.class}. ${e.evidence}`);
+      }
+    }
+    lines.push("");
+    lines.push("Gaps per class:", "");
+    for (const c of CLASSES) lines.push(`- ${c}: ${classCounts[c]}`);
+    lines.push("");
+
+    const gapSet = new Set(gaps);
+    const unclassified = gaps.filter((id) => !byCriterion.has(id));
+    const notCriteria = mine.map((e) => e.criterion).filter((id) => !known.has(id)).sort(compareIds);
+    const stale = mine.map((e) => e.criterion).filter((id) => known.has(id) && !gapSet.has(id)).sort(compareIds);
+    const duplicates = mine
+      .map((e) => e.criterion)
+      .filter((id, i, all) => all.indexOf(id) !== i)
+      .sort(compareIds);
+    problems = unclassified.length + notCriteria.length + stale.length + duplicates.length;
+    if (unclassified.length > 0) messages.push(`unclassified gaps: ${unclassified.join(', ')}`);
+    if (notCriteria.length > 0) messages.push(`classified criteria that do not exist: ${notCriteria.join(', ')}`);
+    if (stale.length > 0) messages.push(`stale classification entries: ${stale.join(', ')}`);
+    if (duplicates.length > 0) messages.push(`duplicate classification entries: ${duplicates.join(', ')}`);
+    lines.push("### Classification check", "");
+    lines.push(`- Unclassified gaps: ${unclassified.length === 0 ? "none" : unclassified.join(", ")}`);
+    lines.push(`- Classified criteria that do not exist in requirements.md: ${notCriteria.length === 0 ? "none" : notCriteria.join(", ")}`);
+    lines.push(`- Stale classification entries (no longer gaps): ${stale.length === 0 ? "none" : stale.join(", ")}`);
+    lines.push(`- Duplicate classification entries: ${duplicates.length === 0 ? "none" : duplicates.join(", ")}`, "");
   }
-  lines.push("## Cited numbers that do not exist in requirements.md", "");
+
+  lines.push("### Cited numbers that do not exist in requirements.md", "");
   if (unknown.size === 0) {
     lines.push("none", "");
   } else {
@@ -128,10 +233,51 @@ function main(): void {
     }
     lines.push("");
   }
-  writeFileSync(OUTPUT, lines.join("\n"), "utf8");
-  process.stdout.write(
-    `criteria ${criteria.length}, cited ${criteria.length - gaps.length}, gaps ${gaps.length}, unknown citations ${unknown.size}\n`,
+
+  return { criteria: criteria.length, cited: criteria.length - gaps.length, gaps: gaps.length, unknownCitations: unknown.size, classCounts, problems, messages };
+}
+
+function main(): void {
+  const entries = readGapEntries();
+  const specNames = new Set(SPECS.map((s) => s.name));
+  const strangeSpecs = entries.filter((e) => !specNames.has(e.spec));
+  const date = new Date().toISOString().slice(0, 10);
+  const lines: string[] = [];
+  lines.push("# Traceability", "");
+  lines.push(`Generated on ${date} by \`npm run trace\` (system date; this is documentation, not a measured number).`, "");
+  lines.push(NOTE, "");
+  lines.push(
+    "One section per spec. Acceptance criteria come from the spec's `requirements.md`; citations are the `// Requirements:` header lines of the spec's test files. Gap classes for proof-of-life-engine are read from `docs/traceability-gaps.json`.",
+    "",
   );
+
+  let failed = false;
+  const summary: string[] = [];
+  for (const spec of SPECS) {
+    const r = renderSpec(spec, entries, lines);
+    const classText = spec.classified
+      ? `, classes: ${CLASSES.map((c) => `${c} ${r.classCounts[c]}`).join("; ")}`
+      : "";
+    summary.push(
+      `${spec.name}: criteria ${r.criteria}, cited ${r.cited}, gaps ${r.gaps}, unknown citations ${r.unknownCitations}${classText}`,
+    );
+    if (r.problems > 0) {
+      failed = true;
+      for (const m of r.messages) summary.push(`  ${spec.name}: ${m}`);
+    }
+  }
+  if (strangeSpecs.length > 0) failed = true;
+  writeFileSync(OUTPUT, lines.join("\n"), "utf8");
+  for (const s of summary) process.stdout.write(`${s}\n`);
+  if (strangeSpecs.length > 0) {
+    process.stdout.write(`classification entries for an unknown spec: ${strangeSpecs.map((e) => `${e.spec} ${e.criterion}`).join(", ")}\n`);
+  }
+  if (failed) {
+    process.stdout.write(
+      "classification problems: see 'Classification check' in docs/traceability.md (unclassified gaps, classified criteria that do not exist, stale classification entries)\n",
+    );
+    process.exitCode = 1;
+  }
 }
 
 main();
