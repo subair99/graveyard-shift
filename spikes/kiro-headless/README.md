@@ -5,6 +5,10 @@ Throwaway. Delete `.github/workflows/spike-kiro.yml` and this directory when don
 All facts below were fetched on **2026-11-15**. Paraphrased from the cited pages. "To verify" means the docs did not
 confirm it or the spike must measure it.
 
+## Account note
+
+Use the account that holds the hackathon credits: a local `kiro-cli` login with a Builder ID is a different account without those credits (user-observed on 15 Nov 2026, `UsageLimitReachedError`; fixed by `kiro-cli login --social google` with the IDE's Google account). For headless, the API key belongs to one account, and which credits that key draws on is to verify.
+
 ## What the spike checks
 
 1. Headless mode works with an API key on your plan.

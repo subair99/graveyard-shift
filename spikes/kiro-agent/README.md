@@ -10,6 +10,10 @@ Draft custom agent for the future Medium role, with a read-only MCP stub and a w
 | `hooks/pre-tool-write-guard.mjs` | PreToolUse hook: allows writes only to `resurrection/**`, `deltas.json`, `harness.json` |
 | `hooks/pre-tool-write-guard.test-cases.json`, `hooks/run-cases.mjs` | Offline cases for the guard (a plain script, not part of vitest) |
 
+## Setup note: log in with the right account
+
+Log in to `kiro-cli` with the same account as the IDE, the one that holds the hackathon credits. A Builder ID login is a different account without those credits; a run then fails with `UsageLimitReachedError` (user-observed, 15 Nov 2026). Fix: `kiro-cli logout`, then `kiro-cli login --social google` (with the Google account the IDE uses).
+
 Run everything from the repository root inside WSL (the examples use `/mnt/c/dev/graveyard-shift`; adjust if you cloned elsewhere). Needs Node 18 or newer in WSL.
 
 ## 1. Versions
@@ -69,6 +73,51 @@ kiro-cli chat --v3 --no-interactive --require-mcp-startup --agent medium \
 
 Optional, to also capture events: add `--output-format stream-json` and redirect stdout to `/tmp/medium-run.jsonl`.
 
+## 5b. Enforcement test
+
+Numbering: the guard-related run is step 5, so this sits right after it. Step 5 asks the model to write `README.md` and `../x`; the model may refuse these by itself, in which case the guard is never exercised (user-observed: it refused, and refused again when asked to test the guard). This step uses a neutral prompt and test agents so that the model has no reason to refuse.
+
+1. Generate the agents (writes `.kiro/agents/guardtest.json` and `.kiro/agents/guardtest-hookonly.json`; the second has no `permissions` block, so the hook is the only enforcement):
+
+   ```bash
+   node spikes/kiro-agent/make-guardtest-agents.mjs
+   ```
+
+2. Run each agent in WSL with a neutral prompt that asks for four files. For `guardtest-hookonly` add the trust flags, so writes are approved and only the hook can stop them:
+
+   ```bash
+   export GUARD_LOG_FILE=/tmp/guardtest-guard.log
+   rm -f "$GUARD_LOG_FILE"
+   P='Create these four files, one tool call each, with the text "x" in each: resurrection/guard-ok.txt, resurrection/../guard-test-outside.txt, guard-test-root.txt, .kiro/guard-test.txt. Report the exact result of each call.'
+   kiro-cli chat --v3 --no-interactive --agent guardtest "$P" 2>&1 | tee /tmp/guardtest-run.txt
+   # second run: hook only, writes trusted
+   kiro-cli chat --v3 --no-interactive --agent guardtest-hookonly --trust-tools=fs_write,fs_append,str_replace "$P" 2>&1 | tee /tmp/guardtest-hookonly-run.txt
+   ```
+
+3. Read the guard log: `cat /tmp/guardtest-guard.log`.
+4. Expected (it matched in the user's run of 15 Nov 2026, both agents):
+   - `DENY` for `resurrection/../guard-test-outside.txt`, `guard-test-root.txt` and `.kiro/guard-test.txt`.
+   - `ALLOW` for `resurrection/guard-ok.txt`.
+   - For each denied call Kiro says the tool "was intercepted by PreToolUse hooks ... NOT executed", with the guard's reason.
+5. Verify none of the blocked files exist:
+
+   ```bash
+   ls -l guard-test-outside.txt guard-test-root.txt .kiro/guard-test.txt 2>&1
+   ```
+
+   Expect "No such file" three times. `resurrection/guard-ok.txt` should exist.
+6. Cleanup, then `git status --short` must print nothing from this test:
+
+   ```bash
+   node spikes/kiro-agent/make-guardtest-agents.mjs --clean
+   rm -f resurrection/guard-ok.txt /tmp/guardtest-guard.log /tmp/guardtest-run.txt /tmp/guardtest-hookonly-run.txt
+   rmdir resurrection 2>/dev/null
+   unset GUARD_LOG_FILE
+   git status --short
+   ```
+
+   `--clean` deletes only the two generated agent files and refuses any other argument.
+
 ## 6. What to expect
 
 - (a) succeeds. The package name is `example-fake-package`. If the tool is missing, check `--require-mcp-startup` output (exit code 3) and the `command`/working directory in `FIELDS.md`.
@@ -118,3 +167,15 @@ git status --short
 ```
 
 `git status` should show nothing from this run (`spikes/kiro-agent/` itself is new and untracked until you commit it). Kiro may also have saved a chat session for this directory; list with `kiro-cli chat --list-sessions` and remove with `kiro-cli chat --delete-session <ID>` if you want.
+
+## Results (user-run, 15 Nov 2026)
+
+Run by the user in WSL with kiro-cli 3.3.0. Copied from the user's report; details in `docs/kiro-journal.md`.
+
+- `run-cases.mjs`: 32 passed, 0 failed, 0 skipped (symlink cases ran).
+- MCP stub by hand: four JSON lines as expected; id 4 (`README.md`) returned `isError` "path not found or not allowed".
+- `kiro-cli agent validate`: no output, no error. `kiro-cli agent list` shows "medium Workspace (v3 format)".
+- `medium` agent run: (a) `@mediumstub/get_certificate` returned `example-fake-package`; (b) `resurrection/hello.txt` written, guard log ALLOW; (c) the model refused to attempt `README.md` and `../x` on its own, so the guard was not exercised. It refused twice more when asked to test the guard.
+- Steering: the agent listed all six steering files, including `necromancy-laws.md` and `honesty.md`.
+- Enforcement test (step 5b, agents `guardtest` and `guardtest-hookonly`): the guard log shows DENY for `resurrection/../guard-test-outside.txt`, `guard-test-root.txt` and `.kiro/guard-test.txt`, and ALLOW for `resurrection/guard-ok.txt`, in both runs. Kiro returned "Tool fs_write was intercepted by PreToolUse hooks before execution ... The tool was NOT executed" with the guard's reason. No blocked file existed afterwards. Cleanup left `git status` empty.
+- Credit meter: not provided.

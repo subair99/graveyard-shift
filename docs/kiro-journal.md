@@ -1036,3 +1036,43 @@ Source: `spikes/secret-scan/REPORT.md`. The scan was run by an agent, so every n
 - Only `isPublic` is named. `isPrivate` and `isLoopback` are secondary-source "to verify" items; the earlier "isPublic/isPrivate" wording (decision 2 above) is not confirmed by the advisory.
 - GitLab advisory database says no fixed version exists (user-stated, not verified by the agent).
 - New to-verify items: (a) what the Original returns for `isPublic` on each of the five (run in the spike; do not assume `true`); (b) whether CVE-2023-42282 is fixed in `ip@2.0.1`; (c) the GitLab "no fixed version" claim.
+
+## 2026-11-15: Spike 5 and spike 3 results (user-run)
+
+Run by the user in WSL on 15 Nov 2026. Copied from the user's report; not re-measured by an agent. Index: `spikes/README.md`.
+
+### Spike 5: local mode (user-run)
+- kiro-cli 3.3.0.
+- First attempt failed with `UsageLimitReachedError`. The CLI was logged in with Builder ID, a separate account with no hackathon credits.
+- After `kiro-cli logout` and `kiro-cli login --social google` (the same Google account as the IDE), `kiro-cli chat --v3 --no-interactive "Reply with the single word OK."` printed OK, exit code 0, real 7.8 s.
+- Account pitfall: log in with the same account as the IDE (the one holding the hackathon credits). A Builder ID login is a different account without those credits. Recorded in `spikes/kiro-agent/README.md` and `spikes/kiro-headless/README.md`.
+- Meter before/after: not provided.
+
+### Spike 3: custom agent (user-run)
+- `hooks/run-cases.mjs` in WSL: 32 passed, 0 failed, 0 skipped (symlink cases ran).
+- MCP stub by hand: four JSON lines as expected; id 4 (`README.md`) returned `isError` "path not found or not allowed".
+- `kiro-cli agent validate`: no output, no error. `kiro-cli agent list` shows "medium Workspace (v3 format)".
+- `medium` agent run:
+  - (a) `@mediumstub/get_certificate` returned `example-fake-package`.
+  - (b) `resurrection/hello.txt` written, guard log ALLOW.
+  - (c) the model refused to attempt `README.md` and `../x` on its own, so the guard was not exercised. It refused twice more when asked to test the guard, saying it would not rely on the guard to catch its own out-of-scope calls.
+- Steering check: the `medium` agent listed all six steering files, including `necromancy-laws.md` and `honesty.md`.
+- Enforcement test with two test agents generated from `medium.json` with a neutral prompt: `guardtest` (permissions + hook) and `guardtest-hookonly` (permissions removed, `--trust-tools=fs_write,fs_append,str_replace`).
+  - In both runs the guard log shows DENY for `resurrection/../guard-test-outside.txt`, `guard-test-root.txt` and `.kiro/guard-test.txt`, and ALLOW for `resurrection/guard-ok.txt`.
+  - Kiro returned "Tool fs_write was intercepted by PreToolUse hooks before execution ... The tool was NOT executed" with the guard's reason.
+  - No blocked file existed afterwards. Cleanup left `git status` empty.
+- The generator script `spikes/kiro-agent/make-guardtest-agents.mjs` is reconstructed by an agent (the user's original one-liner was not provided) and has not been run.
+- "To verify" items in `spikes/kiro-agent/FIELDS.md` that these results confirm (nothing else was changed):
+  - `agent validate` accepts `medium.json` (no output, no error). Not shown: whether it checks `permissions` or `excludedTools`.
+  - `agent list` shows it as v3 format.
+  - A PreToolUse hook (exit 2) blocks `fs_write` with hooks alone when writes are trusted (`guardtest-hookonly`).
+  - The hook's deny reason is returned to the model.
+- Still "to verify": real `tool_input` key names, `fs_write` deny via `exclude`, relative `resources` and hook script paths, `timeout` in inline hooks, exit codes other than 2, the headless run, credit cost.
+
+### Plan update: local mode works, two protection layers
+- Local mode (mode 2) works on the user's machine in WSL with the right account (after the login fix), so mode 2 is confirmed as a working demo path. Headless in Actions (spike 2) is still untested.
+- The Medium's protection has two layers:
+  1. The model's own refusal of out-of-scope writes. Observed, not guaranteed: it refused on its own, so the guard was not exercised in that run.
+  2. The PreToolUse hook, which was shown to hold even with writes trusted (`guardtest-hookonly` run).
+- The layers are not equal: only the hook is enforcement. The refusal is behavior and must not be cited as a guarantee. The demo can show the guard log (ALLOW/DENY lines).
+- Nothing is claimed here about headless mode, the credit cost or the meter (meter before/after: not provided).
