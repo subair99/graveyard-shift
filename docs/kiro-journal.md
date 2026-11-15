@@ -914,7 +914,7 @@ Measured by the user in their own PowerShell; copied from the user's message; no
 - Output stays a pull request with a signed Proof of Life; the Medium is the only unit called a "Kiro agent".
 ### Heroes
 - `lodash.set` is the hero package.
-- `ip`: the Coroner runs and shows its certificate, with the verdict "resurrection blocked: runtime dependencies not supported yet (D4)". Unverified: the registry shows `ip@2.0.1` with no `dependencies` field, so re-check it before relying on this verdict.
+- `ip`: the Coroner runs and shows its certificate, with the verdict "resurrection blocked: runtime dependencies not supported yet (D4)". Unverified: the registry shows `ip@2.0.1` with no `dependencies` field, so re-check it before relying on this verdict. Superseded: see "Plan correction: ip".
 - `inflight` gets a rest-in-peace card (successor `lru-cache`, no resurrection attempted).
 ### Decisions
 - Harness: a delta DSL (`deltas.json`: `prototype-unchanged` or `returns-expected`, each citing an advisory ID in the certificate) plus a preset menu. The LLM never writes executable harness code; a deterministic compiler builds `HarnessConfig`.
@@ -995,3 +995,36 @@ Source: `spikes/secret-scan/REPORT.md`. The scan was run by an agent, so every n
 ### Open
 - Older versions of `docs/kiro-journal.md` in git history still contain the home paths.
 - `tests/proof/unit/identity.test.ts` still has its home-path mentions. The user's decision covered only the journal, so this is not decided.
+
+## 2026-11-15: Secret scan re-run, spike 6 results, plan correction
+
+### Secret scan re-run (user-run)
+- The user re-ran `spikes/secret-scan/scan.ps1` after the redactions, at HEAD `1692f15`. Reported scope: 27 commits, 568 blobs.
+- Unclassified secret rows: 2. Neither is a credential. `spikes/secret-scan/scan.ps1` line 85 is the scanner matching its own AWS pattern. `scripts/spike/envMinimum.ts` line 13 is the known canary.
+- `.env` was never committed.
+- The newest commit uses the user's GitHub no-reply address.
+- The user is making the repository public.
+- Change made after this run (agent-run, not yet re-run by the user): the history blob scan in `scan.ps1` now skips paths under `spikes/secret-scan/`, so the scanner no longer flags itself. The working-tree scan already excluded that folder. This change is uncommitted until the user reviews and commits it.
+- The 2 remaining rows are explained above; the first one is expected to disappear after the change (not yet measured).
+
+### Spike 6 results (user-run)
+- The user ran the script with network on. Reported: 0 failures.
+- Eligible: `lodash.setwith`, `lodash.update`, `merge-recursive`, `lodash.updatewith`, `utils-extend`, `safe-eval`, and `ip` (control).
+- Not eligible:
+  - `ansi2html`: license field absent.
+  - `lodash.pick`: status retired-with-successor.
+  - `node-serialize`: license field absent (the legacy `licenses` field says MIT).
+  - `inflight`: 2 runtime dependencies, retired-with-successor (`lru-cache`), no open OSV vulnerability.
+- Source of the output: `spikes/candidates/RESULTS.md` and `spikes/candidates/certificates/`.
+- User decisions:
+  1. `ip` is a resurrection candidate, not a blocked control.
+  2. Demo set: `lodash.set` (prototype pollution, prototype-unchanged), `ip` (advisory on `isPublic`/`isPrivate`, returns-expected), `inflight` (rest-in-peace card). No other candidates for now.
+  3. `safe-eval` and `node-serialize` are excluded permanently. Their advisories are code execution, a fix would change what the package does, and the project will not run them.
+- Note: the `ip` certificate in `spikes/candidates/certificates/ip.json` lists one open advisory, GHSA-2p57-rm9w-gvfp, with the summary "ip SSRF improper categorization in isPublic". The `isPrivate` part of decision 2 is user-stated and not confirmed by the certificate.
+
+### Plan correction: ip
+- The earlier plan ("Pipeline plan (final)", Heroes) said `ip` is blocked for runtime dependencies (`jsbn`, `sprintf-js`). That was wrong. Those are dependencies of `ip-address`, not `ip`.
+- `ip@2.0.1` has no dependencies in the registry packument (fetched 2026-11-15 by spike 6), and spike 6 marks it eligible.
+- The note that D4 ("resurrection blocked: runtime dependencies not supported yet") applies to `ip` is retired.
+- The "Rejected" item "A dependency-root extension for `ip`" no longer has a reason for `ip`; it stays rejected.
+- Updated demo set: `lodash.set`, `ip`, `inflight` (rest-in-peace card). Sketch of the `ip` work: `spikes/candidates/IP-SKETCH.md`.

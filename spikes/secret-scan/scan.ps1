@@ -174,7 +174,7 @@ foreach ($blob in @($entries.Keys)) {
   $n = [Math]::Min(8000, $r.Bytes.Length)
   for ($j = 0; $j -lt $n; $j++) { if ($r.Bytes[$j] -eq 0) { $binaryBlobs++; break } }
   $text = $latin1.GetString($r.Bytes)
-  foreach ($pth in $locs.Keys) { Scan-Text $text $pth $locs[$pth] }
+  foreach ($pth in $locs.Keys) { if ($pth -like 'spikes/secret-scan/*') { continue }; Scan-Text $text $pth $locs[$pth] }
 }
 $cat.StandardInput.Close(); $cat.WaitForExit()
 
