@@ -1253,7 +1253,7 @@ Diagnosis (agent-run, plain `node` on the extracted Original lib/ip.js; the tabl
   - `"0::"`: false / false / true / `::` / true
 - Local reproduction (agent-run, reported in the diagnosis): `npx tsx <temp script>` with seed 1434247189 (compileHarnessFiles + runProofOfLife on the stub directory resurrection, 100 cases, full radius) reproduced the CI divergence `isPublic(":::")`. That run is not repeated here.
 
-## 2026-11-17: task 12.9, decision option A (class-gated isPublic in ip-alive), outcome (agent-run)
+## 2026-11-16: task 12.9, decision option A (class-gated isPublic in ip-alive), outcome (agent-run)
 - Decision (user): option A. `isPublic(x)` of ip-alive is `inNonPublicAddressClass(x) ? false : <Original's isPublic(x)>`; inNonPublicAddressClass is a plain-JS copy of isNonPublicAddress. The stub copy of ip-alive was updated to match.
 - Changed: ip preset `isPublic` has explicit cases for `":::"`, `"::"`, `"::::"`, `":"`, `"::0"`, `"0::"`, `":::1"` and non-canonical IPv4 forms inside and outside the class (`0x7f.1`, `0xa.0.0.1`, `192.168.1`, `172.16.0.0x1`, `0300.0250.0.1`, `0xc0a80001`, `0251.0376.1.1`; `172.32.0.0x1`, `0xb.0.0.1`, `11.1`, `0x08080808`, `0300.0251.0.1`, `4294967295`); its generator adds malformed IPv6 text (empty groups, runs of colons, stray edge colons, two `::`). The delta cases stay the five advisory addresses. These preset cases do not appear in tests/pipeline/fixtures/ip/{deltas,harness}.json, so those files and the stub copies were not regenerated.
 - New test tests/pipeline/unit/ipAliveClassEquivalence.test.ts: 5 tests passed (agent run, one file, 500-run property). It checks that the class block of ip-alive equals isNonPublicAddress, that ip-alive's isPublic is false inside the class and equals the Original's outside it, and that every difference is inside the class.
@@ -1261,3 +1261,24 @@ Diagnosis (agent-run, plain `node` on the extracted Original lib/ip.js; the tabl
 - tests/pipeline/integration/ipAlive.integration.test.ts (agent run, one file): 2 tests passed, 15.8 s.
 - tests/pipeline/unit/ipPreset.test.ts (agent run, one file): 20 tests passed. compilerIp.test.ts and stubFixtureIp.test.ts were not re-run: neither the compiler, the fixtures nor the stub files changed in this step.
 - Not measured: the CI run with this change; the full suite.
+
+## 2026-11-16: ci.yml runs of the workflow-token PRs (user-run observations)
+- The ci.yml runs 43867414241 (PR #2) and 43874397061 (PR #3) show as failed with "workflow file issue" and `jobs: []`.
+- Each was the `action_required` run (see A5) and ended when its PR was closed unmerged (`updatedAt` matches the close time). This is expected, not a test failure.
+- Main CI run 43875135593 is green on both runners, confirming the 8.3 short-path fix on Windows.
+
+## 2026-11-16: task 12.9 (M12), ip stub run, second attempt: alive and attested (user-run CI, run 43874004948)
+- Run 43874004948, stub mode, ip@2.0.1 -> 2.0.2, seed 693577894 (chosen by CI), verdict alive.
+- All five jobs green: intake, checks, prove, attest, publish.
+- Cases: isPublic 146 (was 41 before the generator change); all 20 exports tested. Declared delta `is-public-advisory` demonstrated.
+- PR #3 "ip 2.0.2: alive (stub run)" was opened by the workflow; closed unmerged with its branch deleted; resurrect/ip deleted.
+- `gh attestation verify` succeeded for resurrection.tgz (sha256:9aeb510eb89f4bb2dab237b725e174f2909e2b9351f5744928043b5c13b0cbad), proof-report.json (sha256:4b99c3857245fc5a656d3e2940bf6288c7689aee1e2336dd913ae54920c52e1d) and certificate.json (sha256:7f73eb9246d05756de233c5e185fcba0ba137d15568ad1f54c9ca039aa8d19e3), with `--predicate-type https://github.com/subair99/graveyard-shift/attestation/resurrection/v1` and `--signer-workflow subair99/graveyard-shift/.github/workflows/resurrect.yml`.
+- Signer: resurrect.yml@refs/heads/main.
+- ledger.json entry committed from the WSL clone.
+- Earlier attempt (run 43867172769): the first attempt was restless on `isPublic(":::")`, nothing was signed, the fix was narrowed to the reviewed class, and the second attempt was alive and attested.
+## 2026-11-16: nightly.yml permissions and not-checked visibility (step (e), user decisions, agent-run edits)
+- Decision (user): job `verify` of nightly.yml holds exactly `contents: read` and `attestations: read`; workflow level stays `permissions: {}`. Reason: the job's purpose is `gh attestation verify`, and with an explicit `permissions` block every unlisted permission is `none`.
+- This is a reasoned decision, not a measurement. M8 cannot confirm it until an `alive` entry is on `main` (V9); no nightly run has exercised `gh attestation verify` yet.
+- Changed: requirements.md (A4, R16.1), design.md (nightly.yml block, "Nightly permissions", V9 and the verify note), tasks.md (13.8, 13.12, M9 wording), tests/pipeline/unit/workflowLint.test.ts (exactly these two permissions for `verify`; still no write permission).
+- Decision (user): the result `not-checked` stays non-failing (R16.16, Property 28), but is visible: one `::warning::` line per not-checked entry (package, entry path, reason; redacted, then escaped for `%`, CR, LF), `counts: { total, checkable, notChecked }` in nightly-report.json and the summary, and the line "All N entries not-checked: nothing was verified tonight." when every checkable entry is not-checked.
+- Not measured: typecheck, lint and test results of this change are in the agent's report to the user, not here; the full suite was not run.

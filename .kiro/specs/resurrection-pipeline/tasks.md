@@ -401,7 +401,7 @@ Conventions for every task:
   - Do not start step (d) until the user has pasted the M3 to M7 results. Fixes to the workflows that follow from them (for example the D3 wording or the artifact flow) are made first, with one test file run per change. After such a fix reaches `main`, the user runs `cd ~/graveyard-shift && git pull origin main` in WSL before any further WSL run.
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 12. Step (d): ip preset and ip run (only while ip stays in the demo, see task 1.8)
+- [x] 12. Step (d): ip preset and ip run (only while ip stays in the demo, see task 1.8)
   - [x] 12.1 Implement the ip preset and its setup module
     - `src/pipeline/harness/core/presets/ipAddress.ts` with one generator for every export of ip@2.0.1 as read from the recorded tarball (task 1.8), using the shapes of the design (`ipString` with the forms of `spikes/candidates/IP-SKETCH.md` and explicit cases for the five Advisory_Addresses plus `0` and `017700000001`, `ipPair`, `ipMaskPair`, `cidrString`, `prefixLen`, `longInt`, `bufferArgs` (Buffers of at most 64 bytes), `familyArg`), registered in `presets/index.ts`. `src/pipeline/harness/sandbox/ipSetup.cjs` replaces `os.networkInterfaces()` identically on both sides.
     - Tests in `tests/pipeline/unit/ipPreset.test.ts`: each generator produces values the Value_Codec encodes (one example per generator), and the list test of R5.12 in `tests/pipeline/integration/ipExports.integration.test.ts`: the preset's covered exports equal the export list of the recorded tarball, read through the Sandbox_Executor.
@@ -469,7 +469,7 @@ Conventions for every task:
     - Rebuild `tests/pipeline/fixtures/stub/ip/` after 12.13 reported `alive`: `resurrection/` is a copy of the final `tests/proof/fixtures/ip-alive` bytes with `name` `@graveyard-shift/ip` and `version` `2.0.2` (README not copied), and `deltas.json` and `harness.json` are the canonical bytes of task 12.12. Update `tests/pipeline/unit/stubFixtureIp.test.ts` so that the byte-equality check refers to the task 12.12 files and the compile check uses the class delta.
     - Stop after this task: the next task is the manual one. Print "Ready for you to run: npm run resurrect -- ip --stub tests/pipeline/fixtures/stub/ip (task 12.9, in WSL)".
     - _Requirements: 23.25, 23.26, 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 9.10_
-  - [-] 12.9 Manual task (yours): M12, ip stub run, check, record, clean up
+  - [x] 12.9 Manual task (yours): M12, ip stub run, check, record, clean up
     - This task is after 12.14; the stop before it is intentional. Commit and push the work of 12.6 to 12.14 to `main` first.
     - In WSL, in the separate clone (never in `/mnt/c/dev/graveyard-shift`): `cd ~/graveyard-shift`; first remove leftovers of earlier runs from the clone root (`rm -rf resurrection deltas.json harness.json .graveyard-work`); `git pull origin main`; `npm ci` only if `package-lock.json` changed; then
       `npm run resurrect -- ip --stub tests/pipeline/fixtures/stub/ip`
@@ -481,16 +481,16 @@ Conventions for every task:
     - _Requirements: 23.27, 13.4, 13.9, 15.10, 18.1_
 
 - [ ] 13. Step (e): nightly re-verification
-  - [ ] 13.1 Implement the nightly classification
+  - [x] 13.1 Implement the nightly classification
     - `src/pipeline/undertaker/core/nightlyClassify.ts`: `NightlyResult`, `NightlyInput`, `classifyEntry` returning `{ results, fails }` in the fixed order (`tool-versions-changed`, `unexpected-attestation`, `attestation-failed`, `replay-mismatch`, `not-checked`, `new-advisory`, then `verified` or `not-resurrected`), `fails` only for `replay-mismatch`, `attestation-failed`, `unexpected-attestation`; a not-resurrected entry never gets `attestation-failed`, `replay-mismatch`, `tool-versions-changed` or `not-checked`; a stub flag. A pure `nightlyOrder` helper (ascending code point).
     - Example tests in `tests/pipeline/unit/nightlyClassify.test.ts`.
     - _Requirements: 16.3, 16.4, 16.5, 16.7, 16.8, 16.11, 16.12, 16.13, 16.16, 16.18, 16.22, 16.23_
 
-  - [ ] 13.2 Write property test for nightly classification
+  - [x] 13.2 Write property test for nightly classification
     - **Property 28: Nightly classification**
     - **Validates: Requirements 16.4, 16.5, 16.7, 16.11, 16.12, 16.13, 16.16, 16.18**
 
-  - [ ] 13.3 Write property test for not-resurrected entries
+  - [x] 13.3 Write property test for not-resurrected entries
     - **Property 29: Not-resurrected entries are never proof failures**
     - **Validates: Requirements 16.22, 16.23**
 
@@ -498,23 +498,23 @@ Conventions for every task:
     - **Property 30: Nightly order**
     - **Validates: Requirements 16.3**
 
-  - [ ] 13.5 Implement the nightly report
+  - [x] 13.5 Implement the nightly report
     - `src/pipeline/undertaker/core/nightlyReport.ts`: `nightly-report.json` and the job summary, one line per package (package, results, reason, committed and running Tool_Versions, "stub run" for a stub, the `gh` version, first differing path for a mismatch); facts about the registry or advisories carry Source_URL and Fetch_Date; no unmeasured number; all text through `redactText`.
     - Example tests in `tests/pipeline/unit/nightlyReport.test.ts`.
     - _Requirements: 16.10, 16.14, 16.15, 23.14_
 
-  - [ ] 13.6 Implement the Replay
+  - [x] 13.6 Implement the Replay
     - `src/pipeline/undertaker/shell/replay.ts`: fetch the Original by name and version from the committed report and compare its sha512 with `report.original.integrity` (mismatch or fetch failure gives `fetch-failed`); run the `prove.ts` path with the committed tarball, `deltas.json`, `harness.json`, `--seed report.seed`, `--cases report.sandbox.limits.casesRequested`, `--radius report.functionsTested`; compare canonical JSON byte for byte and record the first differing path. Confirm V13 (task 8.16) still holds.
     - Example tests in `tests/pipeline/unit/replay.test.ts` with fakes (identical, different with first path, fetch failed, digest differs).
     - _Requirements: 16.6, 16.7, 16.8, 16.17_
 
-  - [ ] 13.7 Implement the nightly shell and its CI entry
+  - [x] 13.7 Implement the nightly shell and its CI entry
     - `src/pipeline/undertaker/shell/nightly.ts` and `scripts/ci/nightly.ts`: list `graveyard/` sorted by code point, `deriveEntryKind` per entry (a malformed entry fails the run and names the path), re-run the Coroner for new advisory ids, compare Tool_Versions, Replay when equal, `gh attestation verify ... --format json` for `alive` entries built with `verifyCommands` (task 8.11), parse the JSON and compare `statement.subject[].digest.sha256` with the committed file, print `gh --version` and fail below `GH_MIN_VERSION`, write the report. It commits nothing and deploys nothing.
     - Unit test `tests/pipeline/unit/ghVerifyJson.test.ts` against a small recorded sample of `gh attestation verify` output, marked as a sample of field names unverified until M8 (use what M6 recorded where available). Tests with fake fs and gh.
     - _Requirements: 16.3, 16.9, 16.10, 16.11, 16.13, 16.17, 16.21_
 
-  - [ ] 13.8 Write `nightly.yml`
-    - `.github/workflows/nightly.yml`: `schedule` (cron `17 3 * * *`) and `workflow_dispatch`, `permissions: {}`, job `verify` with `contents: read` only, `ubuntu-24.04`, `timeout-minutes`, SHA-pinned actions, `node-version: 26.13.1`, `npm ci`, `GH_TOKEN` from `github.token`, upload of `nightly-report` with `if: always()`. Extend `workflowLint.test.ts` for the file.
+  - [x] 13.8 Write `nightly.yml`
+    - `.github/workflows/nightly.yml`: `schedule` (cron `17 3 * * *`) and `workflow_dispatch`, `permissions: {}`, job `verify` with `contents: read` and `attestations: read` only, `ubuntu-24.04`, `timeout-minutes`, SHA-pinned actions, `node-version: 26.13.1`, `npm ci`, `GH_TOKEN` from `github.token`, upload of `nightly-report` with `if: always()`. Extend `workflowLint.test.ts` for the file.
     - _Requirements: 16.1, 16.2, 16.14, 16.21, 12.6, 12.8_
 
   - [ ]* 13.9 Write the optional `notify` job and its tests (R16.19, R16.20, first to cut)
@@ -535,7 +535,7 @@ Conventions for every task:
 
   - [ ] 13.12 Manual task (yours): M8, dispatch `nightly.yml` once and read its report
     - Run in PowerShell: `gh workflow run nightly.yml --repo subair99/graveyard-shift --ref main`, then `gh run watch <run-id>` and `gh run view <run-id> --log` (read the summary), and `gh run download <run-id> -n nightly-report`.
-    - Paste back (V9, V10, V13): the report lines, the `gh` version on the runner (2.67.0 or later), whether `gh attestation verify` worked with the `contents: read` token (needs an `alive` entry on `main`; M9 runs only after spec (b) and is not a prerequisite, so if no such entry exists yet, say so and record `gh attestation verify` as not checked in the nightly), and the JSON field names. Check the GitHub documentation on scheduled workflows in public repositories and note the inactivity rule in the Journal; observe whether the schedule fires after the merge.
+    - Paste back (V9, V10, V13): the report lines, the `gh` version on the runner (2.67.0 or later), whether `gh attestation verify` worked with the `contents: read` and `attestations: read` token (needs an `alive` entry on `main`; M9 runs only after spec (b) and is not a prerequisite, so if no such entry exists yet, say so and record `gh attestation verify` as not checked in the nightly), and the JSON field names. Check the GitHub documentation on scheduled workflows in public repositories and note the inactivity rule in the Journal; observe whether the schedule fires after the merge.
     - _Requirements: 16.1, 16.9, 16.10, 16.14, 16.21_
 
 - [ ] 14. Step (f): documentation and traceability
@@ -544,6 +544,7 @@ Conventions for every task:
     - `tech.md`: `npm run resurrect`, `npm run measure:ip`, `PINNED_NODE_VERSION`, `gh` at least 2.67.0, no new secret, the Proof of Life runs only in CI, the `pipeline` vitest project (target only), `tar` importer rule if changed in task 8.15.
     - `structure.md`: `src/pipeline/` with its subdirectories, `scripts/resurrect.ts`, `push-resurrection.ts`, `measureIp.ts`, `scripts/ci/`, `tests/pipeline/` and fixtures, the Stub_Fixture, `docs/measurements/`, `graveyard/`, `ledger.json`, the two workflows, and the added `workflow_dispatch` of `ci.yml`; the stub run (copies a fixture, no credit, labelled "stub run", not Medium-produced).
     - `README.md`: new section "Resurrecting a package" (commands, the stub run, the verification commands built from the same text as `verifyCommands`, the A12 statement, the `gh` minimum and the CVE-2025-25204 warning marked "to be re-checked before release", the Ledger statement that the user commits `ledger.json` and no script or workflow does, the Credit_Ceiling statement), the "Known limitations" text of the design, the `pipeline` row in the test projects table (target only). No figure that the Journal does not record as measured. Keep Halloween naming in user-facing names and plain wording in code and docs.
+    - `README.md`, in the stub run text: closing a stub PR leaves a red, job-less CI run ("workflow file issue", `jobs: []`) on its publish branch; this is expected (A5).
     - _Requirements: 7.11, 17.2, 17.5, 18.1, 18.2, 18.3, 18.5, 20.1, 20.2, 20.3, 20.4, 20.5, 20.6, 20.8, 20.9, 20.10, 20.12, 20.13, 13.12_
 
   - [ ] 14.2 Reconcile the demo docs, the predicate references and the Journal
@@ -595,7 +596,7 @@ Conventions for every task:
   - [ ] 16.2 Manual task (yours): M8 (second run), dispatch `nightly.yml` again once an `alive` entry from M9 is merged
     - Start only after the pull request of an `alive` real Medium run (task 16.1) is merged to `main` by you. A stub entry does not count. This task is after spec (b) and blocks nothing; task 13.12 stays as it is and records "no `alive` entry yet" for `gh attestation verify`.
     - Same commands as task 13.12, in PowerShell: `gh workflow run nightly.yml --repo subair99/graveyard-shift --ref main`, then `gh run watch <run-id>` and `gh run view <run-id> --log` (read the summary), and `gh run download <run-id> -n nightly-report`.
-    - Paste back (V9): the report line of the `alive` entry, the `gh` version on the runner, whether `gh attestation verify` worked on that real entry with the `contents: read` token, the exit code and the JSON field names (compare with what M6 recorded), and whether the `statement.subject[].digest.sha256` comparison held. If it differs from the sample used by `ghVerifyJson.test.ts` (task 13.7), stop and tell the agent, who then fixes the parser.
+    - Paste back (V9): the report line of the `alive` entry, the `gh` version on the runner, whether `gh attestation verify` worked on that real entry with the `contents: read` and `attestations: read` token, the exit code and the JSON field names (compare with what M6 recorded), and whether the `statement.subject[].digest.sha256` comparison held. If it differs from the sample used by `ghVerifyJson.test.ts` (task 13.7), stop and tell the agent, who then fixes the parser.
     - _Requirements: 16.9, 16.10, 16.11, 16.13, 16.21_
 
 ## Notes

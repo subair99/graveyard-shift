@@ -526,7 +526,7 @@ Rules (R16, R16.18, R16.22, R16.23):
 
 `nightly.ts` (shell): lists `graveyard/` directories sorted by code point (R16.3); for each reads the files, calls `deriveEntryKind`, runs the Coroner again (R16.13), compares Tool_Versions (R16.4), runs the Replay when equal, verifies attestations for `alive` with `gh attestation verify ... --format json` and parses the JSON (`statement.subject[].digest.sha256` against the sha256 of the committed file, R16.11). Replay (R16.6, R16.8): fetch the Original by name and version from the committed report and compare its sha512 with `report.original.integrity` (mismatch or fetch failure gives `fetch-failed`); run the proof CLI path of `prove.ts` with the committed tarball, `deltas.json`, `harness.json`, `--seed report.seed`, `--cases report.sandbox.limits.casesRequested`, `--radius report.functionsTested`; compare the canonical JSON of the new report with the committed file byte for byte and record the first differing path. The nightly report (`nightly-report.json` and the job summary, R16.14, R16.15) has one line per package: package, results, reason, committed and running Tool_Versions, `stub run` for a stub (R23.14), the `gh` version (R16.10); facts about the registry or advisories carry Source_URL and Fetch_Date. The job prints `gh --version` and fails with a clear message if it is below `GH_MIN_VERSION`. The job never commits and never deploys (R16.21).
 
-**To verify:** (agent, at task time) that `casesRequested` equals the value passed as `--cases` and that `functionsTested` is accepted by `--radius`; (user, first nightly dispatch) that `gh attestation verify` works with the workflow token of `contents: read`, that the runner image's `gh` is 2.67.0 or later, and the JSON field names (still open in `spikes/attest/DECISION.md`).
+**To verify:** (agent, at task time) that `casesRequested` equals the value passed as `--cases` and that `functionsTested` is accepted by `--radius`; (user, first nightly dispatch) that `gh attestation verify` works with the workflow token of `contents: read` and `attestations: read`, that the runner image's `gh` is 2.67.0 or later, and the JSON field names (still open in `spikes/attest/DECISION.md`).
 
 ### Redaction and honesty
 
@@ -755,7 +755,7 @@ jobs:
   verify:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
-    permissions: { contents: read }
+    permissions: { contents: read, attestations: read }
     steps:
       # checkout (persist-credentials: false), setup-node 26.13.1, npm ci
       - name: Re-verify graveyard
@@ -771,6 +771,10 @@ jobs:
     steps:
       # download-artifact nightly-report; shell with gh and jq only; no checkout, no npm
 ```
+
+**Nightly permissions (decision, 2026-11-16).** Job `verify` holds exactly `contents: read` and `attestations: read`; the workflow level stays `permissions: {}`. Reason: the purpose of the job is `gh attestation verify`, and in a workflow with an explicit `permissions` block every permission that is not listed is `none`, so the attestation read permission has to be listed. This is a reasoned decision, not a measurement: M8 cannot confirm it until an `alive` entry is on `main` (V9). No write permission is added. `notify` is a separate job with `issues: write` only and does not change.
+
+**Not-checked in the nightly (decision, 2026-11-16).** The result `not-checked` stays non-failing (R16.16, Property 28). To keep it visible, the shell prints one `::warning::` line per entry whose results include `not-checked` (package, entry path, reason; redacted with `redactText`, then escaped for workflow commands: `%` to `%25`, CR to `%0D`, LF to `%0A`). `nightly-report.json` has `counts: { total, checkable, notChecked }` after `ghMinVersion` and before `entries`; `checkable` is the number of entries that were to be checked (every entry except a not-resurrected one without `not-checked`). The summary prints the counts, and when `checkable` is at least 1 and equals `notChecked` it says "All N entries not-checked: nothing was verified tonight."
 
 `notify` runs no package code and reads no Medium_Output (A15). It finds an open issue titled "Nightly re-verification failed" with `gh issue list --search`, edits its body or creates one. The schedule is declared on `main`'s copy of the file. GitHub's schedule trigger has documented limits (it runs on the default branch, and scheduled workflows in public repositories can be disabled after a period without repository activity). **To verify (user):** the schedule fires after the first merge of `nightly.yml`, and the inactivity rule against the current GitHub docs (not fetched for this design).
 
@@ -1182,7 +1186,7 @@ These choices fill gaps. Each can be reversed without reopening a requirement.
 | V6 | `gh` (2.67.0 or later, official apt repository) and `git` authenticated in the WSL clone `~/graveyard-shift`; `gh workflow run` with `--ref main` and an omitted or empty `branch` | M3, M5, M10 | user. **Still open (2026-11-16):** `gh` and `git` authentication in WSL was observed (M3), but `gh workflow run` with an empty or omitted `branch` was NOT tested; M5 covered only a dispatch with a branch. |
 | V7 | `gh auth setup-git` plus `git push` works in `publish` with `contents: write`; `npm ci --ignore-scripts` is enough for the `tsx` scripts in `attest` and `publish` | first stub run | user. **Verified 2026-11-16 by the user's run:** the `publish` job pushed the branch and opened PR #1, and `attest` and `publish` were green. |
 | V8 | Three separate `actions/attest` steps give three bundles, and each `gh attestation verify` finds its own; JSON field names and the exit code of the failing case (open since spike 4) | M6 | user. **Verified 2026-11-16 by the user's run:** each subject has its own attestation; `gh attestation verify` succeeded for `resurrection.tgz`, `proof-report.json` and `certificate.json`, each by `.github/workflows/resurrect.yml@refs/heads/main`. JSON field names and the exit code of the failing case were not part of this observation and stay open. |
-| V9 | `gh attestation verify` works in the nightly job with a `contents: read` token; `gh` on the runner image is 2.67.0 or later | M8; on a real `alive` entry, M8 (second run) after M9 | user |
+| V9 | `gh attestation verify` works in the nightly job with a `contents: read` and `attestations: read` token; `gh` on the runner image is 2.67.0 or later | M8; on a real `alive` entry, M8 (second run) after M9 | user |
 | V10 | The schedule fires after the merge, and the inactivity rule for scheduled workflows in public repositories (docs not fetched here) | observe after merge; read the GitHub docs | user |
 | V11 | Byte-identical replay holds across days on the runner while the Tool_Versions are equal (A8, U2) | nightly runs after the first alive entry | user |
 | V12 | `kiro-cli` exit code and output for "no credits", and whether it prints usage (R6.13, R7.3) | first real Medium run (M9) | user |

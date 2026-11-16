@@ -169,6 +169,53 @@ describe("workflow lint", () => {
     expect(problems.some((p) => p.startsWith("nightly.yml") && p.includes("differs"))).toBe(true);
   });
 
+  it("accepts a good nightly.yml and applies the pipeline rules to a bad one", () => {
+    const good = `
+on: { schedule: [{ cron: "17 3 * * *" }], workflow_dispatch: {} }
+permissions: {}
+jobs:
+  verify:
+    timeout-minutes: 60
+    permissions: { contents: read, attestations: read }
+    steps:
+      - uses: actions/checkout@${SHA}
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@${SHA}
+        with: { node-version: ${PINNED_NODE_VERSION} }
+      - run: npx tsx scripts/ci/nightly.ts
+`;
+    expect(lintWorkflows([wf("nightly.yml", good)])).toEqual([]);
+    const bad = good
+      .replace("{ persist-credentials: false }", "{ fetch-depth: 0 }")
+      .replace("    timeout-minutes: 60\n", "")
+      .replace("npx tsx scripts/ci/nightly.ts", "echo ${{ github.token }}");
+    const problems = lintWorkflows([wf("nightly.yml", bad)]);
+    expect(problems.some((p) => p.includes("persist-credentials"))).toBe(true);
+    expect(problems.some((p) => p.includes("no timeout-minutes"))).toBe(true);
+    expect(problems.some((p) => p.includes("expression inside a run"))).toBe(true);
+  });
+
+  it("has nightly.yml with the required triggers, permissions and report upload", () => {
+    const nightly = loadWorkflows().find((f) => f.name === "nightly.yml");
+    expect(nightly).toBeDefined();
+    const doc = nightly?.doc as Workflow & { permissions?: unknown };
+    expect(doc.permissions).toEqual({});
+    expect(doc.on).toHaveProperty("workflow_dispatch");
+    const schedule = (doc.on as { schedule?: { cron?: string }[] }).schedule;
+    expect(schedule?.map((s) => s.cron)).toEqual(["17 3 * * *"]);
+    expect(Object.keys(doc.jobs ?? {})).toEqual(["verify"]);
+    const verify = doc.jobs?.["verify"];
+    expect(verify?.permissions).toEqual({ contents: "read", attestations: "read" });
+    expect(lintWorkflows(nightly ? [nightly] : [])).toEqual([]);
+    const text = nightly?.text ?? "";
+    for (const forbidden of ["id-token", "attestations: write", "contents: write", "issues:", "pull-requests"]) {
+      expect(text).not.toContain(forbidden);
+    }
+    const upload = verify?.steps?.find((s) => s.uses?.startsWith("actions/upload-artifact@"));
+    expect(upload?.with?.["name"]).toBe("nightly-report");
+    expect((upload as { if?: string }).if).toBe("always()");
+  });
+
   it("finds the workflows directory", () => {
     expect(existsSync(workflowDir)).toBe(true);
   });
