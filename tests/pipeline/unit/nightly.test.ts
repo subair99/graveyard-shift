@@ -1,4 +1,4 @@
-// Requirements: 16.3, 16.9, 16.10, 16.11, 16.13, 16.17, 16.21
+// Requirements: 16.3, 16.9, 16.10, 16.11, 16.13, 16.17, 16.21, 16.24
 // Fakes only: in-memory files, a fake gh, a fake Coroner, a fake Replay CLI. No network, no real gh.
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -10,6 +10,7 @@ import type { ToolVersions } from "../../../src/pipeline/undertaker/core/nightly
 import {
   runNightly,
   runningToolVersions,
+  REPO_ROOT_MARKER,
   REPORT_SCHEMA_VERSION,
   type GhResult,
   type NightlyDeps,
@@ -89,6 +90,7 @@ interface Rig {
 }
 
 function rig(opts: {
+  cwdIsRoot?: boolean;
   ghVersionOut?: string;
   verifyDigest?: (file: string, actual: string) => string;
   verifyOut?: (file: string) => GhResult | null;
@@ -126,6 +128,7 @@ function rig(opts: {
         }
         return [...seen];
       },
+      exists: (f) => (opts.cwdIsRoot ?? true) && norm(f) === REPO_ROOT_MARKER,
       listFiles: (dir) =>
         [...files.keys()]
           .map(norm)
@@ -272,6 +275,47 @@ describe("runNightly", () => {
     expect(out.malformed.join("\n")).toContain(join("graveyard", "broken"));
     expect(r.errors.join("\n")).toContain(join("graveyard", "broken"));
     expect(out.report.entries).toHaveLength(1);
+  });
+
+  it("treats a missing graveyard/ in the repository root as zero entries: exit 0, one ::notice::, no malformed entry", async () => {
+    const r = rig({});
+    r.deps = { ...r.deps, fs: { ...r.deps.fs, listDirs: () => null } };
+    const out = await runNightly(r.deps);
+    expect(out.exitCode).toBe(0);
+    expect(out.malformed).toEqual([]);
+    expect(out.report.counts).toEqual({ total: 0, checkable: 0, notChecked: 0 });
+    expect(r.logs.filter((l) => l.startsWith("::notice::"))).toEqual(["::notice::No entries in the graveyard: nothing to verify."]);
+    expect(r.errors).toEqual([]);
+    expect(r.summaries[0]).toContain("No entries in the graveyard: nothing to verify.");
+    expect(r.summaries[0]).not.toContain("nothing was verified tonight");
+  });
+
+  it("treats an existing but empty graveyard/ the same way", async () => {
+    const r = rig({});
+    const out = await runNightly(r.deps);
+    expect(out.exitCode).toBe(0);
+    expect(out.report.counts).toEqual({ total: 0, checkable: 0, notChecked: 0 });
+    expect(r.logs.filter((l) => l.startsWith("::notice::"))).toHaveLength(1);
+    expect(r.summaries[0]).toContain("No entries in the graveyard: nothing to verify.");
+  });
+
+  it("fails with a clear message when graveyard/ is missing and the cwd is not the repository root", async () => {
+    const r = rig({ cwdIsRoot: false });
+    r.deps = { ...r.deps, fs: { ...r.deps.fs, listDirs: () => null } };
+    const out = await runNightly(r.deps);
+    expect(out.exitCode).toBe(1);
+    expect(r.errors.join("\n")).toContain("not the repository root");
+    expect(r.logs.some((l) => l.startsWith("::notice::"))).toBe(false);
+    expect(r.summaries[0]).toContain("The run failed");
+  });
+
+  it("still fails for one malformed entry and prints no notice", async () => {
+    const r = rig({});
+    r.files.set(join("graveyard", "broken", "certificate.json"), enc(JSON.stringify(LODASH_SET_CERT)));
+    const out = await runNightly(r.deps);
+    expect(out.exitCode).toBe(1);
+    expect(out.malformed.join("\n")).toContain(join("graveyard", "broken"));
+    expect(r.logs.some((l) => l.startsWith("::notice::"))).toBe(false);
   });
 
   it("reports a new advisory id with its Source_URL and Fetch_Date", async () => {

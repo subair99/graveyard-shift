@@ -6,6 +6,8 @@ import type { ToolVersions } from "../../../src/pipeline/undertaker/core/nightly
 import {
   allNotChecked,
   escapeWorkflowCommandData,
+  NO_ENTRIES_TEXT,
+  renderNoEntriesNotice,
   renderNotCheckedWarning,
   buildNightlyReport,
   renderNightlyReportJson,
@@ -114,6 +116,13 @@ describe("nightlyReport", () => {
       expect(allNotChecked(report.counts)).toBe(false);
       expect(renderNightlySummary(report)).not.toContain("nothing was verified tonight");
     }
+  });
+
+  it("says there is nothing to verify for an empty graveyard and renders a redacted ::notice::", () => {
+    expect(renderNightlySummary(build([]))).toContain(NO_ENTRIES_TEXT);
+    expect(renderNoEntriesNotice({ pathValues: [], userName: undefined }, "posix")).toBe(
+      "::notice::No entries in the graveyard: nothing to verify.",
+    );
   });
 
   it("escapes %, CR and LF of workflow command data and nothing else", () => {

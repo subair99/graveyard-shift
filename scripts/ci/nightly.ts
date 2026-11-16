@@ -5,7 +5,7 @@
  * Environment: GH_TOKEN (or GITHUB_TOKEN) for `gh` and the GitHub REST API, GITHUB_STEP_SUMMARY (optional).
  */
 import { spawn } from "node:child_process";
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -38,6 +38,7 @@ const nodeFs: NightlyFs = {
       return null;
     }
   },
+  exists: (file) => existsSync(file),
   listFiles: (dir) =>
     readdirSync(dir, { withFileTypes: true })
       .filter((e) => e.isFile())

@@ -99,6 +99,14 @@ export function renderNotCheckedWarning(
   return `::warning::${escapeWorkflowCommandData(redactText(text, identity, platform))}`;
 }
 
+/** The line for a missing or empty graveyard/ (R16.24): the normal state before the first entry is merged. */
+export const NO_ENTRIES_TEXT = "No entries in the graveyard: nothing to verify.";
+
+/** The `::notice::` line for an empty graveyard, redacted first and escaped second. */
+export function renderNoEntriesNotice(identity: IdentityValues, platform: Platform): string {
+  return `::notice::${escapeWorkflowCommandData(redactText(NO_ENTRIES_TEXT, identity, platform))}`;
+}
+
 const DEFAULT_REASONS: Readonly<Record<NightlyResult, string>> = {
   verified: "Replay identical and attestations verified.",
   "replay-mismatch": "The Replay produced a report that differs from the committed one.",
@@ -187,7 +195,7 @@ export function renderNightlySummary(report: NightlyReport): string {
       ? [`All ${report.counts.checkable} entries not-checked: nothing was verified tonight.`]
       : []),
     "",
-    ...(report.entries.length === 0 ? ["No entries in graveyard/."] : report.entries.map(renderNightlyLine)),
+    ...(report.entries.length === 0 ? [NO_ENTRIES_TEXT] : report.entries.map(renderNightlyLine)),
   ];
   return `${lines.join("\n")}\n`;
 }

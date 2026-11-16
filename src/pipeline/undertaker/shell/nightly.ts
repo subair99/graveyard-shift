@@ -28,6 +28,7 @@ import {
   renderNightlyLine,
   renderNightlyReportJson,
   renderNightlySummary,
+  renderNoEntriesNotice,
   renderNotCheckedWarning,
 } from "../core/nightlyReport";
 import type { NightlyEntryInput, NightlyFact, NightlyReport } from "../core/nightlyReport";
@@ -37,6 +38,8 @@ import type { ReplayDeps } from "./replay";
 
 export const NIGHTLY_REPORT_FILE = "nightly-report.json";
 export const GRAVEYARD_DIR = "graveyard";
+/** A file that exists in the repository root and nowhere else on the runner; its presence shows the cwd is the root. */
+export const REPO_ROOT_MARKER = ".github/workflows/nightly.yml";
 const BUNDLE_SUFFIX = ".sigstore.json";
 const TARBALL_SUFFIX = ".tgz";
 
@@ -45,6 +48,8 @@ export interface NightlyFs {
   listDirs(dir: string): string[] | null;
   /** Names of the files directly in `dir`. */
   listFiles(dir: string): string[];
+  /** True when `file` (relative to the current directory) exists; used to check that the cwd is the repository root. */
+  exists(file: string): boolean;
   readBytes(file: string): Uint8Array | null;
   writeText(file: string, text: string): void;
 }
@@ -177,7 +182,7 @@ const shortText = (text: string): string => text.trim().split(/\r?\n/)[0]?.slice
 
 /** Verifies one committed file: runs gh in the entry directory, then compares the signed digest with the file's. */
 export async function verifyAttestation(
-  deps: Pick<NightlyDeps, "runGh" | "sha256" | "fs">,
+  deps: Pick<NightlyDeps, "runGh" | "sha256"> & { readonly fs: Pick<NightlyFs, "readBytes"> },
   entryDir: string,
   fileName: string,
 ): Promise<Result<true, string>> {
@@ -389,6 +394,7 @@ export async function runNightly(deps: NightlyDeps): Promise<NightlyOutcome> {
   const inputs: NightlyEntryInput[] = [];
   const warnings: string[] = [];
   let failed = false;
+  let wrongCwd: string | null = null;
 
   // gh first: its version is printed and checked before any attestation is trusted (CVE-2025-25204 below 2.67.0).
   let ghVersion: string | null = null;
@@ -415,10 +421,14 @@ export async function runNightly(deps: NightlyDeps): Promise<NightlyOutcome> {
       io.log(`note: running Node ${deps.runningTools.node} is not the pinned v${PINNED_NODE_VERSION}`);
     }
     const names = deps.fs.listDirs(deps.root);
-    if (names === null) {
-      malformed.push(`${deps.root}: directory is missing`);
+    if (names === null && !deps.fs.exists(REPO_ROOT_MARKER)) {
+      // A missing graveyard/ is only the empty Crypt when we stand in the repository root (R16.24).
+      wrongCwd = `the current directory is not the repository root (${REPO_ROOT_MARKER} not found), so a missing ${deps.root}/ cannot be read as an empty graveyard`;
+      io.error(wrongCwd);
+      failed = true;
     } else {
-      for (const name of nightlyOrder(names)) {
+      // A missing graveyard/ in the repository root is the same as an empty one: zero entries (R16.24).
+      for (const name of nightlyOrder(names ?? [])) {
         try {
           const processed = await processEntry(deps, name);
           inputs.push(processed.input);
@@ -437,8 +447,13 @@ export async function runNightly(deps: NightlyDeps): Promise<NightlyOutcome> {
   const report = buildNightlyReport({ entries: inputs, ghVersion, identity: deps.identity, platform: deps.platform });
   for (const e of report.entries) io.log(renderNightlyLine(e));
   for (const w of warnings) io.log(w);
+  // Nothing to verify: only when the graveyard was read (missing or empty) and nothing is malformed or failed.
+  if (!failed && wrongCwd === null && malformed.length === 0 && inputs.length === 0) {
+    io.log(renderNoEntriesNotice(deps.identity, deps.platform));
+  }
   for (const m of malformed) io.error(`malformed entry: ${m}`);
   let summary = renderNightlySummary(report);
+  if (wrongCwd !== null) summary += `\nThe run failed: ${wrongCwd}.\n`;
   if (malformed.length > 0) summary += `\nMalformed entries (the run fails):\n${malformed.map((m) => `- ${m}`).join("\n")}\n`;
   deps.fs.writeText(deps.reportFile, renderNightlyReportJson(report));
   io.summary(summary);
