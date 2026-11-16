@@ -13,6 +13,7 @@
     "lint": "eslint src tests",
     "fixtures:record": "tsx --env-file=.env scripts/recordFixtures.ts",
     "fixtures:record-tarball": "tsx scripts/recordTarball.ts",
+    "measure:ip": "tsx scripts/measureIp.ts",
     "proof:run": "tsx src/proof/cli.ts",
     "trace": "tsx scripts/trace.ts"
   },

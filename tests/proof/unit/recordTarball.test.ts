@@ -1,5 +1,5 @@
 // Requirements: 14.1
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -7,6 +7,8 @@ import {
   META_FILE_NAME,
   TARBALL_FILE_NAME,
   assertRegistryUrl,
+  findPackumentPath,
+  parseRecordTarballArgs,
   recordTarball,
 } from "../../../scripts/lib/recordTarball";
 import { computeSri } from "../../../src/proof/shell/integrity";
@@ -196,5 +198,107 @@ describe("recordTarball", () => {
     const meta = JSON.parse(readFileSync(join(outDir, META_FILE_NAME), "utf8")) as Record<string, unknown>;
     expect(Object.keys(meta)).not.toContain("author");
     expect(Object.keys(meta)).not.toContain("contributors");
+  });
+});
+
+describe("parseRecordTarballArgs", () => {
+  it("defaults to lodash.set@4.3.2", () => {
+    expect(parseRecordTarballArgs([])).toEqual({
+      packageName: "lodash.set",
+      packageVersion: "4.3.2",
+      force: false,
+      dryRun: false,
+    });
+  });
+
+  it("parses --package and --version with the flags", () => {
+    expect(parseRecordTarballArgs(["--package", "ip", "--version", "2.0.1", "--force", "--dry-run"])).toEqual({
+      packageName: "ip",
+      packageVersion: "2.0.1",
+      force: true,
+      dryRun: true,
+    });
+  });
+
+  it.each([
+    [["--package", "ip"]],
+    [["--version", "2.0.1"]],
+    [["--package", "--version", "2.0.1"]],
+    [["--package", "../x", "--version", "1.0.0"]],
+    [["--package", "@a/b", "--version", "1.0.0"]],
+    [["--package", "ip", "--version", "latest"]],
+    [["--bogus"]],
+  ])("rejects %j", (args) => {
+    expect(() => parseRecordTarballArgs(args)).toThrow();
+  });
+});
+
+describe("recordTarball for ip@2.0.1", () => {
+  const IP_URL = "https://registry.npmjs.org/ip/-/ip-2.0.1.tgz";
+
+  function writeIpPackument(integrity: string): void {
+    const body = { versions: { "2.0.1": { license: "MIT", dist: { tarball: IP_URL, integrity } } } };
+    writeFileSync(
+      packumentPath,
+      JSON.stringify({ sourceUrl: "https://registry.npmjs.org/ip", body: JSON.stringify(body) }),
+      "utf8",
+    );
+  }
+
+  it("writes ip-2.0.1.tgz and ip-2.0.1.meta.json with the ip name and version", async () => {
+    writeIpPackument(computeSri(BYTES));
+    const ipOut = join(dir, "tests", "proof", "fixtures", "ip");
+    const summary = await recordTarball({
+      fetch: fakeFetch(BYTES).fetch,
+      clock,
+      packumentPath,
+      outDir: ipOut,
+      packageName: "ip",
+      packageVersion: "2.0.1",
+    });
+    expect(summary.written).toEqual([join(ipOut, "ip-2.0.1.tgz"), join(ipOut, "ip-2.0.1.meta.json")]);
+    expect(new Uint8Array(readFileSync(join(ipOut, "ip-2.0.1.tgz")))).toEqual(BYTES);
+    const meta = JSON.parse(readFileSync(join(ipOut, "ip-2.0.1.meta.json"), "utf8")) as Record<string, unknown>;
+    expect(meta).toMatchObject({ name: "ip", version: "2.0.1", tarballUrl: IP_URL, integrity: computeSri(BYTES) });
+  });
+
+  it("writes nothing when the bytes do not match the registry integrity", async () => {
+    writeIpPackument(computeSri(BYTES));
+    const changed = BYTES.slice();
+    changed[3] = (changed[3] ?? 0) ^ 1;
+    await expect(
+      recordTarball({
+        fetch: fakeFetch(changed).fetch,
+        clock,
+        packumentPath,
+        outDir,
+        packageName: "ip",
+        packageVersion: "2.0.1",
+      }),
+    ).rejects.toThrow(/Integrity mismatch.*Nothing was written/s);
+    expect(existsSync(outDir)).toBe(false);
+  });
+
+  it("fails when the packument lacks the requested version", async () => {
+    await expect(
+      recordTarball({ fetch: fakeFetch(BYTES).fetch, clock, packumentPath, outDir, packageName: "ip", packageVersion: "9.9.9" }),
+    ).rejects.toThrow(/no version 9\.9\.9/);
+  });
+
+  it("finds the recorded registry packument by its source URL", () => {
+    const fixtures = join(dir, "fixtures");
+    mkdirSync(join(fixtures, "ip"), { recursive: true });
+    writeFileSync(
+      join(fixtures, "ip", "npm-a.json"),
+      JSON.stringify({ sourceUrl: "https://api.npmjs.org/downloads/point/last-week/ip", body: "{}" }),
+      "utf8",
+    );
+    writeFileSync(
+      join(fixtures, "ip", "npm-b.json"),
+      JSON.stringify({ sourceUrl: "https://registry.npmjs.org/ip", body: "{}" }),
+      "utf8",
+    );
+    expect(findPackumentPath(fixtures, "ip")).toBe(join(fixtures, "ip", "npm-b.json"));
+    expect(() => findPackumentPath(fixtures, "nope")).toThrow(/No recorded packument/);
   });
 });

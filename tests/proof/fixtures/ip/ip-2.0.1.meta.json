@@ -1,0 +1,39 @@
+{
+  "name": "ip",
+  "version": "2.0.1",
+  "tarballUrl": "https://registry.npmjs.org/ip/-/ip-2.0.1.tgz",
+  "integrity": "sha512-lJUL9imLTNi1ZfXT+DU6rBBdbiKGBuay9B6xGSPVjUeQwaH1RIGqef8RZkUtHioLmSNpPR5M4HVKJGm1j8FWVQ==",
+  "sourceUrl": "https://registry.npmjs.org/ip",
+  "fetchedAt": "2026-11-16T07:27:47Z",
+  "license": "MIT",
+  "author": {
+    "name": "Fedor Indutny",
+    "email": "fedor@indutny.com"
+  },
+  "maintainers": [
+    {
+      "name": "bcbailey",
+      "email": "brad@memoryleak.org"
+    },
+    {
+      "name": "fedor.indutny",
+      "email": "fedor.indutny@gmail.com"
+    },
+    {
+      "name": "mmalecki",
+      "email": "me@mmalecki.com"
+    },
+    {
+      "name": "indutny",
+      "email": "blackhole@livebox.sh"
+    },
+    {
+      "name": "indexzero",
+      "email": "charlie.robbins@gmail.com"
+    }
+  ],
+  "packument": {
+    "file": "npm-c65b8b5fac19.json",
+    "integrity": "sha512-lJUL9imLTNi1ZfXT+DU6rBBdbiKGBuay9B6xGSPVjUeQwaH1RIGqef8RZkUtHioLmSNpPR5M4HVKJGm1j8FWVQ=="
+  }
+}

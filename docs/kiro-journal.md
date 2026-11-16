@@ -1127,3 +1127,17 @@ Run by the user; copied from the user's report, not re-measured by an agent. Det
 - The Verify page's `gh attestation verify` command depends on item 7 (predicate type and signer workflow).
 - Sign only when the verdict is alive (standing rule).
 - Open question for spec (a), not a decision: does a Restless or Inconclusive run also get a `graveyard/<package>/` entry? The honesty rules say Restless is shown, never hidden.
+
+## 2026-11-16: ip@2.0.1 tarball and isPublic measurement (tasks 1.6 and 1.7, user-run)
+
+Measured by the user in their own PowerShell; copied from the user's message; not re-measured by the agent. Node v26.13.1 is the user's local Windows Node, not the CI pin.
+
+- M1: `npm run fixtures:record-tarball -- --package ip --version 2.0.1` downloaded https://registry.npmjs.org/ip/-/ip-2.0.1.tgz and verified its integrity (5212 bytes). It wrote `tests/proof/fixtures/ip/ip-2.0.1.tgz` (5212 bytes) and `tests/proof/fixtures/ip/ip-2.0.1.meta.json` (996 bytes).
+- M2: `npx tsx scripts/measureIp.ts`. Package ip 2.0.1, integrity `sha512-lJUL9imLTNi1ZfXT+DU6rBBdbiKGBuay9B6xGSPVjUeQwaH1RIGqef8RZkUtHioLmSNpPR5M4HVKJGm1j8FWVQ==`, Node v26.13.1, measured at 2026-11-16T07:28:27Z. It wrote `docs/measurements/ip-2.0.1.json`.
+- `isPublic` returned `true` for all five Advisory_Addresses: `"127.1"`, `"01200034567"`, `"012.1.2.3"`, `"000:0:0000::01"`, `"::fFFf:127.0.0.1"`.
+- Informational inputs: `"0"` returned `true`; `"017700000001"` returned `true`.
+- Exports, all functions, with arity as printed (20 exports): address 2, cidr 1, cidrSubnet 1, fromLong 1, fromPrefixLen 2, isEqual 2, isLoopback 1, isPrivate 1, isPublic 1, isV4Format 1, isV6Format 1, loopback 1, mask 2, normalizeToLong 1, not 1, or 2, subnet 2, toBuffer 3, toLong 1, toString 3.
+- Advisory sources (from `spikes/candidates/IP-SKETCH.md`, checked by the user 15 Nov 2026): https://github.com/advisories/GHSA-2p57-rm9w-gvfp (GHSA-2p57-rm9w-gvfp) and https://nvd.nist.gov/vuln/detail/CVE-2024-29415 (CVE-2024-29415).
+- Conclusion: the Original returns `true` for all five addresses, so a delta exists for all five and ip stays in the demo (A10). The measurement is from the local-machine Node, not the CI pin.
+- Check by the agent (not a re-measurement): `docs/measurements/ip-2.0.1.json` exists and `parseIpMeasurement` (`src/pipeline/harness/core/ipMeasurement.ts`) returns `ok: true` for its contents.
+- Coverage table update (agent, task 1.8, V16 second half answered): extracted `tests/proof/fixtures/ip/ip-2.0.1.tgz` to a temp directory and read `lib/ip.js` (no network). All 20 names match the printed list. Corrected `.kiro/specs/resurrection-pipeline/design.md` "ip coverage": every entry now read from the tarball, argument shapes fixed (`toBuffer(ip, buff, offset)` writes in place and uses `this`; `toString(buff, offset, length)` gives `[]` for lengths other than 4 and 16; `address(name, family)` throws for an unknown interface name; `subnet` returns an object with a `contains` function). Uncoverable exports: none. The artifact-overwrite half of V16 stays open. Not measured by the agent: whether each generator encodes within the codec budget (task 12.1).

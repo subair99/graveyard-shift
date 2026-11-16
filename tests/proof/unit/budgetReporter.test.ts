@@ -10,8 +10,8 @@ const spanAt = (project: string, spanSeconds: number, mode?: string) =>
   evaluateBudget({ project, spanSeconds, wallSeconds: 500, targetSeconds: BUDGET_SECONDS[project] ?? 0, mode });
 
 describe("budget check on the span", () => {
-  it("has the targets 60 s, 90 s and 120 s", () => {
-    expect(BUDGET_SECONDS).toEqual({ "proof-property": 60, "proof-heavy": 90, "proof-integration": 120 });
+  it("has the targets 60 s, 90 s, 120 s and 90 s (pipeline)", () => {
+    expect(BUDGET_SECONDS).toEqual({ "proof-property": 60, "proof-heavy": 90, "proof-integration": 120, pipeline: 90 });
   });
 
   it("checks the span, not the whole-run wall-clock", () => {
@@ -31,11 +31,11 @@ describe("budget check on the span", () => {
     expect(r.ok).toBe(true);
   });
 
-  it.each(["proof-property", "proof-heavy", "proof-integration"])("%s: exactly at target is ok", (project) => {
+  it.each(["proof-property", "proof-heavy", "proof-integration", "pipeline"])("%s: exactly at target is ok", (project) => {
     expect(spanAt(project, BUDGET_SECONDS[project] ?? 0)).toMatchObject({ ok: true, level: "info" });
   });
 
-  it.each(["proof-property", "proof-heavy", "proof-integration"])("%s: over target in strict mode is an error", (project) => {
+  it.each(["proof-property", "proof-heavy", "proof-integration", "pipeline"])("%s: over target in strict mode is an error", (project) => {
     const target = BUDGET_SECONDS[project] ?? 0;
     const r = spanAt(project, target + 0.5);
     expect(r).toMatchObject({ ok: false, level: "error" });
@@ -48,7 +48,7 @@ describe("budget check on the span", () => {
     expect(spanAt("proof-integration", 120.5, mode)).toMatchObject({ ok: false, level: "error" });
   });
 
-  it.each(["proof-property", "proof-heavy", "proof-integration"])("%s: over target in warn mode warns and does not fail", (project) => {
+  it.each(["proof-property", "proof-heavy", "proof-integration", "pipeline"])("%s: over target in warn mode warns and does not fail", (project) => {
     const target = BUDGET_SECONDS[project] ?? 0;
     const r = spanAt(project, target + 1, "warn");
     expect(r).toMatchObject({ ok: true, level: "warn" });
@@ -180,6 +180,7 @@ describe("PROOF_BUDGET_SCALE (test aid)", () => {
       "proof-heavy": "[budget] proof-heavy: 0 s span, first test file start to last test file end (checked against target 45 s = 90 s x PROOF_BUDGET_SCALE 0.5; test aid)",
       "proof-integration": "[budget] proof-integration: 0 s span, first test file start to last test file end (checked against target 60 s = 120 s x PROOF_BUDGET_SCALE 0.5; test aid)",
       "proof-property": "[budget] proof-property: 0 s span, first test file start to last test file end (checked against target 30 s = 60 s x PROOF_BUDGET_SCALE 0.5; test aid)",
+      pipeline: "[budget] pipeline: 0 s span, first test file start to last test file end (checked against target 45 s = 90 s x PROOF_BUDGET_SCALE 0.5; test aid)",
     });
   });
 

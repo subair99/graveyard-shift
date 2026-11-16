@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "package": "ip",
+  "version": "2.0.1",
+  "integrity": "sha512-lJUL9imLTNi1ZfXT+DU6rBBdbiKGBuay9B6xGSPVjUeQwaH1RIGqef8RZkUtHioLmSNpPR5M4HVKJGm1j8FWVQ==",
+  "node": "v26.13.1",
+  "measuredAt": "2026-11-16T07:28:27Z",
+  "advisory": {
+    "id": "GHSA-2p57-rm9w-gvfp",
+    "aliases": [
+      "CVE-2024-29415"
+    ],
+    "sources": [
+      {
+        "url": "https://github.com/advisories/GHSA-2p57-rm9w-gvfp",
+        "checkedOn": "2026-11-15"
+      },
+      {
+        "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-29415",
+        "checkedOn": "2026-11-15"
+      }
+    ]
+  },
+  "results": [
+    {
+      "input": "127.1",
+      "outcome": {
+        "kind": "returned",
+        "value": true
+      }
+    },
+    {
+      "input": "01200034567",
+      "outcome": {
+        "kind": "returned",
+        "value": true
+      }
+    },
+    {
+      "input": "012.1.2.3",
+      "outcome": {
+        "kind": "returned",
+        "value": true
+      }
+    },
+    {
+      "input": "000:0:0000::01",
+      "outcome": {
+        "kind": "returned",
+        "value": true
+      }
+    },
+    {
+      "input": "::fFFf:127.0.0.1",
+      "outcome": {
+        "kind": "returned",
+        "value": true
+      }
+    }
+  ],
+  "informational": [
+    {
+      "input": "0",
+      "outcome": {
+        "kind": "returned",
+        "value": true
+      }
+    },
+    {
+      "input": "017700000001",
+      "outcome": {
+        "kind": "returned",
+        "value": true
+      }
+    }
+  ]
+}

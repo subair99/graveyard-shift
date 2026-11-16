@@ -47,6 +47,13 @@ export default defineConfig({
           testTimeout: 60000,
         },
       }),
+      defineProject({
+        test: {
+          name: "pipeline",
+          include: ["tests/pipeline/**/*.test.ts"],
+          testTimeout: 60000,
+        },
+      }),
     ],
   },
 });
