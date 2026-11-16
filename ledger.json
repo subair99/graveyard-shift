@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "mode": "stub",
+      "package": "lodash.set",
+      "version": "4.3.2",
+      "date": "2026-11-16T10:17:08Z",
+      "fixture": "tests/pipeline/fixtures/stub/lodash.set"
+    }
+  ]
+}
