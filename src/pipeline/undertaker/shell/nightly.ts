@@ -25,6 +25,7 @@ import {
 import type { NightlyReplay, NightlyResult, ToolVersions } from "../core/nightlyClassify";
 import {
   buildNightlyReport,
+  renderNightlyCountLines,
   renderNightlyLine,
   renderNightlyReportJson,
   renderNightlySummary,
@@ -231,13 +232,31 @@ async function checkAdvisories(deps: NightlyDeps, committed: DeathCertificate): 
   if (fresh === undefined || fresh.package.name !== name || fresh.package.version !== version) {
     return { ids: [], facts: [], problem: `the Coroner produced no certificate for ${name}@${version}` };
   }
+  // An unavailable OSV query leaves the id list empty; that means "unknown", not "none" (as in the Gravedigger rule).
+  const open = fresh.vitalSigns.openVulnerabilities;
+  if (!open.available) {
+    return { ids: [], facts: [], problem: `the advisory re-check could not read OSV (${open.attemptedUrl}): ${open.reason}` };
+  }
   const known = new Set(committed.openVulnerabilityIds);
   const ids = [...new Set(fresh.openVulnerabilityIds.filter((id) => !known.has(id)))].sort(compareCodePoint);
-  if (ids.length === 0) return { ids, facts: [] };
   const fact = fresh.facts.find((f) => f.key === "openVulnerabilities");
   const provenance = fact?.provenance.find((p) => p.sourceUrl.includes("osv")) ?? fact?.provenance[0];
   if (provenance === undefined) {
-    return { ids, facts: [], problem: `new advisory ids ${ids.join(", ")} have no recorded source` };
+    const what = ids.length === 0 ? "the advisory re-check result" : `new advisory ids ${ids.join(", ")}`;
+    return { ids, facts: [], problem: `${what} has no recorded source` };
+  }
+  // The re-check ran and found nothing new: the report says so, with its source (R16.13, R16.15).
+  if (ids.length === 0) {
+    return {
+      ids,
+      facts: [
+        {
+          text: `advisory re-check: no new advisories for ${name}@${version}`,
+          sourceUrl: provenance.sourceUrl,
+          fetchedAt: provenance.fetchedAt,
+        },
+      ],
+    };
   }
   return {
     ids,
@@ -445,6 +464,8 @@ export async function runNightly(deps: NightlyDeps): Promise<NightlyOutcome> {
   }
 
   const report = buildNightlyReport({ entries: inputs, ghVersion, identity: deps.identity, platform: deps.platform });
+  // The count lines go to the job log as well as to the summary.
+  for (const l of renderNightlyCountLines(report)) io.log(l);
   for (const e of report.entries) io.log(renderNightlyLine(e));
   for (const w of warnings) io.log(w);
   // Nothing to verify: only when the graveyard was read (missing or empty) and nothing is malformed or failed.

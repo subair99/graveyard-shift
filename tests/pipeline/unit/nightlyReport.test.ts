@@ -2,9 +2,10 @@
 import { describe, expect, it } from "vitest";
 import { GH_MIN_VERSION, REPO } from "../../../src/pipeline/common/constants";
 import { redactionScanFindsAnything } from "../../../src/pipeline/common/canonical";
-import type { ToolVersions } from "../../../src/pipeline/undertaker/core/nightlyClassify";
+import { differingToolFields, type ToolVersions } from "../../../src/pipeline/undertaker/core/nightlyClassify";
 import {
   allNotChecked,
+  renderNightlyCountLines,
   escapeWorkflowCommandData,
   NO_ENTRIES_TEXT,
   renderNoEntriesNotice,
@@ -66,6 +67,22 @@ describe("nightlyReport", () => {
     const text = renderNightlySummary(report);
     expect(text).toContain("running Tool_Versions: node 26.14.0");
     expect(text).toContain("first differing path: $.divergences[0].function");
+  });
+
+  it("lists no differing Tool_Versions field when there is no committed record (nothing to compare)", () => {
+    const report = build([entry({ package: "inflight", results: ["not-resurrected"], committedTools: null })]);
+    expect(report.entries[0]?.differingToolFields).toEqual([]);
+    expect(renderNightlySummary(report)).toContain("committed Tool_Versions: none recorded");
+    // Classification is unchanged: the exported helper still counts a missing record as differing in every field.
+    expect(differingToolFields(null, tools)).toEqual(["node", "fastCheck", "reportSchema"]);
+  });
+
+  it("renders the count lines shared by the summary and the log", () => {
+    expect(renderNightlyCountLines(build([entry({ results: ["not-resurrected"] })]))).toEqual(["Entries: 1 total, 0 not-checked."]);
+    expect(renderNightlyCountLines(build([entry({ results: ["not-checked"] })]))).toEqual([
+      "Entries: 1 total, 1 not-checked.",
+      "All 1 entries not-checked: nothing was verified tonight.",
+    ]);
   });
 
   it("carries Source_URL and Fetch_Date of a fact in the JSON and the line", () => {

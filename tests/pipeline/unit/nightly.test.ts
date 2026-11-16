@@ -1,5 +1,6 @@
-// Requirements: 16.3, 16.9, 16.10, 16.11, 16.13, 16.17, 16.21, 16.24
+// Requirements: 16.3, 16.9, 16.10, 16.11, 16.13, 16.14, 16.15, 16.17, 16.21, 16.22, 16.24
 // Fakes only: in-memory files, a fake gh, a fake Coroner, a fake Replay CLI. No network, no real gh.
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { runProve, type ProveDeps } from "../../../scripts/ci/prove";
@@ -18,7 +19,14 @@ import {
 import { sriSha512 } from "../../../src/pipeline/undertaker/shell/replay";
 import type { CliDeps, CliResult } from "../../../src/proof/cli";
 import { deserializeReport } from "../../../src/proof/serialize/deserialize";
-import { LODASH_SET_CERT } from "../helpers/gravediggerCerts";
+import { DeathCertificateSchema } from "../../../src/engine/types";
+import { LODASH_SET_CERT, OSV_UNAVAILABLE_CERT } from "../helpers/gravediggerCerts";
+
+/** The committed not-resurrected entry graveyard/inflight (PR #6), read as bytes from the repository. */
+const INFLIGHT_DIR = new URL("../../../graveyard/inflight/", import.meta.url);
+const INFLIGHT_CERT_BYTES = new Uint8Array(readFileSync(new URL("certificate.json", INFLIGHT_DIR)));
+const INFLIGHT_ELIGIBILITY_BYTES = new Uint8Array(readFileSync(new URL("eligibility.json", INFLIGHT_DIR)));
+const INFLIGHT_CERT: DeathCertificate = DeathCertificateSchema.parse(JSON.parse(new TextDecoder().decode(INFLIGHT_CERT_BYTES)));
 
 const enc = (s: string): Uint8Array => new TextEncoder().encode(s);
 const dec = (b: Uint8Array): string => new TextDecoder().decode(b);
@@ -196,6 +204,11 @@ async function addEntry(r: Rig, dir: string, spec: EntrySpec = {}): Promise<void
   }
 }
 
+function addInflight(r: Rig): void {
+  r.files.set(join("graveyard", "inflight", "certificate.json"), INFLIGHT_CERT_BYTES);
+  r.files.set(join("graveyard", "inflight", "eligibility.json"), INFLIGHT_ELIGIBILITY_BYTES);
+}
+
 const primary = (r: Rig, dirIndex = 0): string[] => JSON.parse(dec(r.files.get("nightly-report.json")!)).entries[dirIndex].results;
 
 describe("runNightly", () => {
@@ -296,6 +309,8 @@ describe("runNightly", () => {
     expect(out.exitCode).toBe(0);
     expect(out.report.counts).toEqual({ total: 0, checkable: 0, notChecked: 0 });
     expect(r.logs.filter((l) => l.startsWith("::notice::"))).toHaveLength(1);
+    expect(r.logs).toContain("Entries: 0 total, 0 not-checked.");
+    expect(r.logs.some((l) => l.includes("nothing was verified tonight"))).toBe(false);
     expect(r.summaries[0]).toContain("No entries in the graveyard: nothing to verify.");
   });
 
@@ -383,6 +398,7 @@ describe("runNightly", () => {
     expect(primary(r, 0)).toEqual(["tool-versions-changed", "not-checked"]);
     expect(out.report.counts).toEqual({ total: 2, checkable: 2, notChecked: 1 });
     expect(r.summaries[0]).toContain("Entries: 2 total, 1 not-checked.");
+    expect(r.logs).toContain("Entries: 2 total, 1 not-checked.");
     expect(r.summaries[0]).not.toContain("nothing was verified tonight");
   });
 
@@ -392,6 +408,45 @@ describe("runNightly", () => {
     const out = await runNightly(r.deps);
     expect(out.exitCode).toBe(0);
     expect(r.summaries[0]).toContain("All 1 entries not-checked: nothing was verified tonight.");
+  });
+
+  it("re-runs the Coroner for a not-resurrected entry and cites the source of 'no new advisories'", async () => {
+    const r = rig({ fresh: () => ({ certificates: [INFLIGHT_CERT], errors: [], notes: [] }) });
+    addInflight(r);
+    const out = await runNightly(r.deps);
+    expect(out.exitCode).toBe(0);
+    expect(r.coronerCalls).toEqual(["inflight@1.0.6"]);
+    expect(r.fetched).toEqual([]);
+    expect(r.ghCalls.filter((c) => c.argv[0] === "attestation")).toEqual([]);
+    const e = out.report.entries[0]!;
+    expect(e.results).toEqual(["not-resurrected"]);
+    expect(e.reason).toBe("Not-resurrected entry; nothing to replay or attest.");
+    expect(e.committedTools).toBeNull();
+    expect(e.differingToolFields).toEqual([]);
+    const osv = INFLIGHT_CERT.facts.find((f) => f.key === "openVulnerabilities")!.provenance[0]!;
+    expect(e.facts).toEqual([
+      { text: "advisory re-check: no new advisories for inflight@1.0.6", sourceUrl: osv.sourceUrl, fetchedAt: osv.fetchedAt },
+    ]);
+    expect(r.logs).toContain("Entries: 1 total, 0 not-checked.");
+    expect(r.logs.some((l) => l.startsWith("- inflight: not-resurrected") && l.includes(`(source: ${osv.sourceUrl}, fetched ${osv.fetchedAt})`))).toBe(true);
+    expect(r.logs.some((l) => l.startsWith("::warning::"))).toBe(false);
+  });
+
+  it("reports not-checked with a ::warning:: when the re-run Coroner could not read OSV, and logs the count lines", async () => {
+    const r = rig({
+      fresh: () => ({ certificates: [{ ...OSV_UNAVAILABLE_CERT, package: INFLIGHT_CERT.package }], errors: [], notes: [] }),
+    });
+    addInflight(r);
+    const out = await runNightly(r.deps);
+    expect(out.exitCode).toBe(0);
+    expect(primary(r)).toEqual(["not-checked"]);
+    expect(out.report.entries[0]!.facts).toEqual([]);
+    expect(out.report.entries[0]!.reason).toContain("could not read OSV (https://api.osv.dev/v1/query)");
+    const warnings = r.logs.filter((l) => l.startsWith("::warning::"));
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toContain("inflight not-checked (graveyard/inflight): the advisory re-check could not read OSV");
+    expect(r.logs).toContain("Entries: 1 total, 1 not-checked.");
+    expect(r.logs).toContain("All 1 entries not-checked: nothing was verified tonight.");
   });
 
   it("labels a stub entry 'stub run' and verifies it like the others", async () => {

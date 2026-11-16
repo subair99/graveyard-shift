@@ -973,6 +973,16 @@
         "executionId": "efe3ccd9-ec2d-4c4b-bbff-02f56883ed0e",
         "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
         "timestamp": 1794836202780
+      },
+      {
+        "executionId": "513f7019-6b15-47f1-bf55-c7811b42b4b9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794843726841
+      },
+      {
+        "executionId": "513f7019-6b15-47f1-bf55-c7811b42b4b9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794844147939
       }
     ],
     "13.6 Implement the Replay": [
@@ -1029,6 +1039,27 @@
         "executionId": "efe3ccd9-ec2d-4c4b-bbff-02f56883ed0e",
         "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
         "timestamp": 1794836807604
+      }
+    ],
+    "13.11 Manual task (yours): M10, dispatch the eligibility-only run for inflight": [
+      {
+        "executionId": "513f7019-6b15-47f1-bf55-c7811b42b4b9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794843726337
+      }
+    ],
+    "13.12 Manual task (yours): M8, dispatch `nightly.yml` once and read its report": [
+      {
+        "executionId": "513f7019-6b15-47f1-bf55-c7811b42b4b9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794844148909
+      }
+    ],
+    "13. Step (e): nightly re-verification": [
+      {
+        "executionId": "513f7019-6b15-47f1-bf55-c7811b42b4b9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794844149053
       }
     ]
   }

@@ -144,7 +144,9 @@ export function buildNightlyReport(input: NightlyReportInput): NightlyReport {
       stub: e.stub,
       committedTools: e.committedTools,
       runningTools: e.runningTools,
-      differingToolFields: differingToolFields(e.committedTools, e.runningTools),
+      // Nothing to compare without a committed record: the report lists no field. Classification (classifyEntry)
+      // still counts a missing record as differing in every field; this changes only what the report shows.
+      differingToolFields: e.committedTools === null ? [] : differingToolFields(e.committedTools, e.runningTools),
       firstDiffPath: e.firstDiffPath ?? null,
       facts: (e.facts ?? []).map((f) => ({ text: f.text, sourceUrl: f.sourceUrl, fetchedAt: f.fetchedAt })),
     };
@@ -182,7 +184,20 @@ export function renderNightlyLine(e: NightlyReportEntry): string {
   return `- ${parts.join("; ")}`;
 }
 
-/** The job summary (markdown): the `gh` version line, then one line per package. */
+/**
+ * The count lines, shared by the job summary and the job log: "Entries: N total, K not-checked." and, when every
+ * checkable entry is not-checked, "All N entries not-checked: nothing was verified tonight."
+ */
+export function renderNightlyCountLines(report: NightlyReport): string[] {
+  return [
+    `Entries: ${report.counts.total} total, ${report.counts.notChecked} not-checked.`,
+    ...(allNotChecked(report.counts)
+      ? [`All ${report.counts.checkable} entries not-checked: nothing was verified tonight.`]
+      : []),
+  ];
+}
+
+/** The job summary (markdown): the `gh` version line, the count lines, then one line per package. */
 export function renderNightlySummary(report: NightlyReport): string {
   const gh = report.ghVersion === null ? "gh version: unknown" : `gh version: ${report.ghVersion}`;
   const lines = [
@@ -190,10 +205,7 @@ export function renderNightlySummary(report: NightlyReport): string {
     "",
     `${gh} (minimum ${report.ghMinVersion})`,
     "",
-    `Entries: ${report.counts.total} total, ${report.counts.notChecked} not-checked.`,
-    ...(allNotChecked(report.counts)
-      ? [`All ${report.counts.checkable} entries not-checked: nothing was verified tonight.`]
-      : []),
+    ...renderNightlyCountLines(report),
     "",
     ...(report.entries.length === 0 ? [NO_ENTRIES_TEXT] : report.entries.map(renderNightlyLine)),
   ];

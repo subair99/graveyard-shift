@@ -480,7 +480,7 @@ Conventions for every task:
     - Then clean up, do not merge: `gh pr close <number> --delete-branch`, and `git push origin --delete resurrect/ip` if the branch is still there.
     - _Requirements: 23.27, 13.4, 13.9, 15.10, 18.1_
 
-- [ ] 13. Step (e): nightly re-verification
+- [x] 13. Step (e): nightly re-verification
   - [x] 13.1 Implement the nightly classification
     - `src/pipeline/undertaker/core/nightlyClassify.ts`: `NightlyResult`, `NightlyInput`, `classifyEntry` returning `{ results, fails }` in the fixed order (`tool-versions-changed`, `unexpected-attestation`, `attestation-failed`, `replay-mismatch`, `not-checked`, `new-advisory`, then `verified` or `not-resurrected`), `fails` only for `replay-mismatch`, `attestation-failed`, `unexpected-attestation`; a not-resurrected entry never gets `attestation-failed`, `replay-mismatch`, `tool-versions-changed` or `not-checked`; a stub flag. A pure `nightlyOrder` helper (ascending code point).
     - Example tests in `tests/pipeline/unit/nightlyClassify.test.ts`.
@@ -526,14 +526,14 @@ Conventions for every task:
     - **Validates: Requirements 2.7, 7.10, 14.11, 15.9, 16.20, 22.1**
     - Covers `record.ts`, `ledger.ts`, `prText`, `nightlyReport` and, when it exists, the issue text.
 
-  - [ ] 13.11 Manual task (yours): M10, dispatch the eligibility-only run for inflight
+  - [x] 13.11 Manual task (yours): M10, dispatch the eligibility-only run for inflight
     - Run in PowerShell:
       `gh workflow run resurrect.yml --repo subair99/graveyard-shift --ref main -f package=inflight -f version=1.0.6 -f medium_mode=local`
       then `gh run list --workflow resurrect.yml --limit 3` and `gh run watch <run-id>`.
     - Paste back: the run result, the pull request URL and the pull request body (a Not_Resurrected_Entry with the Successor `lru-cache`, failed rules, Source_URL and Fetch_Date). Review it and merge it yourself, then `git pull origin main` (V6).
     - _Requirements: 14.9, 14.10, 14.13, 14.14, 19.5_
 
-  - [ ] 13.12 Manual task (yours): M8, dispatch `nightly.yml` once and read its report
+  - [x] 13.12 Manual task (yours): M8, dispatch `nightly.yml` once and read its report
     - Run in PowerShell: `gh workflow run nightly.yml --repo subair99/graveyard-shift --ref main`, then `gh run watch <run-id>` and `gh run view <run-id> --log` (read the summary), and `gh run download <run-id> -n nightly-report`.
     - Paste back (V9, V10, V13): the report lines, the `gh` version on the runner (2.67.0 or later), whether `gh attestation verify` worked with the `contents: read` and `attestations: read` token (needs an `alive` entry on `main`; M9 runs only after spec (b) and is not a prerequisite, so if no such entry exists yet, say so and record `gh attestation verify` as not checked in the nightly), and the JSON field names. Check the GitHub documentation on scheduled workflows in public repositories and note the inactivity rule in the Journal; observe whether the schedule fires after the merge.
     - _Requirements: 16.1, 16.9, 16.10, 16.14, 16.21_
