@@ -11,7 +11,7 @@
 // V14: `runCli` passes `loadHarness` only the spec string, so the closure carries the compiled config;
 // a thrown error ends as exit code 2 with no report, and this script then writes `fallbackReport`.
 
-import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { appendFileSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import * as path from "node:path";
 import { pathToFileURL } from "node:url";
 import { deserialize } from "../../src/engine/serialize/deserialize";
@@ -49,6 +49,12 @@ export interface ProveDeps {
   /** The text of a file, or null when it does not exist. */
   readonly readText: (file: string) => string | null;
   readonly writeText: (file: string, text: string) => void;
+  /**
+   * Creates the directory when needed and returns its `fs.realpathSync.native` form (no 8.3 short
+   * names, no links). The generated property modules are written to, granted from and loaded by
+   * this one path. Default: the path unchanged (tests with an in-memory file system).
+   */
+  readonly ensureRealDir?: (dir: string) => string;
   /** Appends `name=value` to the step outputs. */
   readonly setOutput: (name: string, value: string) => void;
   readonly runCli: (argv: readonly string[], deps?: CliDeps) => Promise<CliResult>;
@@ -173,7 +179,11 @@ export async function runProve(deps: ProveDeps, dir = "."): Promise<ProveOutcome
     // The compiler is pure: it returns the generated returns-expected modules, and this script writes
     // them into `<dir>/harness-modules` (absolute, so the engine can grant read access to each file).
     const template = deps.readText(RETURNS_EXPECTED_TEMPLATE_PATH);
-    const modulesDir = path.resolve(dir, MODULES_DIR_NAME);
+    // The directory is canonicalized here, before the compiler builds `propertyModule` and `readPaths`
+    // from it: the engine grants the real path, so the child must load the module by the real path too
+    // (an 8.3 short name such as C:\Users\RUNNER~1 is denied).
+    const wanted = path.resolve(dir, MODULES_DIR_NAME);
+    const modulesDir = deps.ensureRealDir === undefined ? wanted : deps.ensureRealDir(wanted);
     const compiled = compileHarnessFiles({
       deltasJson,
       harnessJson,
@@ -234,6 +244,10 @@ export function productionDeps(): ProveDeps {
     writeText: (file, text) => {
       mkdirSync(path.dirname(path.resolve(file)), { recursive: true });
       writeFileSync(file, text, "utf8");
+    },
+    ensureRealDir: (dir) => {
+      mkdirSync(dir, { recursive: true });
+      return realpathSync.native(dir);
     },
     setOutput: (name, value) => {
       if (output !== undefined && output !== "") appendFileSync(output, `${name}=${value}\n`, "utf8");

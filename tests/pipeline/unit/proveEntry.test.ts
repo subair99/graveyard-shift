@@ -1,11 +1,14 @@
 // Requirements: 5.4, 5.11, 12.1, 12.2, 12.3, 12.4, 12.5, 12.12
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { spawnSync } from "node:child_process";
+import { mkdtempSync, readFileSync, realpathSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   buildProveArgv,
   CI_CASE_COUNT,
   MODULES_DIR_NAME,
+  productionDeps,
   RETURNS_EXPECTED_TEMPLATE_PATH,
   runProve,
   type ProveDeps,
@@ -124,6 +127,72 @@ describe("runProve: generated returns-expected modules", () => {
     expect(s.files.get(modulePath)).toContain('JSON.parse("1")');
     expect(s.loaded[0]?.deltas[0]?.propertyModule).toBe(modulePath);
     expect(s.loaded[0]?.readPaths).toEqual([modulePath]);
+  });
+});
+
+describe("runProve: modules directory is canonicalized before compiling", () => {
+  const template = readFileSync("src/pipeline/harness/sandbox/returnsExpected.cjs", "utf8");
+  const deltas = JSON.stringify({
+    schemaVersion: 1,
+    package: "lodash.set",
+    deltas: [
+      {
+        kind: "returns-expected",
+        id: "re",
+        function: "default",
+        advisory: "GHSA-p6mc-m468-83gw",
+        cases: [
+          {
+            input: ["a"],
+            expected: 1,
+            source: { url: "https://github.com/advisories/GHSA-p6mc-m468-83gw", fetchedAt: "2026-11-15T10:00:00Z" },
+          },
+        ],
+      },
+    ],
+  });
+
+  // Portable form: the injected function stands for fs.realpathSync.native on a short-name path.
+  it("writes, grants and passes the module under the directory that ensureRealDir returns", async () => {
+    const s = setup({ files: { "deltas.json": deltas, [RETURNS_EXPECTED_TEMPLATE_PATH]: template } });
+    const asked: string[] = [];
+    const real = resolve("a-long-real-directory-name", MODULES_DIR_NAME);
+    s.deps = {
+      ...s.deps,
+      ensureRealDir: (d) => {
+        asked.push(d);
+        return real;
+      },
+    };
+    await runProve(s.deps);
+    const modulePath = resolve(real, "returns-expected-re.cjs");
+    expect(asked).toEqual([resolve(MODULES_DIR_NAME)]);
+    expect(s.files.get(modulePath)).toContain('JSON.parse("1")');
+    expect(s.files.has(resolve(MODULES_DIR_NAME, "returns-expected-re.cjs"))).toBe(false);
+    expect(s.loaded[0]?.deltas[0]?.propertyModule).toBe(modulePath);
+    expect(s.loaded[0]?.readPaths).toEqual([modulePath]);
+  });
+
+  it("the production ensureRealDir returns the real form of a directory given by its 8.3 short name", (ctx) => {
+    if (process.platform !== "win32") return ctx.skip("8.3 short names exist only on Windows");
+    const base = mkdtempSync(join(tmpdir(), "gs-eight-three-modules-long-name-"));
+    try {
+      const longBase = realpathSync.native(base);
+      const run = spawnSync("cmd.exe", ["/d", "/c", `"for %I in ("${longBase}") do @echo %~sI"`], {
+        encoding: "utf8",
+        shell: false,
+        windowsVerbatimArguments: true,
+      });
+      const shortBase = (run.stdout ?? "").trim();
+      if (shortBase === "" || !shortBase.includes("~") || shortBase === longBase) {
+        return ctx.skip("8.3 short name generation is disabled or the short path could not be obtained");
+      }
+      const got = productionDeps().ensureRealDir!(join(shortBase, MODULES_DIR_NAME));
+      expect(got).toBe(join(longBase, MODULES_DIR_NAME));
+      expect(got).not.toContain("~");
+    } finally {
+      rmSync(base, { recursive: true, force: true });
+    }
   });
 });
 

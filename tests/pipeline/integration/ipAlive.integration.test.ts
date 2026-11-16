@@ -4,7 +4,7 @@
 // Sandbox_Executor, with the CI case counts of the compiled config (no override) and the full radius.
 // Case 1: the Original (recorded ip@2.0.1 tarball) against ip-alive is alive. Case 2 (negative
 // control): the Original against itself is not alive and the delta is not demonstrated.
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -27,7 +27,8 @@ let workDir = "";
 let config: HarnessConfig;
 
 beforeAll(() => {
-  workDir = mkdtempSync(join(tmpdir(), "graveyard-ip-alive-"));
+  // Real path (no 8.3 short name): the engine grants the real path, the child loads propertyModule by this one.
+  workDir = realpathSync.native(mkdtempSync(join(tmpdir(), "graveyard-ip-alive-")));
   const measurement = parseIpMeasurement(readFileSync(join(ROOT, "docs/measurements/ip-2.0.1.json"), "utf8"));
   if (!measurement.ok) throw new Error(measurement.error.issues.join("; "));
   const compiled = compileHarnessFiles({
