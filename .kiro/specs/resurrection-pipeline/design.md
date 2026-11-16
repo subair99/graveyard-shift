@@ -149,7 +149,7 @@ sequenceDiagram
   U->>L: npm run resurrect -- pkg [--stub dir]
   L->>L: Coroner, Gravedigger (eligible?)
   L->>U: ask credit reading (not for stub)
-  L->>M: kiro-cli chat --v3 --no-interactive --agent medium (once)
+  L->>M: kiro-cli chat --v3 --no-interactive --require-mcp-startup --agent medium (once)
   M-->>L: resurrection/, deltas.json, harness.json
   L->>U: ask credit reading after (not for stub)
   L->>L: write ledger.json entry, run Intake_Validator
@@ -396,7 +396,7 @@ Flow (R6, R7, R23), each numbered step stops the run when it fails:
 4. Run the Coroner (`runAutopsy` for the package, latest version) and the Gravedigger. The exact version of the certificate is used from here on. `eligible: false`: print failed rules and the dispatch command without a branch, exit non-zero, no Ledger entry (R6.4).
 5. `ip` only: `docs/measurements/ip-2.0.1.json` must exist and `deriveIpDeltas(...).ipInDemo` must be true (R6.5).
 6. Write the certificate to `.graveyard-work/certificate.json` (gitignored) for the Medium's read-only tool. The contract with spec (b): the environment variable `GRAVEYARD_CERTIFICATE_PATH`. Spec (b) may change it. The certificate is never pushed (R6.11).
-7. Without `--stub`: print the Credit_Ceiling statement ("a documented rule that this command does not enforce", R7.6), ask for the reading before (R7.1), run `kiro-cli chat --v3 --no-interactive --agent medium "<prompt>"` once with `env` minus `GITHUB_TOKEN`, with an argument list (R6.6, R6.7, R6.12), then ask for the reading after (R7.2). With `--stub`: copy the three entries of the fixture directory (`resurrection/`, `deltas.json`, `harness.json`) unchanged to the repository root, a plain recursive copy with no renaming and no filtering (R23.2), print "A stub run uses no credit", ask nothing. The copy plan (`stubPlan.ts`) first checks that the fixture directory holds exactly those three entries and nothing else; any other entry is a usage error before anything is copied.
+7. Without `--stub`: print the Credit_Ceiling statement ("a documented rule that this command does not enforce", R7.6), ask for the reading before (R7.1), run `kiro-cli chat --v3 --no-interactive --require-mcp-startup --agent medium "<prompt>"` once with the allowlisted environment of R6.7 (medium-agent R11.1), with an argument list (R6.6, R6.7, R6.12), then ask for the reading after (R7.2). With `--stub`: copy the three entries of the fixture directory (`resurrection/`, `deltas.json`, `harness.json`) unchanged to the repository root, a plain recursive copy with no renaming and no filtering (R23.2), print "A stub run uses no credit", ask nothing. The copy plan (`stubPlan.ts`) first checks that the fixture directory holds exactly those three entries and nothing else; any other entry is a usage error before anything is copied.
 8. Append the Ledger entry (R7.3, R23.4) and write the file atomically (temp file in the same directory, then rename). Print the reminder that the user commits `ledger.json` (R6.15): the file is written in the WSL clone `~/graveyard-shift`, and the user commits and pushes it to `main` from there, then runs `git pull origin main` in the Windows clone. No script or workflow commits it. This happens even when the Medium exited non-zero (R6.9).
 9. Run `validateIntake` on the three paths read with `fsEntries.ts`. On violations: list them, call no push, exit non-zero, delete nothing (R6.8, R6.9).
 10. Call `push` once (R6.10).
@@ -1006,7 +1006,7 @@ Reflection results: the prework found one property per pure function or family o
 
 ### Property 33: Medium process environment
 
-*For any* environment map, the environment passed to the Medium process contains no `GITHUB_TOKEN` and keeps every other variable unchanged, and the argument list equals `chat --v3 --no-interactive --agent medium <prompt>` with the prompt built only from the package name.
+*For any* environment map, the environment passed to the Medium process contains exactly the allowlisted keys (Medium_Env_Keys, medium-agent R11.1) that have a value, minus every key ending in `_TOKEN`, `_KEY` or `_SECRET` (compared case-insensitively), plus `GRAVEYARD_CERTIFICATE_PATH` and `GUARD_LOG_FILE`, and contains no `GITHUB_TOKEN` in any letter case; the argument list equals `chat --v3 --no-interactive --require-mcp-startup --agent medium <prompt>` with the prompt built only from the package name. (amended 2026-11-16 by medium-agent; see medium-agent R8.5, R11.1)
 
 **Validates: Requirements 6.6, 6.7**
 
