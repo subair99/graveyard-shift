@@ -7,6 +7,13 @@
       "version": "4.3.2",
       "date": "2026-11-16T10:17:08Z",
       "fixture": "tests/pipeline/fixtures/stub/lodash.set"
+    },
+    {
+      "mode": "stub",
+      "package": "ip",
+      "version": "2.0.1",
+      "date": "2026-11-16T12:30:04Z",
+      "fixture": "tests/pipeline/fixtures/stub/ip"
     }
   ]
 }
