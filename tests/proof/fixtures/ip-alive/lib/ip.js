@@ -333,26 +333,177 @@ ip.isPrivate = function (addr) {
     || /^::$/.test(addr);
 };
 
-// Hand-written fix for GHSA-2p57-rm9w-gvfp: classify the canonical form of the address.
-function _canonicalForClassification(addr) {
-  if (typeof addr !== 'string') return addr;
-  if (/:/.test(addr)) {
-    if (!ip.isV6Format(addr)) return addr;
-    let buff;
-    try {
-      buff = ip.toBuffer(addr);
-    } catch (e) {
-      return addr;
-    }
-    const mapped = buff.slice(0, 10).every((b) => b === 0) && buff[10] === 0xff && buff[11] === 0xff;
-    return ip.toString(mapped ? buff.slice(12) : buff);
+// Hand-written fix for GHSA-2p57-rm9w-gvfp. inNonPublicAddressClass is a plain-JS copy of the strict parser
+// and range table in src/pipeline/harness/core/presets/ipNonPublicAddress.ts (Graveyard Shift repository).
+// The "Lines" comments name the lines of that file each part mirrors. Parse failure means not in class.
+var inNonPublicAddressClass = (function () {
+  // Lines 73-74: V4_BITS, V6_BITS. BigInt values as in the source (Node 10.4 or later); no 0n literals.
+  var V4_BITS = 32;
+  var V6_BITS = 128;
+  var ZERO = BigInt(0);
+  var EIGHT = BigInt(8);
+  var SIXTEEN = BigInt(16);
+  var BIT_SHIFT_32 = BigInt(32);
+  var FF = BigInt(255);
+  var FFFF = BigInt(0xffff);
+  var FFFFFFFF = BigInt(0xffffffff);
+
+  // Lines 77-83 (V4_RANGES) and 85-90 (V6_RANGES): [network, prefix length]
+  var V4_RANGES = [
+    ['127.0.0.0', 8],
+    ['10.0.0.0', 8],
+    ['192.168.0.0', 16],
+    ['172.16.0.0', 12],
+    ['169.254.0.0', 16]
+  ];
+  var V6_RANGES = [
+    ['::1', 128],
+    ['::', 128],
+    ['fc00::', 7],
+    ['fe80::', 16]
+  ];
+
+  // Lines 96-100: the part patterns
+  var DEC = /^[1-9][0-9]*$/;
+  var OCT = /^0[0-7]*$/;
+  var HEX = /^0[xX][0-9a-fA-F]+$/;
+  var GROUP = /^[0-9a-fA-F]{1,4}$/;
+  var QUAD_PART = /^(?:0|[1-9][0-9]{0,2})$/;
+
+  // Lines 102-108: one IPv4 part, hexadecimal, octal (leading zero) or decimal
+  function parseV4Part(part) {
+    if (part.length > 12) return null;
+    if (HEX.test(part)) return BigInt(part);
+    if (OCT.test(part)) return BigInt('0o' + part);
+    if (DEC.test(part)) return BigInt(part);
+    return null;
   }
-  const ipl = ip.normalizeToLong(addr);
-  return ipl < 0 ? addr : ip.fromLong(ipl);
-}
+
+  // Lines 111-128: inet_aton style, 1 to 4 parts, the last one fills the remaining bytes
+  function parseV4(text) {
+    var parts = text.split('.');
+    if (parts.length < 1 || parts.length > 4) return null;
+    var value = ZERO;
+    for (var i = 0; i < parts.length; i++) {
+      var n = parseV4Part(parts[i]);
+      if (n === null) return null;
+      if (i < parts.length - 1) {
+        if (n > FF) return null;
+        value = (value << EIGHT) | n;
+      } else {
+        var bytesLeft = 4 - i;
+        if (n >= (BigInt(1) << BigInt(8 * bytesLeft))) return null;
+        value = (value << BigInt(8 * bytesLeft)) | n;
+      }
+    }
+    return value;
+  }
+
+  // Lines 131-142: strict dotted decimal, exactly four parts 0 to 255
+  function parseDottedQuad(text) {
+    var parts = text.split('.');
+    if (parts.length !== 4) return null;
+    var value = ZERO;
+    for (var i = 0; i < parts.length; i++) {
+      if (!QUAD_PART.test(parts[i])) return null;
+      var n = Number(parts[i]);
+      if (n > 255) return null;
+      value = (value << EIGHT) | BigInt(n);
+    }
+    return value;
+  }
+
+  // Lines 144-152: a run of colon separated groups of 1 to 4 hex digits
+  function parseGroups(text) {
+    if (text === '') return [];
+    var groups = [];
+    var pieces = text.split(':');
+    for (var i = 0; i < pieces.length; i++) {
+      if (!GROUP.test(pieces[i])) return null;
+      groups.push(BigInt('0x' + pieces[i]));
+    }
+    return groups;
+  }
+
+  // Lines 154-184: IPv6 with at most one "::" and an optional dotted IPv4 tail
+  function parseV6(input) {
+    var text = input;
+    var lastColon = text.lastIndexOf(':');
+    if (lastColon < 0) return null;
+    var tail = text.slice(lastColon + 1);
+    if (tail.indexOf('.') >= 0) {
+      var quad = parseDottedQuad(tail);
+      if (quad === null) return null;
+      var hi = (quad >> SIXTEEN).toString(16);
+      var lo = (quad & FFFF).toString(16);
+      text = text.slice(0, lastColon + 1) + hi + ':' + lo;
+    }
+    var halves = text.split('::');
+    if (halves.length > 2) return null;
+    var groups;
+    if (halves.length === 2) {
+      var left = parseGroups(halves[0]);
+      var right = parseGroups(halves[1]);
+      if (left === null || right === null) return null;
+      var missing = 8 - left.length - right.length;
+      if (missing < 1) return null;
+      var zeros = [];
+      for (var z = 0; z < missing; z++) zeros.push(ZERO);
+      groups = left.concat(zeros, right);
+    } else {
+      var all = parseGroups(text);
+      if (all === null || all.length !== 8) return null;
+      groups = all;
+    }
+    var value = ZERO;
+    for (var g = 0; g < groups.length; g++) value = (value << SIXTEEN) | groups[g];
+    return value;
+  }
+
+  // Lines 190-210 (Range, buildRanges, V4_TABLE, V6_TABLE): the range tables, built once at load time
+  function buildRanges(rows, bits, parse) {
+    var out = [];
+    for (var i = 0; i < rows.length; i++) {
+      var network = parse(rows[i][0]);
+      var length = rows[i][1];
+      if (network === null || length < 0 || length > bits) {
+        throw new Error('inNonPublicAddressClass: bad range ' + rows[i][0] + '/' + length);
+      }
+      out.push({ network: network, length: length });
+    }
+    return out;
+  }
+  var V4_TABLE = buildRanges(V4_RANGES, V4_BITS, parseDottedQuad);
+  var V6_TABLE = buildRanges(V6_RANGES, V6_BITS, parseV6);
+
+  // Lines 212-217: inRanges, is the address inside one of the ranges
+  function inRanges(address, bits, table) {
+    return table.some(function (range) {
+      var shift = BigInt(bits - range.length);
+      return (address >> shift) === (range.network >> shift);
+    });
+  }
+
+  // Lines 224-234: isNonPublicAddress. Non-strings and unparseable text give false.
+  // An IPv4-mapped IPv6 address (::ffff:0:0/96) is classified by its embedded IPv4 address.
+  return function (input) {
+    if (typeof input !== 'string') return false;
+    if (input.indexOf(':') >= 0) {
+      var v6 = parseV6(input);
+      if (v6 === null) return false;
+      if ((v6 >> BIT_SHIFT_32) === FFFF) return inRanges(v6 & FFFFFFFF, V4_BITS, V4_TABLE);
+      return inRanges(v6, V6_BITS, V6_TABLE);
+    }
+    var v4 = parseV4(input);
+    return v4 === null ? false : inRanges(v4, V4_BITS, V4_TABLE);
+  };
+}());
 
 ip.isPublic = function (addr) {
-  return !ip.isPrivate(_canonicalForClassification(addr));
+  if (inNonPublicAddressClass(addr)) {
+    return false;
+  }
+  return !ip.isPrivate(addr);
 };
 
 ip.isLoopback = function (addr) {

@@ -32,9 +32,9 @@ const ORIGINAL_TREE_HASH =
 // Keys are paths relative to tests/proof/fixtures.
 const PINS: Readonly<Record<string, string>> = {
   "ip-alive/README.md":
-    "sha512-x5L5Fd5EpVyRUAwlNGFq8on/i7KiD3CeJ0bpjYgwWLOt/cHV5oMtQIakrSITJ1G748K7ONXb4BSHNU8ZCaVV4w==",
+    "sha512-2um9DjwXtWY9jLfVyxHiL/A+tZE1vz8leopHirkGa5IVQB8kSi76hJotGPLAVRbu54d+V+uCslVpREpmkH2mvA==",
   "ip-alive/lib/ip.js":
-    "sha512-8akg4O4b13PysIWlqT+8VDQjchT52PuSpR1Vc/IfN3TNcoiDG8nTFVmyLUBrV580TYD0aztx5BBE/eQTSJK6kg==",
+    "sha512-ZxqNTtBTeXu4I2kPOJA2h03aOzMT7XwJZpuBPjCb50aqWP3IwwL0uIZl8CmKfI++6bUPmi3/52Hsh36uWpUVRQ==",
   "ip-alive/package.json":
     "sha512-GLY7A8AvsYisns7BDouvBwYHWWfwW4F/8Ri9u5D2jcjt2LF+NyLZ8ypDJh1zZC7lb9AorcJ7ZyVjRm8v7tUlsQ==",
   "ip/ip-2.0.1.meta.json":

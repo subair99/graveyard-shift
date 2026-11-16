@@ -1232,3 +1232,32 @@ Source: the output and results the user pasted; the agent did not run the full s
 - Fix: the caller canonicalizes the modules directory before the compiler builds paths from it (the compiler stays pure; `src/proof` is not changed). `scripts/ci/prove.ts`: new optional dep `ensureRealDir` (creates the directory, returns `fs.realpathSync.native`), used for `modulesDir`; production wiring supplies it. `ipAlive.integration.test.ts`: `workDir` is `realpathSync.native(mkdtempSync(...))`. No other pipeline test writes generated modules (checked by grep for `modulesDir`; the others compile only and write nothing). `setupModule` (`IP_SETUP_MODULE_PATH`, from `import.meta.url` in the checkout) was not changed: it lies in the checkout, not in the temp directory, and was loaded in the same failing run's other tests; if a checkout path ever has a short component it would have the same problem.
 - Test added: `tests/pipeline/unit/proveEntry.test.ts`: an injected `ensureRealDir` (portable) shows the module is written, granted and passed under the returned directory; a Windows-only test builds a short-name path with `cmd for %~sI` and checks that the production `ensureRealDir` returns the long form (skipped when short names are unavailable).
 - Not verified locally: this machine's temp path has no short form, so the failure was not reproduced and the short-name test may skip here. The CI re-run result is to be pasted by the user.
+
+## 2026-11-16: first task 12.9 attempt in CI ended restless (user-run CI, run 43867172769, seed 1434247189)
+
+Facts as reported by the user from the CI run (not measured by the agent):
+- Verdict `restless`, one divergence: `isPublic`, kind `unexplained`, args `[":::"]`, replay phase `generated`, replay seed -1082896086, path "13". The Original (ip@2.0.1) returned `true`; the stub resurrection (ip-alive) returned `false`.
+- The declared delta `is-public-advisory` was demonstrated; the class predicate `non-public-address` did not cover `":::"`.
+- Nothing was attested (a restless verdict is never attested). Pull request #2 was closed (as stated by the user).
+- `ipAlive.integration.test.ts` passes locally because its fixed seed never generates `":::"`.
+
+Diagnosis (agent-run, plain `node` on the extracted Original lib/ip.js; the table was re-measured in the session that made the fix, on the Original and on the fixed ip-alive, because the table of the first diagnosis report was not at hand; the original diagnosis itself is as reported then):
+- Cause: ip-alive's `toBuffer` canonicalization maps `":::"` to `"::"` (`toString(toBuffer(":::"))` is `"::"` on the Original and on ip-alive), while the strict class parser of ipNonPublicAddress.ts rejects empty groups, so `":::"` is not in the class. CI reported `isPublic(":::")` as `true` on the Original and `false` on the earlier ip-alive (user report above). The input is outside the class, so the delta did not cover the divergence.
+- Measured on the Original (ip@2.0.1), input: isPrivate / isLoopback / isPublic / canonical `toString(toBuffer(x))` / class predicate:
+  - `":::"`: false / false / true / `::` / false
+  - `"::::"`: false / false / true / `::` / false
+  - `":"`: false / false / true / `::` / false
+  - `":::1"`: false / false / true / `::1` / false
+  - `"::"`: true / true / false / `::` / true
+  - `"::0"`: false / false / true / `::` / true
+  - `"0::"`: false / false / true / `::` / true
+- Local reproduction (agent-run, reported in the diagnosis): `npx tsx <temp script>` with seed 1434247189 (compileHarnessFiles + runProofOfLife on the stub directory resurrection, 100 cases, full radius) reproduced the CI divergence `isPublic(":::")`. That run is not repeated here.
+
+## 2026-11-17: task 12.9, decision option A (class-gated isPublic in ip-alive), outcome (agent-run)
+- Decision (user): option A. `isPublic(x)` of ip-alive is `inNonPublicAddressClass(x) ? false : <Original's isPublic(x)>`; inNonPublicAddressClass is a plain-JS copy of isNonPublicAddress. The stub copy of ip-alive was updated to match.
+- Changed: ip preset `isPublic` has explicit cases for `":::"`, `"::"`, `"::::"`, `":"`, `"::0"`, `"0::"`, `":::1"` and non-canonical IPv4 forms inside and outside the class (`0x7f.1`, `0xa.0.0.1`, `192.168.1`, `172.16.0.0x1`, `0300.0250.0.1`, `0xc0a80001`, `0251.0376.1.1`; `172.32.0.0x1`, `0xb.0.0.1`, `11.1`, `0x08080808`, `0300.0251.0.1`, `4294967295`); its generator adds malformed IPv6 text (empty groups, runs of colons, stray edge colons, two `::`). The delta cases stay the five advisory addresses. These preset cases do not appear in tests/pipeline/fixtures/ip/{deltas,harness}.json, so those files and the stub copies were not regenerated.
+- New test tests/pipeline/unit/ipAliveClassEquivalence.test.ts: 5 tests passed (agent run, one file, 500-run property). It checks that the class block of ip-alive equals isNonPublicAddress, that ip-alive's isPublic is false inside the class and equals the Original's outside it, and that every difference is inside the class.
+- Local reproduction, seed 1434247189, stub directory resurrection, 100 cases, full radius (agent-run, temp script, deleted afterwards): verdict `alive`, no divergence, no harness error, 20 functions tested, delta `is-public-advisory` demonstrated (first demonstration input `127.1`, 36 predicate cases checked).
+- tests/pipeline/integration/ipAlive.integration.test.ts (agent run, one file): 2 tests passed, 15.8 s.
+- tests/pipeline/unit/ipPreset.test.ts (agent run, one file): 20 tests passed. compilerIp.test.ts and stubFixtureIp.test.ts were not re-run: neither the compiler, the fixtures nor the stub files changed in this step.
+- Not measured: the CI run with this change; the full suite.

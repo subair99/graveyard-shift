@@ -13,6 +13,12 @@ const IS_PUBLIC_FILE = "lib/ip.js";
 /** The one allowed addition in file names; its bytes are not compared with the Original. */
 const README = "README.md";
 
+const CLASS_BLOCK_START = "// Hand-written fix for GHSA-2p57-rm9w-gvfp. inNonPublicAddressClass is a plain-JS copy";
+const CLASS_BLOCK_END = "}());";
+const ORIGINAL_IS_PUBLIC = "ip.isPublic = function (addr) {\n  return !ip.isPrivate(addr);\n};";
+const NEW_IS_PUBLIC =
+  "ip.isPublic = function (addr) {\n  if (inNonPublicAddressClass(addr)) {\n    return false;\n  }\n  return !ip.isPrivate(addr);\n};";
+
 const ADVISORY_ADDRESSES = ["127.1", "01200034567", "012.1.2.3", "000:0:0000::01", "::fFFf:127.0.0.1"];
 
 let tempDir = "";
@@ -105,39 +111,31 @@ describe("ip-alive: only the isPublic fix", () => {
     expect(text).toContain("not Medium output and not a demo entry");
   });
 
-  it("differs from the Original in lib/ip.js only by the listed isPublic fix lines", () => {
-    const diff = lineDiff(
-      readFileSync(join(tempDir, IS_PUBLIC_FILE), "utf8"),
-      readFileSync(join(ALIVE_DIR, IS_PUBLIC_FILE), "utf8"),
-    );
-    // The call site: isPublic classifies the canonical form instead of the raw address.
-    expect(diff.removed).toEqual(["  return !ip.isPrivate(addr);"]);
-    expect(diff.added).toEqual([
-      // New helper that isPublic needs: canonical form of the address.
-      "// Hand-written fix for GHSA-2p57-rm9w-gvfp: classify the canonical form of the address.",
-      "function _canonicalForClassification(addr) {",
-      "  if (typeof addr !== 'string') return addr;",
-      "  if (/:/.test(addr)) {",
-      "    if (!ip.isV6Format(addr)) return addr;",
-      "    let buff;",
-      "    try {",
-      "      buff = ip.toBuffer(addr);",
-      "    } catch (e) {",
-      "      return addr;",
-      "    }",
-      "    const mapped = buff.slice(0, 10).every((b) => b === 0) && buff[10] === 0xff && buff[11] === 0xff;",
-      "    return ip.toString(mapped ? buff.slice(12) : buff);",
-      "  }",
-      "  const ipl = ip.normalizeToLong(addr);",
-      "  return ipl < 0 ? addr : ip.fromLong(ipl);",
-      "}",
-      "",
-      // The isPublic call site.
-      "  return !ip.isPrivate(_canonicalForClassification(addr));",
-    ]);
+  it("differs from the Original in lib/ip.js only by the added class block and the changed isPublic body", () => {
+    const original = readFileSync(join(tempDir, IS_PUBLIC_FILE), "utf8");
+    const alive = readFileSync(join(ALIVE_DIR, IS_PUBLIC_FILE), "utf8");
+    const diff = lineDiff(original, alive);
+    // Nothing of the Original is removed or changed: the fixture only adds lines.
+    expect(diff.removed).toEqual([]);
+
+    // The class block, from its first comment line to the end of the function expression.
+    const blockStart = alive.indexOf(CLASS_BLOCK_START);
+    const blockEnd = alive.indexOf(CLASS_BLOCK_END);
+    expect(blockStart).toBeGreaterThan(-1);
+    expect(blockEnd).toBeGreaterThan(blockStart);
+    const block = alive.slice(blockStart, blockEnd + CLASS_BLOCK_END.length);
+    expect(block.startsWith(CLASS_BLOCK_START)).toBe(true);
+    expect(alive.slice(blockEnd + CLASS_BLOCK_END.length).startsWith("\n\nip.isPublic = function (addr) {")).toBe(true);
+
+    // The changed isPublic body: the guard lines are inserted, the Original's return line stays.
+    expect(alive).toContain(NEW_IS_PUBLIC);
+    expect(original).toContain(ORIGINAL_IS_PUBLIC);
+
+    // Remove the two additions: the Original comes back byte for byte.
+    const restored = alive.replace(block + "\n\n", "").replace(NEW_IS_PUBLIC, ORIGINAL_IS_PUBLIC);
+    expect(restored).toBe(original);
   });
 });
-
 // isPublic runs in a spawned child, as for lodash.set-alive.
 const CHILD_SCRIPT = [
   "const ip = require(process.argv[1]);",
@@ -166,5 +164,12 @@ describe("ip-alive: isPublic on the Advisory_Addresses", () => {
   it("keeps the canonical answers of the Original", () => {
     const canonical = ["8.8.8.8", "10.0.0.1", "127.0.0.1", "::1", "2001:db8::1"];
     expect(runIsPublic(ALIVE_DIR, canonical)).toEqual(runIsPublic(tempDir, canonical));
+  });
+
+  it("answers like the Original for \":::\" (not in the class, so the Original code path runs; true)", () => {
+    const addresses = [":::"];
+    const original = runIsPublic(tempDir, addresses);
+    expect(original[":::"]).toBe(true);
+    expect(runIsPublic(ALIVE_DIR, addresses)).toEqual(original);
   });
 });

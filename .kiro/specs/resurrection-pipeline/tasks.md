@@ -469,7 +469,7 @@ Conventions for every task:
     - Rebuild `tests/pipeline/fixtures/stub/ip/` after 12.13 reported `alive`: `resurrection/` is a copy of the final `tests/proof/fixtures/ip-alive` bytes with `name` `@graveyard-shift/ip` and `version` `2.0.2` (README not copied), and `deltas.json` and `harness.json` are the canonical bytes of task 12.12. Update `tests/pipeline/unit/stubFixtureIp.test.ts` so that the byte-equality check refers to the task 12.12 files and the compile check uses the class delta.
     - Stop after this task: the next task is the manual one. Print "Ready for you to run: npm run resurrect -- ip --stub tests/pipeline/fixtures/stub/ip (task 12.9, in WSL)".
     - _Requirements: 23.25, 23.26, 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 9.10_
-  - [ ] 12.9 Manual task (yours): M12, ip stub run, check, record, clean up
+  - [-] 12.9 Manual task (yours): M12, ip stub run, check, record, clean up
     - This task is after 12.14; the stop before it is intentional. Commit and push the work of 12.6 to 12.14 to `main` first.
     - In WSL, in the separate clone (never in `/mnt/c/dev/graveyard-shift`): `cd ~/graveyard-shift`; first remove leftovers of earlier runs from the clone root (`rm -rf resurrection deltas.json harness.json .graveyard-work`); `git pull origin main`; `npm ci` only if `package-lock.json` changed; then
       `npm run resurrect -- ip --stub tests/pipeline/fixtures/stub/ip`

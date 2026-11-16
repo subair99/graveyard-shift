@@ -309,6 +309,64 @@ export const toStringArgs: fc.Arbitrary<readonly unknown[]> = fc.oneof(
 const single = ipString.map((a) => [a] as readonly unknown[]);
 const singleCases: readonly (readonly unknown[])[] = FIXED_ADDRESSES.map((a) => [a]);
 
+// isPublic only (task 12.9, decision A of 2026-11-17): malformed IPv6 text and non-canonical IPv4 forms,
+// inside and outside the non-public-address class. They are preset cases, not delta cases; the delta
+// cases stay the five Advisory_Addresses.
+const IS_PUBLIC_EXTRA_INPUTS: readonly string[] = [
+  // malformed IPv6: empty groups, extra colons, runs of colons
+  ":::",
+  "::",
+  "::::",
+  ":",
+  "::0",
+  "0::",
+  ":::1",
+  // non-canonical IPv4 inside the class (short, hex, octal, long forms)
+  "0x7f.1",
+  "0xa.0.0.1",
+  "192.168.1",
+  "172.16.0.0x1",
+  "0300.0250.0.1",
+  "0xc0a80001",
+  "0251.0376.1.1",
+  // the same forms outside the class
+  "172.32.0.0x1",
+  "0xb.0.0.1",
+  "11.1",
+  "0x08080808",
+  "0300.0251.0.1",
+  "4294967295",
+];
+const isPublicCases: readonly (readonly unknown[])[] = [
+  ...singleCases,
+  ...IS_PUBLIC_EXTRA_INPUTS.filter((a) => !FIXED_ADDRESSES.includes(a)).map((a) => [a]),
+];
+
+/** Malformed IPv6 text by construction: empty groups, extra colons, ':::' runs, stray edge colons. */
+const emptyGroupV6: fc.Arbitrary<string> = fc
+  .array(fc.oneof({ arbitrary: hexGroup, weight: 2 }, { arbitrary: fc.constant(""), weight: 1 }), {
+    minLength: 1,
+    maxLength: 9,
+  })
+  .map((parts) => parts.join(":"));
+const colonRunV6: fc.Arbitrary<string> = fc
+  .tuple(groups(3), fc.constantFrom(":", "::", ":::", "::::", ":::::"), groups(3))
+  .map(([head, run, tail]) => `${head.join(":")}${run}${tail.join(":")}`);
+const edgeColonV6: fc.Arbitrary<string> = fc
+  .tuple(fc.constantFrom("", ":", "::", ":::"), v6Full, fc.constantFrom("", ":", "::", ":::"))
+  .map(([lead, body, trail]) => `${lead}${body}${trail}`);
+const twoGapsV6: fc.Arbitrary<string> = fc
+  .tuple(groups(2), groups(2), groups(2))
+  .map(([a, b, c]) => `${a.join(":")}::${b.join(":")}::${c.join(":")}`);
+
+/** More malformed IPv6 text for isPublic. Exported for the ip-alive equivalence test. */
+export const malformedV6String: fc.Arbitrary<string> = fc.oneof(emptyGroupV6, colonRunV6, edgeColonV6, twoGapsV6);
+
+const isPublicArgs: fc.Arbitrary<readonly unknown[]> = fc.oneof(
+  { arbitrary: single, weight: 3 },
+  { arbitrary: malformedV6String.map((a) => [a] as readonly unknown[]), weight: 2 },
+);
+
 interface Entry {
   args: fc.Arbitrary<readonly unknown[]>;
   explicitCases: readonly (readonly unknown[])[];
@@ -334,7 +392,7 @@ const ENTRIES: Readonly<Record<IpExport, Entry>> = {
   },
   isLoopback: { args: single, explicitCases: singleCases },
   isPrivate: { args: single, explicitCases: singleCases },
-  isPublic: { args: single, explicitCases: singleCases },
+  isPublic: { args: isPublicArgs, explicitCases: isPublicCases },
   isV4Format: { args: single, explicitCases: singleCases },
   isV6Format: { args: single, explicitCases: singleCases },
   loopback: { args: familyArg, explicitCases: [[], [4], [6], ["ipv4"], ["IPv6"], ["foo"]] },

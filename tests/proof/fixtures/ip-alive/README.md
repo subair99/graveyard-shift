@@ -1,4 +1,10 @@
-> **Test fixture, not a release.** This directory is a hand-written development fixture: ip@2.0.1 with the smallest fix to `isPublic` for GHSA-2p57-rm9w-gvfp (version 2.0.2). It is not Medium output and not a demo entry. The original README follows unchanged.
+> **Test fixture, not a release.** This directory is a hand-written development fixture: ip@2.0.1 with the smallest fix to `isPublic` for GHSA-2p57-rm9w-gvfp (version 2.0.2). It is not Medium output and not a demo entry.
+>
+> The rule, in `lib/ip.js`:
+>
+> `isPublic(x) = inNonPublicAddressClass(x) ? false : <the Original's isPublic(x), unchanged code path>`
+>
+> `inNonPublicAddressClass` is a plain-JS copy (CommonJS, no imports) of the strict parser and range table in `src/pipeline/harness/core/presets/ipNonPublicAddress.ts` of the Graveyard Shift repository: same grammar, same ranges, a parse failure means not in the class, non-string input is not in the class. Each part of the copy names the lines it mirrors. The else-branch is the Original's `return !ip.isPrivate(addr);`. No other function differs from ip@2.0.1. The original README follows unchanged.
 
 # IP  
 [![](https://badge.fury.io/js/ip.svg)](https://www.npmjs.com/package/ip)  
