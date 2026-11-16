@@ -39,6 +39,19 @@ function buildFacts(i: BuildRecordInput, rules: readonly RuleResult[]): Fact[] {
     if (r.reason === "unverified" || !fromTarball.has(r.rule)) continue;
     facts.push({ key: `rule.${r.rule}`, value: r.observed, provenance: tarball });
   }
+  // The open-vulnerability observation comes from the certificate, not from the registry packument
+  // or the tarball. Its Source_URL and Fetch_Date are the ones the Coroner recorded for the
+  // `openVulnerabilities` fact (the OSV query, autopsy-engine R3.2, R3.3), never the Gravedigger's clock.
+  const osvFact = i.cert.facts.find((f) => f.key === "openVulnerabilities");
+  const open = rules.find((r) => r.rule === "open-vulnerability");
+  if (osvFact !== undefined && osvFact.provenance.length > 0 && open !== undefined && open.reason !== "unverified") {
+    facts.push({
+      key: "rule.open-vulnerability",
+      value: open.observed,
+      provenance: osvFact.provenance.map((p) => ({ sourceUrl: p.sourceUrl, fetchedAt: p.fetchedAt })),
+      ...(osvFact.stale === true ? { stale: true } : {}),
+    });
+  }
   return facts.sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
 }
 

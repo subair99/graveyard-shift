@@ -62,7 +62,11 @@ describe("buildEligibilityRecord", () => {
       integrity: { expected: SRI, computed: "sha512-BBBB", matches: false },
     });
     expect(rec.rules[0]).toMatchObject({ reason: "unverified", missingField: "package.json" });
-    expect(rec.facts.map((f) => f.key)).toEqual(["integrity.computed", "integrity.expected"]);
+    expect(rec.facts.map((f) => f.key)).toEqual([
+      "integrity.computed",
+      "integrity.expected",
+      "rule.open-vulnerability",
+    ]);
   });
 
   it("marks an absent license as unverified and not eligible", () => {
@@ -75,10 +79,55 @@ describe("buildEligibilityRecord", () => {
     const rec = buildEligibilityRecord(input({}));
     expect(rec.facts.length).toBeGreaterThan(0);
     for (const f of rec.facts) {
-      expect(f.provenance[0]!.sourceUrl).toMatch(/^https:\/\/registry\.npmjs\.org\//);
-      expect(f.provenance[0]!.fetchedAt).toBe(AT);
+      expect(f.provenance[0]!.sourceUrl).toMatch(/^https:\/\//);
+      expect(f.provenance[0]!.fetchedAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/);
+      if (f.key !== "rule.open-vulnerability") {
+        expect(f.provenance[0]!.sourceUrl).toMatch(/^https:\/\/registry\.npmjs\.org\//);
+        expect(f.provenance[0]!.fetchedAt).toBe(AT);
+      }
     }
     expect(hasCredentialOrPath(serializeEligibilityRecord(rec))).toBe(false);
+  });
+
+  // Finding 2 (PR #4): the open-vulnerability count cited the npm registry.
+  it("cites the certificate's OSV provenance for open-vulnerability, never the registry or the Gravedigger clock", () => {
+    for (const [name, cert] of [
+      ["ip", IP_CERT],
+      ["inflight", INFLIGHT_CERT],
+      ["lodash.set", LODASH_SET_CERT],
+    ] as const) {
+      const rec = buildEligibilityRecord(input({ name, cert }));
+      const fact = rec.facts.find((f) => f.key === "rule.open-vulnerability");
+      const certFact = cert.facts.find((f) => f.key === "openVulnerabilities")!;
+      expect(fact, name).toBeDefined();
+      expect(fact!.provenance, name).toEqual(certFact.provenance);
+      expect(fact!.provenance[0]!.sourceUrl, name).toBe("https://api.osv.dev/v1/query");
+      expect(fact!.provenance[0]!.fetchedAt, name).not.toBe(AT);
+      expect(fact!.value, name).toBe(cert.openVulnerabilityIds.length);
+    }
+  });
+
+  it("omits the open-vulnerability fact when the certificate has no openVulnerabilities fact", () => {
+    const cert = { ...IP_CERT, facts: IP_CERT.facts.filter((f) => f.key !== "openVulnerabilities") };
+    const rec = buildEligibilityRecord(input({ cert }));
+    expect(rec.facts.some((f) => f.key === "rule.open-vulnerability")).toBe(false);
+  });
+
+  it("cites the right source for each rule observation (table)", () => {
+    const tarball = "https://registry.npmjs.org/ip/-/ip-2.0.1.tgz";
+    const packument = "https://registry.npmjs.org/ip";
+    const rec = buildEligibilityRecord(input({ pkg: { license: "MIT", dependencies: {}, type: "commonjs" } }));
+    const source = (key: string) => rec.facts.find((f) => f.key === key)?.provenance[0]?.sourceUrl;
+    const table: Array<[string, string]> = [
+      ["rule.license", tarball],
+      ["rule.dependencies", tarball],
+      ["rule.module-type", tarball],
+      ["rule.line-count", tarball],
+      ["rule.open-vulnerability", "https://api.osv.dev/v1/query"],
+      ["integrity.expected", packument],
+      ["integrity.computed", tarball],
+    ];
+    for (const [key, url] of table) expect(source(key), key).toBe(url);
   });
 
   it("produces byte-identical output for identical input", () => {
