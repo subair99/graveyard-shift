@@ -35,6 +35,8 @@ const goodPathArb = fc
 
 const forbiddenArb = fc.constantFrom(".git", ".github", ".kiro", ".GIT", ".Github", ".KIRO");
 
+const controlArb = fc.oneof(fc.integer({ min: 0, max: 0x1f }), fc.constant(0x7f)).map((code) => String.fromCharCode(code));
+
 const badPathArb: fc.Arbitrary<string> = fc.oneof(
   goodPathArb.map((p) => p.replace("resurrection/", "resurrection/../")),
   goodPathArb.map((p) => `../${p}`),
@@ -46,6 +48,10 @@ const badPathArb: fc.Arbitrary<string> = fc.oneof(
   goodPathArb.map((p) => `/${p}`),
   goodPathArb.map((p) => p.replace("resurrection/", "resurrection//")),
   goodPathArb.map((p) => `${p.slice(0, -1)}\0${p.slice(-1)}`),
+  // Any C0 control character or DEL (R9.6 amended).
+  fc
+    .tuple(goodPathArb, controlArb)
+    .map(([p, c]) => `${p.slice(0, -1)}${c}${p.slice(-1)}`),
   fc.tuple(goodPathArb, forbiddenArb).map(([p, seg]) => p.replace("resurrection/", `resurrection/${seg}/`)),
   forbiddenArb.map((seg) => `${seg}/config.json`),
   fc.constant(""),

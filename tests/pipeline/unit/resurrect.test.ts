@@ -253,6 +253,18 @@ describe("Local_Runner", () => {
     expect(ledgerOf(s.files).entries[0]).toMatchObject({ creditBefore: "not provided", creditAfter: "not provided" });
   });
 
+  it("prints a path with a newline escaped (R9.6)", async () => {
+    const entry: IntakeEntry = { path: "resurrection/a\n::warning::x", type: "file", size: 1 };
+    const s = setup({ entries: [entry] });
+    const r = await runResurrect(["lodash.set"], s.deps);
+    expect(r.exitCode).toBe(1);
+    const lines = s.err.join("\n");
+    expect(lines).toContain("resurrection/a\\u000a::warning::x: bad-path");
+    expect(lines).toContain("U+000A");
+    expect(s.err.every((l) => !/[\u0000-\u001f\u007f]/.test(l) && !l.startsWith("::"))).toBe(true);
+    expect(s.pushes).toEqual([]);
+  });
+
   it("violation path writes the ledger, lists the violations and does not push", async () => {
     const s = setup({ entries: [] });
     const r = await runResurrect(["lodash.set"], s.deps);

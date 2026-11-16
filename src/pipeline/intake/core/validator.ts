@@ -11,11 +11,13 @@ import {
   RESURRECTION_DIR,
   TEXT_EXTENSIONS,
 } from "./limits";
+import { codePointLabel, firstControlCharacter } from "./safePath";
 import type { IntakeEntry, IntakeResult, Violation, ViolationCode } from "./types";
 
 function badPathReason(path: string): string | null {
   if (path.length === 0) return "empty path";
-  if (path.includes("\0")) return "NUL byte in path";
+  const control = firstControlCharacter(path);
+  if (control !== null) return `control character ${codePointLabel(control)} in path`;
   if (path.includes("\\")) return "backslash in path";
   if (/^[A-Za-z]:/.test(path)) return "drive prefix in path";
   if (path.startsWith("/")) return "absolute path";

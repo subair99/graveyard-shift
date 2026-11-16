@@ -15,6 +15,7 @@ import { ALLOWED_MEDIUM_PATHS, CREDIT_CEILING } from "../../common/constants";
 import { isSupportedPackageName } from "../../common/packageNames";
 import { runGravedigger, type GravediggerResult } from "../../gravedigger/shell/gravedigger";
 import { deriveIpDeltas, parseIpMeasurement } from "../../harness/core/ipMeasurement";
+import { safePathForLog } from "../../intake/core/safePath";
 import { validateIntake } from "../../intake/core/validator";
 import type { IntakeEntry } from "../../intake/core/types";
 import { readFsEntries } from "../../intake/shell/fsEntries";
@@ -245,7 +246,7 @@ async function run(argv: readonly string[], deps: ResurrectDeps): Promise<Resurr
   const validated = validateIntake(await deps.readEntries(deps.repoRoot));
   if (!validated.ok) {
     deps.err("The Medium output fails the intake check; nothing was pushed and nothing was deleted:");
-    for (const v of validated.violations) deps.err(`  ${v.path}: ${v.code}: ${v.message}`);
+    for (const v of validated.violations) deps.err(`  ${safePathForLog(v.path)}: ${v.code}: ${v.message}`);
     return { exitCode: 1 };
   }
 

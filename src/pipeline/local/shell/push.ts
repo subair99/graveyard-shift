@@ -2,6 +2,7 @@
 // plumbing-built commit on origin/main, then dispatches the CI_Workflow. Never force-pushes,
 // never deletes a branch, never runs a shell.
 import { ALLOWED_MEDIUM_PATHS } from "../../common/constants";
+import { safePathForLog } from "../../intake/core/safePath";
 import { validateIntake } from "../../intake/core/validator";
 import type { IntakeEntry } from "../../intake/core/types";
 import { readFsEntries } from "../../intake/shell/fsEntries";
@@ -58,7 +59,7 @@ export async function runPush(input: PushInput, deps: PushDeps): Promise<number>
     const validated = validateIntake(entries);
     if (!validated.ok) {
       deps.err("The Medium output fails the intake check; nothing was pushed:");
-      for (const v of validated.violations) deps.err(`  ${v.path}: ${v.code}: ${v.message}`);
+      for (const v of validated.violations) deps.err(`  ${safePathForLog(v.path)}: ${v.code}: ${v.message}`);
       return 1;
     }
     const plan = planPush({ package: input.package, version: input.version, mode: input.mode, files: validated.files });

@@ -16,6 +16,7 @@ import {
   serializeEligibilityRecord,
 } from "../../../src/pipeline/gravedigger/core/eligibility";
 import type { GravediggerResult } from "../../../src/pipeline/gravedigger/shell/gravedigger";
+import { safePathForLog } from "../../../src/pipeline/intake/core/safePath";
 import { validateIntake } from "../../../src/pipeline/intake/core/validator";
 import type { IntakeEntry, Violation } from "../../../src/pipeline/intake/core/types";
 import type { GitEntriesOptions } from "../../../src/pipeline/intake/shell/gitEntries";
@@ -233,7 +234,7 @@ export async function resolveBranchStep(deps: IntakeDeps): Promise<number> {
 }
 
 function violationLines(violations: readonly Violation[]): string[] {
-  return violations.map((v) => `${v.code} ${v.path}: ${v.message}`);
+  return violations.map((v) => `${v.code} ${safePathForLog(v.path)}: ${v.message}`);
 }
 
 function parseJsonObject(bytes: Uint8Array): PackageJson | null {

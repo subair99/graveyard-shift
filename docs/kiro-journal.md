@@ -1361,3 +1361,20 @@ Diagnosis (agent-run, plain `node` on the extracted Original lib/ip.js; the tabl
 - V16 answered: the attest job did NOT compare the recomputed sha256 of resurrection.tgz and certificate.json against intake job outputs. Evidence: attestSteps.ts prepareStep, the attest env and intake outputs in resurrect.yml, and the upload-artifact v7.0.2 README (overwrite is false by default; prove uploads only prove-data). Change: intake outputs certificate_digest and tarball_digest (coroner and pack steps); attest env GS_INTAKE_SHA256_TARBALL and GS_INTAKE_SHA256_CERTIFICATE; comparison in prepareStep (fails closed: missing, malformed or different). Tests in ciEntries, ciIntakeEntry and workflowLint. proof-report.json cannot be compared because prove produces it; it is bound by the Tree_Hash, the Integrity_Hash and the verdict gate.
 - V16 not verified: that pinned SHA cf430e03 is the v7.0.2 commit (taken from the workflow comment); direct artifact-service calls with the runtime token; whether the runtime token is visible to run steps; a live workflow run; forgery of the prove verdict output through GITHUB_OUTPUT (same residual risk as before).
 - Agent-run results, one run each: ciEntries 28, ciIntakeEntry 22, workflowLint 19, untrustedMediumOutput 63, apiSurfaceVerdict 5, restlessEntryKept 5, excludedPackages 9, sourceScan 7. Part D runs: traceExit 4, packageNames 3, cliArgs and dispatchInputs 23 together (one command), push 8, resurrect 24, excludedPackages 9, branchNames 5, kiroRunner 10. All passed.
+
+## 2026-11-16: V16 closure: lodash.set stub run and pinned SHA
+- User-run facts. lodash.set stub run 43935754684: all five jobs green. The attest job passed with the new GS_INTAKE_SHA256_* comparison (the intake-output digest check added for V16). PR #7 "lodash.set 4.3.3: alive (stub run)" was closed unmerged.
+- The pinned upload-artifact SHA cf430e030ddbb5b0abf93d22962f4752f3646cd9 was confirmed as v7.0.2 via `gh api` (user-run). This closes the first item of the "V16 not verified" note in the entry "Pre-checkpoint cleanup: traceability gaps, new tests, V16" (that entry is unchanged).
+- Still not verified: direct artifact-service calls with the runtime token; runtime token visibility to run steps; forgery of the prove verdict output through GITHUB_OUTPUT.
+
+## 2026-11-16: Checkpoint 15: full suite and traceability (user-run)
+- User-run facts. `npm test`: 179 files passed, 2017 tests passed, 4 skipped.
+- Spans, checked against targets: pipeline 12.7 s (target 90 s), pipeline-integration 66.5 s (target 120 s), proof-heavy 46.6 s (90), proof-integration 24.2 s (120), proof-property 36.7 s (60).
+- The earlier pipeline spans of 53.2 s (third run) and 78.9 s (one run) predate the split into `pipeline` and `pipeline-integration`; they are the user's earlier measurements, see the earlier entries.
+- `npm run trace`: exit 0. autopsy-engine: criteria 107, cited 106, gaps 1. proof-of-life-engine: criteria 165, cited 149, gaps 16. resurrection-pipeline: criteria 307, cited 252, gaps 55. Unknown citations: 0 in all three.
+- CI run 43934950702 (commit d09fec8): test-linux, test-windows and test-no-identity all green.
+
+## 2026-11-16: R9.6 amended: control characters in Medium_Output paths are rejected (user decision)
+- Reason: the observation under "untrustedMediumOutput (1.3)" above: a path with a newline passed validation and, echoed to a CI log, could inject a `::` workflow command. Now any C0 control character (U+0000 to U+001F) or U+007F is a `bad-path` violation whose reason names the first code point (`U+000A`); log and summary output prints paths through `safePathForLog` (`\u000a`).
+- Code: `src/pipeline/intake/core/safePath.ts`, `validator.ts`, `scripts/ci/lib/intakeSteps.ts`, `src/pipeline/local/shell/resurrect.ts`, `push.ts`.
+- Tests (agent-run, one file at a time, each passed): intakeValidator 34, p13-intake-paths 1, untrustedMediumOutput 71, ciIntakeEntry 23, resurrect 25, push 8, stubFixture 5, stubFixtureIp 5, gitEntries.integration 3. `npm run typecheck` and `npm run lint` exit 0. No full suite run by the agent.

@@ -578,7 +578,7 @@ Conventions for every task:
     - Run `npm run typecheck` and `npm run lint` and fix findings. Do not run the full suite.
     - _Requirements: 21.3_
 
-- [ ] 15. Final checkpoint: full suite and traceability, run by the user
+- [x] 15. Final checkpoint: full suite and traceability, run by the user
   - Ready for you to run: `npm test` (M11). Paste the output. Add the observed spans of the `pipeline` and `pipeline-integration` projects to `docs/kiro-journal.md`; Journal timings come from this pasted output only.
   - Ready for you to run: `npm run trace`. Paste the output (exit code 0 means no unclassified gap).
   - Ensure all tests pass, ask the user if questions arise.

@@ -332,6 +332,20 @@ describe("fetch-and-validate and pack", () => {
     expect(await exists("work/medium")).toBe(false);
   });
 
+  it("renders a path with a newline escaped: no raw control character and no line starting with '::' (R9.6)", async () => {
+    await withOriginal();
+    const cap = fresh();
+    const bad: IntakeEntry[] = [...goodEntries(), { path: "resurrection/a\n::warning::x", type: "file", size: 1 }];
+    const code = await fetchAndValidateStep(makeDeps(env, cap, { readGitEntries: () => Promise.resolve({ ok: true, value: bad }) }));
+    expect(code).toBe(1);
+    const text = [...cap.summary, ...cap.errors, ...cap.logs].join("\n");
+    expect(text).toContain("bad-path resurrection/a\\u000a::warning::x");
+    expect(text).toContain("U+000A");
+    expect(text).not.toMatch(/[\u0000-\u0009\u000b-\u001f\u007f]/);
+    for (const line of text.split("\n")) expect(line.startsWith("::")).toBe(false);
+    expect(await exists("work/medium")).toBe(false);
+  });
+
   it("lists failed necromancy checks in the summary, exits 1 and writes nothing", async () => {
     await withOriginal();
     const cap = fresh();

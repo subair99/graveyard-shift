@@ -34,7 +34,10 @@ const base = (): IntakeEntry[] => [
   file("harness.json", "{}"),
 ];
 
-/** Names the Intake_Validator must reject: traversal, backslash, NUL, absolute, drive, forbidden segments, outside the allowlist. */
+/**
+ * Names the Intake_Validator must reject: traversal, backslash, control characters (NUL, newline, R9.6 amended),
+ * absolute, drive, forbidden segments, outside the allowlist.
+ */
 const REJECTED_NAMES = [
   "resurrection/../../x.js",
   "resurrection\\..\\..\\x.js",
@@ -49,6 +52,8 @@ const REJECTED_NAMES = [
   "$(id).js",
   "`id`.js",
   "x\ny.js",
+  "resurrection/a\nb.js",
+  "resurrection/a\n::warning::x",
   "src/$(id).js",
 ];
 
@@ -59,7 +64,6 @@ const ACCEPTED_HOSTILE_NAMES = [
   "resurrection/`id`.js",
   "resurrection/a&&id.js",
   "resurrection/a|id.js",
-  "resurrection/a\nb.js",
 ];
 
 const MARKERS = [";", "$(", "`", "&&", "|", "\n", "..", "\\"];
@@ -299,8 +303,8 @@ describe("CI intake", () => {
   });
 
   it("writes accepted shell-looking names as literal files under work/medium and runs no command", async () => {
-    // `|` and newline are not valid in Windows file names, so those two are left to the Push_Script test.
-    const names = ACCEPTED_HOSTILE_NAMES.filter((n) => !n.includes("\n") && !n.includes("|"));
+    // `|` is not valid in Windows file names, so it is left to the Push_Script test. A newline is rejected (R9.6).
+    const names = ACCEPTED_HOSTILE_NAMES.filter((n) => !n.includes("|"));
     const r = run([...good(), ...names.map((n) => file(n))]);
     expect(await fetchAndValidateStep(r.deps)).toBe(0);
     expect(r.commands).toEqual([]);

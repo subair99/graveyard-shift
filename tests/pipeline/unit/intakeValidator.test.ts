@@ -1,6 +1,7 @@
 // Requirements: 9.5, 9.6, 9.7, 9.8, 9.9, 9.12
 import { describe, expect, it } from "vitest";
 import { ALLOWED_MEDIUM_PATHS, INTAKE_LIMITS } from "../../../src/pipeline/common/constants";
+import { safePathForLog } from "../../../src/pipeline/intake/core/safePath";
 import { validateIntake } from "../../../src/pipeline/intake/core/validator";
 import type { IntakeEntry, ViolationCode } from "../../../src/pipeline/intake/core/types";
 
@@ -53,6 +54,30 @@ describe("validateIntake", () => {
     ["deltas.json.bak", "outside-allowlist"],
   ] as const)("reports %j as %s", (path, code) => {
     expect(codes([...base(), file(path)])).toContain(code);
+  });
+
+  it.each([
+    ["resurrection/a\n.js", "U+000A"],
+    ["resurrection/a\r.js", "U+000D"],
+    ["resurrection/a\t.js", "U+0009"],
+    ["resurrection/a\0.js", "U+0000"],
+    ["resurrection/a\u007f.js", "U+007F"],
+    ["resurrection/a\n::warning::x", "U+000A"],
+    ["resurrection/a\u001f\n.js", "U+001F"],
+  ] as const)("rejects the control character in %j with a reason naming %s", (path, codePoint) => {
+    const result = validateIntake([...base(), file(path)]);
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    const violations = result.violations.filter((v) => v.path === path);
+    expect(violations.map((v) => v.code)).toEqual(["bad-path"]);
+    expect(violations[0]?.message).toContain(codePoint);
+    // The message itself carries no raw control character.
+    expect(violations[0]?.message).not.toMatch(/[\u0000-\u001f\u007f]/);
+  });
+
+  it("escapes control characters for logs and leaves other text unchanged", () => {
+    expect(safePathForLog("resurrection/a\n::warning::x\0\u007f")).toBe("resurrection/a\\u000a::warning::x\\u0000\\u007f");
+    expect(safePathForLog("resurrection/lib/a b.js")).toBe("resurrection/lib/a b.js");
   });
 
   it.each(["symlink", "hardlink", "submodule", "device", "other"] as const)("rejects a %s", (type) => {
