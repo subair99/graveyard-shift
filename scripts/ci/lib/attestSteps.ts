@@ -20,6 +20,9 @@ export const ATTEST_ENV = {
   prove: "GS_JOB_PROVE",
   mediumMode: "GS_MEDIUM_MODE",
   branchCommit: "GS_BRANCH_COMMIT",
+  /** sha256 (hex) of resurrection.tgz and certificate.json, from the job outputs of `intake` (V16). */
+  intakeSha256Tarball: "GS_INTAKE_SHA256_TARBALL",
+  intakeSha256Certificate: "GS_INTAKE_SHA256_CERTIFICATE",
   runId: "GITHUB_RUN_ID",
   runAttempt: "GITHUB_RUN_ATTEMPT",
   bundleTarball: "GS_BUNDLE_TARBALL",
@@ -79,6 +82,18 @@ function manifestOf(files: readonly ExtractedFile[]): { name: string; version: s
   }
 }
 
+const SHA256_HEX = /^[0-9a-f]{64}$/;
+
+/** Returns a reason when an expected digest is missing, malformed or different from the recomputed one; else null. */
+function intakeMismatch(deps: AttestDeps, checks: readonly (readonly [string, string, Uint8Array])[]): string | null {
+  for (const [file, envName, bytes] of checks) {
+    const expected = deps.env[envName] ?? "";
+    if (!SHA256_HEX.test(expected)) return `${envName} (the intake digest of ${file}) is missing or not a sha256`;
+    if (deps.sha256(bytes) !== expected) return `${file} differs from the bytes the intake job produced`;
+  }
+  return null;
+}
+
 /** Step `prepare`. */
 export async function prepareStep(deps: AttestDeps): Promise<number> {
   const { files, env } = deps;
@@ -93,6 +108,16 @@ export async function prepareStep(deps: AttestDeps): Promise<number> {
 
   const tarball = await files.readFile(ATTEST_FILES.tarball);
   const original = await files.readFile(ATTEST_FILES.original);
+
+  // V16: the two intake files must be the bytes `intake` produced. The expected digests are job outputs of
+  // `intake`, which no other job can change; the artifact copy could be replaced by a process with the token.
+  const certificateBytes = await files.readFile(ATTEST_FILES.certificate);
+  const mismatch = intakeMismatch(deps, [
+    [ATTEST_FILES.tarball, ATTEST_ENV.intakeSha256Tarball, tarball],
+    [ATTEST_FILES.certificate, ATTEST_ENV.intakeSha256Certificate, certificateBytes],
+  ]);
+  if (mismatch !== null) return skip(deps, mismatch, 1);
+
   const extracted = await deps.extract(tarball);
   const treeHash = extracted.ok ? computeTreeHash(extracted.value.map((f) => ({ path: f.path, bytes: f.bytes }))) : null;
   const manifest = extracted.ok ? manifestOf(extracted.value) : null;
@@ -113,7 +138,7 @@ export async function prepareStep(deps: AttestDeps): Promise<number> {
   const bytes = {
     tarball,
     report: await files.readFile(ATTEST_FILES.report),
-    certificate: await files.readFile(ATTEST_FILES.certificate),
+    certificate: certificateBytes,
   };
   const built = buildPredicate({
     package: { name: report.package.name, version: report.package.version },

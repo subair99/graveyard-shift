@@ -2,7 +2,7 @@
  * Budget check per project, on the span of its test files (Requirement 15.8). Spans and clocks are
  * injected, so no slow suite runs and the journal is never written.
  */
-// Requirements: 15.7, 15.8
+// Requirements: 15.7, 15.8; resurrection-pipeline 21.9
 import { describe, expect, it } from "vitest";
 import { BUDGET_SECONDS, concludeRun, createSpanTracker, evaluateBudget, evaluateRun, parseBudgetScale } from "../helpers/budgetReporter";
 

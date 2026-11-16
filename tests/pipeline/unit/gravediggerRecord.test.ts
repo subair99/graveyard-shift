@@ -1,4 +1,4 @@
-// Requirements: 2.2, 2.3, 2.5, 2.6, 2.7, 2.8, 2.9, 2.10, 2.11
+// Requirements: 2.2, 2.3, 2.5, 2.6, 2.7, 2.8, 2.9, 2.10, 2.11, 2.14, 2.15
 import { describe, expect, it } from "vitest";
 import {
   deserializeEligibilityRecord,
@@ -248,6 +248,13 @@ describe("buildEligibilityRecord", () => {
     const text = serializeEligibilityRecord(rec);
     const back = deserializeEligibilityRecord(text);
     expect(back.ok && serializeEligibilityRecord(back.value)).toBe(text);
+  });
+
+  it("runtime-rot as the only cause with GitHub not read: causes unverified, no rule.causes fact", () => {
+    const cert = withCert(IP_CERT, { causes: ["runtime-rot"], facts: IP_CERT.facts.filter((f) => f.key !== "githubRepo") });
+    const rec = buildEligibilityRecord(input({ cert }));
+    expect(rec.rules[5]).toMatchObject({ holds: false, reason: "unverified", missingField: "githubRepo" });
+    expect(rec.facts.some((f) => f.key === "rule.causes")).toBe(false);
   });
 
   it("OSV unavailable: open-vulnerability is unverified, has no fact, and the record is not eligible", () => {

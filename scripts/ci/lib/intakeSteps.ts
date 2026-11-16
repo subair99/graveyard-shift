@@ -2,6 +2,7 @@
 // output files) is injected through `IntakeDeps`; files of the job are read and written below `cwd`.
 // Inputs reach these functions as environment variables only. A step returns its exit code.
 
+import { createHash } from "node:crypto";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { canonicalJson } from "../../../src/engine/serialize/canonicalJson";
@@ -108,6 +109,8 @@ export interface IntakeDeps {
   readonly packTarball: (entries: readonly PackEntry[]) => Result<Uint8Array, { kind: string; entry: string }>;
 }
 
+const sha256Hex = (bytes: Uint8Array): string => createHash("sha256").update(bytes).digest("hex");
+
 const abs = (deps: IntakeDeps, rel: string): string => path.join(deps.cwd, ...rel.split("/"));
 
 function fail(deps: IntakeDeps, title: string, lines: readonly string[]): number {
@@ -185,10 +188,13 @@ export async function coronerStep(deps: IntakeDeps): Promise<number> {
   if (dug.record.eligible && dug.tarball === null) {
     return fail(deps, "the Gravedigger kept no tarball for an eligible package", []);
   }
-  await writeFile(abs(deps, FILES.certificate), `${canonicalJson(cert)}\n`);
+  const certificateBytes = new TextEncoder().encode(`${canonicalJson(cert)}\n`);
+  await writeFile(abs(deps, FILES.certificate), certificateBytes);
   await writeFile(abs(deps, FILES.eligibility), `${serializeEligibilityRecord(dug.record)}\n`);
   if (dug.tarball !== null) await writeFile(abs(deps, FILES.original), dug.tarball);
   deps.io.setOutput("eligible", dug.record.eligible ? "true" : "false");
+  // V16: a job output of `intake`; `attest` compares it with the digest it recomputes from the artifact.
+  deps.io.setOutput("certificate_digest", sha256Hex(certificateBytes));
   return 0;
 }
 
@@ -335,6 +341,7 @@ export async function packStep(deps: IntakeDeps): Promise<number> {
   const packed = deps.packTarball(packEntries);
   if (!packed.ok) return fail(deps, "could not pack the resurrection", [`${packed.error.kind}: ${packed.error.entry}`]);
   await writeFile(abs(deps, FILES.resurrection), packed.value);
+  deps.io.setOutput("tarball_digest", sha256Hex(packed.value));
   for (const name of [FILES.deltas, FILES.harness]) {
     const file = validated.files.find((f) => f.path === name);
     if (file?.bytes === undefined) return fail(deps, `${name} is missing`, []);

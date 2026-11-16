@@ -5,7 +5,7 @@
  * directories pass) and over the files that must not mention the spike URI host.
  * The `ci.yml` check is added in task 8.19.
  */
-// Requirements: 1.5, 6.12, 13.8, 17.2
+// Requirements: 1.2, 1.5, 6.12, 13.8, 17.2
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, resolve, sep } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -98,6 +98,18 @@ describe("pipeline source scan", () => {
     expect(findAll(pipelineFiles(), re)).toEqual([]);
   });
 
+  it("invokes no LLM and no kiro-cli from the workflows or the CI scripts (R1.2)", () => {
+    const llm = /kiro-cli|openai|anthropic|bedrock|gemini|mistral|cohere|ollama|\bllm\b/i;
+    const workflows = walk(".github/workflows", (n) => extOf(n) === ".yml" || extOf(n) === ".yaml");
+    expect(workflows).toContain(".github/workflows/resurrect.yml");
+    expect(workflows).toContain(".github/workflows/nightly.yml");
+    const ciScripts = walk("scripts/ci", (n) => CODE_EXT.has(extOf(n)));
+    // Only the Medium (src/pipeline/medium) and the Local_Runner (src/pipeline/local) may name kiro-cli.
+    const deterministic = walk("src/pipeline", (n) => CODE_EXT.has(extOf(n))).filter(
+      (f) => !f.startsWith("src/pipeline/medium/") && !f.startsWith("src/pipeline/local/"),
+    );
+    expect(findAll([...workflows, ...ciScripts, ...deterministic], llm)).toEqual([]);
+  });
   it("uses no `shell: true` (R6.12)", () => {
     expect(findAll(pipelineFiles(), /\bshell\s*:\s*true\b/)).toEqual([]);
   });

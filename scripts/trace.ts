@@ -2,15 +2,17 @@
 // of the spec's requirements.md, and writes docs/traceability.md (one section per spec).
 // Citations are the `// Requirements: ...` header lines of test files. Syntax of one line:
 //   // Requirements: 1.2, 4.3                          bare list: the spec the test belongs to
-//                                                      (tests/engine -> autopsy-engine, tests/proof -> proof-of-life-engine)
+//                                                      (tests/engine -> autopsy-engine, tests/proof -> proof-of-life-engine,
+//                                                      tests/pipeline -> resurrection-pipeline)
 //   // Requirements: proof-of-life-engine 15.5, 15.9   list for the named spec
 //   // Requirements: 1.2, 4.3; proof-of-life-engine 15.5, 15.9   several groups, separated by semicolons
 // A citation credits the criterion in the named spec's table, which shows the citing file path.
 // An unknown spec name or an unknown number is listed under "Cited numbers that do not exist".
-// Gap classes for both specs come from docs/traceability-gaps.json (class and evidence per gap).
+// Gap classes for all specs come from docs/traceability-gaps.json (class and evidence per gap).
 // Reads files only; the single write is docs/traceability.md. Not a test. Run: npm run trace
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const OUTPUT = join(ROOT, "docs", "traceability.md");
@@ -18,10 +20,17 @@ const GAPS_FILE = join(ROOT, "docs", "traceability-gaps.json");
 
 type Id = string;
 
-interface SpecConfig {
+export interface SpecConfig {
   name: string;
   requirements: string;
   testsDir: string;
+}
+
+/** What runTrace reads: the root all spec paths are relative to, the gaps file and the specs. Tests pass a temp directory. */
+export interface TraceContext {
+  root: string;
+  gapsFile: string;
+  specs: readonly SpecConfig[];
 }
 
 const SPECS: readonly SpecConfig[] = [
@@ -35,9 +44,20 @@ const SPECS: readonly SpecConfig[] = [
     requirements: ".kiro/specs/proof-of-life-engine/requirements.md",
     testsDir: "tests/proof",
   },
+  {
+    name: "resurrection-pipeline",
+    requirements: ".kiro/specs/resurrection-pipeline/requirements.md",
+    testsDir: "tests/pipeline",
+  },
 ];
 
-const CLASSES = ["needs a test", "documentation only", "covered, header missing"] as const;
+const CLASSES = [
+  "needs a test",
+  "documentation only",
+  "covered, header missing",
+  "manual",
+  "optional, skipped in first pass",
+] as const;
 type GapClass = (typeof CLASSES)[number];
 
 interface GapEntry {
@@ -127,20 +147,20 @@ interface FileCitations {
   citations: Citation[];
 }
 
-function collectCitations(): FileCitations[] {
+function collectCitations(ctx: TraceContext): FileCitations[] {
   const all: FileCitations[] = [];
-  for (const spec of SPECS) {
-    for (const full of listTestFiles(join(ROOT, spec.testsDir))) {
-      const file = relative(ROOT, full).split("\\").join("/");
+  for (const spec of ctx.specs) {
+    for (const full of listTestFiles(join(ctx.root, spec.testsDir))) {
+      const file = relative(ctx.root, full).split("\\").join("/");
       all.push({ file, ownSpec: spec.name, citations: parseCitations(full, spec.name) });
     }
   }
   return all;
 }
 
-function readGapEntries(): GapEntry[] {
-  if (!existsSync(GAPS_FILE)) return [];
-  const raw: unknown = JSON.parse(readFileSync(GAPS_FILE, "utf8"));
+function readGapEntries(gapsFile: string): GapEntry[] {
+  if (!existsSync(gapsFile)) return [];
+  const raw: unknown = JSON.parse(readFileSync(gapsFile, "utf8"));
   if (!Array.isArray(raw)) throw new Error("docs/traceability-gaps.json must be an array");
   return raw.map((item: unknown, index: number): GapEntry => {
     const e = item as Partial<GapEntry> | null;
@@ -169,15 +189,15 @@ interface SpecResult {
   messages: string[];
 }
 
-function renderSpec(spec: SpecConfig, entries: readonly GapEntry[], allCitations: readonly FileCitations[], lines: string[]): SpecResult {
-  const criteria = parseCriteria(readFileSync(join(ROOT, spec.requirements), "utf8"));
+function renderSpec(ctx: TraceContext, spec: SpecConfig, entries: readonly GapEntry[], allCitations: readonly FileCitations[], lines: string[]): SpecResult {
+  const criteria = parseCriteria(readFileSync(join(ctx.root, spec.requirements), "utf8"));
   const known = new Set(criteria);
   const citedBy = new Map<Id, Set<string>>();
   const unknown = new Map<Id, Set<string>>();
-  const files = listTestFiles(join(ROOT, spec.testsDir))
-    .map((f) => relative(ROOT, f).split("\\").join("/"))
+  const files = listTestFiles(join(ctx.root, spec.testsDir))
+    .map((f) => relative(ctx.root, f).split("\\").join("/"))
     .sort(compareText);
-  const specNames = new Set(SPECS.map((s) => s.name));
+  const specNames = new Set(ctx.specs.map((s) => s.name));
   const add = (target: Map<Id, Set<string>>, key: Id, file: string): void => {
     const set = target.get(key) ?? new Set<string>();
     set.add(file);
@@ -196,11 +216,7 @@ function renderSpec(spec: SpecConfig, entries: readonly GapEntry[], allCitations
 
   const sortedCriteria = [...criteria].sort(compareIds);
   const gaps = sortedCriteria.filter((id) => !citedBy.has(id));
-  const classCounts: Record<GapClass, number> = {
-    "needs a test": 0,
-    "documentation only": 0,
-    "covered, header missing": 0,
-  };
+  const classCounts = Object.fromEntries(CLASSES.map((c) => [c, 0])) as Record<GapClass, number>;
   let problems = 0;
   const messages: string[] = [];
 
@@ -277,10 +293,11 @@ function renderSpec(spec: SpecConfig, entries: readonly GapEntry[], allCitations
   return { criteria: criteria.length, cited: criteria.length - gaps.length, gaps: gaps.length, unknownCitations: unknown.size, classCounts, problems, messages };
 }
 
-function main(): void {
-  const entries = readGapEntries();
-  const specNames = new Set(SPECS.map((s) => s.name));
-  const allCitations = collectCitations();
+/** Core of the trace: reads files only. `report` is the markdown, `output` the text printed to stdout. */
+export function runTrace(ctx: TraceContext): { exitCode: number; output: string; report: string } {
+  const entries = readGapEntries(ctx.gapsFile);
+  const specNames = new Set(ctx.specs.map((s) => s.name));
+  const allCitations = collectCitations(ctx);
   const strangeSpecs = entries.filter((e) => !specNames.has(e.spec));
   const date = new Date().toISOString().slice(0, 10);
   const lines: string[] = [];
@@ -288,16 +305,16 @@ function main(): void {
   lines.push(`Generated on ${date} by \`npm run trace\` (system date; this is documentation, not a measured number).`, "");
   lines.push(NOTE, "");
   lines.push(
-    "One section per spec. Acceptance criteria come from the spec's `requirements.md`; citations are the `// Requirements:` header lines of the test files. Gap classes (class and evidence per gap) for both specs are read from `docs/traceability-gaps.json`. An unclassified gap or a stale classification entry in either spec makes `npm run trace` exit with 1.",
+    "One section per spec. Acceptance criteria come from the spec's `requirements.md`; citations are the `// Requirements:` header lines of the test files. Gap classes (class and evidence per gap) for every spec are read from `docs/traceability-gaps.json`. An unclassified gap or a stale classification entry in any spec makes `npm run trace` exit with 1.",
     "",
-    "Header syntax: `// Requirements: 1.2, 4.3` is a bare list and means the spec the test belongs to (`tests/engine` is autopsy-engine, `tests/proof` is proof-of-life-engine). `// Requirements: proof-of-life-engine 15.5, 15.9` cites criteria of another spec, and groups are separated by semicolons: `// Requirements: 1.2, 4.3; proof-of-life-engine 15.5, 15.9`. A citation credits the criterion in the named spec's table, which shows the citing file path. An unknown spec name or an unknown number is listed under \"Cited numbers that do not exist\" in the section of the spec the citing file belongs to.",
+    "Header syntax: `// Requirements: 1.2, 4.3` is a bare list and means the spec the test belongs to (`tests/engine` is autopsy-engine, `tests/proof` is proof-of-life-engine, `tests/pipeline` is resurrection-pipeline). `// Requirements: proof-of-life-engine 15.5, 15.9` cites criteria of another spec, and groups are separated by semicolons: `// Requirements: 1.2, 4.3; proof-of-life-engine 15.5, 15.9`. A citation credits the criterion in the named spec's table, which shows the citing file path. An unknown spec name or an unknown number is listed under \"Cited numbers that do not exist\" in the section of the spec the citing file belongs to.",
     "",
   );
 
   let failed = false;
   const summary: string[] = [];
-  for (const spec of SPECS) {
-    const r = renderSpec(spec, entries, allCitations, lines);
+  for (const spec of ctx.specs) {
+    const r = renderSpec(ctx, spec, entries, allCitations, lines);
     const classText = `, classes: ${CLASSES.map((c) => `${c} ${r.classCounts[c]}`).join("; ")}`;
     summary.push(
       `${spec.name}: criteria ${r.criteria}, cited ${r.cited}, gaps ${r.gaps}, unknown citations ${r.unknownCitations}${classText}`,
@@ -308,17 +325,24 @@ function main(): void {
     }
   }
   if (strangeSpecs.length > 0) failed = true;
-  writeFileSync(OUTPUT, lines.join("\n"), "utf8");
-  for (const s of summary) process.stdout.write(`${s}\n`);
+  let output = "";
+  for (const s of summary) output += `${s}\n`;
   if (strangeSpecs.length > 0) {
-    process.stdout.write(`classification entries for an unknown spec: ${strangeSpecs.map((e) => `${e.spec} ${e.criterion}`).join(", ")}\n`);
+    output += `classification entries for an unknown spec: ${strangeSpecs.map((e) => `${e.spec} ${e.criterion}`).join(", ")}\n`;
   }
   if (failed) {
-    process.stdout.write(
-      "classification problems: see 'Classification check' in docs/traceability.md (unclassified gaps, classified criteria that do not exist, stale classification entries)\n",
-    );
-    process.exitCode = 1;
+    output +=
+      "classification problems: see 'Classification check' in docs/traceability.md (unclassified gaps, classified criteria that do not exist, stale classification entries)\n";
   }
+  return { exitCode: failed ? 1 : 0, output, report: lines.join("\n") };
 }
 
-main();
+function main(): void {
+  const result = runTrace({ root: ROOT, gapsFile: GAPS_FILE, specs: SPECS });
+  writeFileSync(OUTPUT, result.report, "utf8");
+  process.stdout.write(result.output);
+  if (result.exitCode !== 0) process.exitCode = result.exitCode;
+}
+
+// Run only as a script (npm run trace), not when a test imports runTrace.
+if (process.argv[1] !== undefined && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) main();

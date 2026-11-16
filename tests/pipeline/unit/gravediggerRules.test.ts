@@ -1,4 +1,4 @@
-// Requirements: 2.3, 2.4, 2.5, 2.6, 2.8
+// Requirements: 2.3, 2.4, 2.5, 2.6, 2.8, 2.12, 2.13
 import { describe, expect, it } from "vitest";
 import { countLines, evaluateRules, RULE_IDS } from "../../../src/pipeline/gravedigger/core/rules";
 import {
@@ -146,13 +146,37 @@ describe("evaluateRules", () => {
       expect(causesOf({ causes: [], facts: noGithub, notes })).toEqual({ rule: "causes", holds: false, observed: 0 });
     });
 
-    it("a cause found holds even when another input is unavailable", () => {
+    it("a cause whose inputs are all available holds even when an unrelated input is unavailable", () => {
+      const rule = causesOf({
+        causes: ["maintainer-gone"],
+        facts: noGithub,
+        vitalSigns: { ...IP_CERT.vitalSigns, openVulnerabilities: off("osv") },
+      });
+      expect(rule).toEqual({ rule: "causes", holds: true, observed: 1 });
+    });
+
+    it("runtime-rot alone with githubRepo unavailable: unverified, naming githubRepo only", () => {
       const rule = causesOf({
         causes: ["runtime-rot"],
         facts: noGithub,
         vitalSigns: { ...IP_CERT.vitalSigns, openVulnerabilities: off("osv") },
       });
-      expect(rule).toEqual({ rule: "causes", holds: true, observed: 1 });
+      expect(rule).toEqual({
+        rule: "causes",
+        holds: false,
+        observed: null,
+        reason: "unverified",
+        missingField: "githubRepo",
+      });
+    });
+
+    it("runtime-rot with githubRepo unavailable plus a cause with all inputs available: holds", () => {
+      const rule = causesOf({ causes: ["maintainer-gone", "runtime-rot"], facts: noGithub });
+      expect(rule).toEqual({ rule: "causes", holds: true, observed: 2 });
+    });
+
+    it("runtime-rot with all inputs available holds", () => {
+      expect(causesOf({ causes: ["runtime-rot"] })).toEqual({ rule: "causes", holds: true, observed: 1 });
     });
   });
 

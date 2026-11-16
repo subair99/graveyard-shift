@@ -1,4 +1,5 @@
 // Requirements: 9.1, 9.2, 9.3, 9.4, 9.10, 10.8, 11.1, 11.2, 11.3, 11.12, 11.15, 12.6
+import { createHash } from "node:crypto";
 import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -204,6 +205,9 @@ describe("coroner", () => {
     expect(await coronerStep(deps)).toBe(0);
     expect(seen).toEqual(["ip", "2.0.1", "tok"]);
     expect(cap.outputs["eligible"]).toBe("true");
+    expect(cap.outputs["certificate_digest"]).toBe(
+      createHash("sha256").update(await readFile(join(cwd, "certificate.json"))).digest("hex"),
+    );
     expect(JSON.parse(await readFile(join(cwd, "certificate.json"), "utf8")).package.name).toBe("ip");
     expect(JSON.parse(await readFile(join(cwd, "eligibility.json"), "utf8")).eligible).toBe(true);
     expect(Buffer.from(await readFile(join(cwd, "original.tgz"))).equals(Buffer.from(originalTar.bytes))).toBe(true);
@@ -364,6 +368,7 @@ describe("fetch-and-validate and pack", () => {
     // the same input packs to the same bytes
     expect(await packStep(makeDeps(env, fresh()))).toBe(0);
     expect(Buffer.from(await readFile(join(cwd, "resurrection.tgz"))).equals(Buffer.from(tgz))).toBe(true);
+    expect(cap.outputs["tarball_digest"]).toBe(createHash("sha256").update(tgz).digest("hex"));
   });
 
   it("pack refuses a work/medium that is no longer valid intake", async () => {

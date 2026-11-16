@@ -7,7 +7,8 @@
 - ts-morph for static analysis (Haunting Radius).
 - `tar` reads package tarballs in the proof engine (only `src/proof/shell/tarball/tarballExtractor.ts` imports it).
 - The autopsy engine is deterministic: no LLM calls. Facts come only from the npm registry, OSV, deps.dev and the GitHub REST API, each stored with its source URL and fetch date.
-- The Medium runs locally (Kiro CLI in WSL). CI does the verification, the Proof of Life, the attestation (GitHub Artifact Attestations) and the pull request.
+- The Medium runs on demand on the user's machine (Kiro CLI in WSL). CI re-runs the Coroner and the Gravedigger, runs the Proof of Life, attests only an `alive` verdict (GitHub Artifact Attestations) and opens the pull request. A nightly CI job (`nightly.yml`) re-verifies every committed result without an LLM and without credits.
+- The Proof of Life runs only in CI, so local Node versions do not affect reports. CI uses the pinned Node version `PINNED_NODE_VERSION` (`src/pipeline/common/constants.ts`, currently `26.13.1`). The Pipeline needs `gh` 2.67.0 or later (`GH_MIN_VERSION`) and uses no new secret.
 
 ## Known external dependencies
 - Data sources: npm registry, OSV, deps.dev, GitHub REST API.
@@ -28,6 +29,8 @@
 - Test: `npm test` (vitest --run; tests in `tests/**/*.test.ts`; set `FC_SEED` to replay a fast-check seed). Tests are run by the user, not by agents; see `testing-workflow.md`. Agents may run typecheck, lint and one test file at a time.
 - One vitest project: `npx vitest run --project engine` (or `proof-property`, `proof-heavy`, `proof-integration`, `pipeline`, `pipeline-integration`). Projects are defined in `vitest.config.mts`: `engine` (`tests/engine`), `proof-property` (`tests/proof/property` and `tests/proof/unit`, minus the three files of `proof-heavy`, target 60 s), `proof-heavy` (`p24-same-seed-same-bytes`, `p26-injected-changes`, `p26b-declared-delta`, target 90 s), `proof-integration` (`tests/proof/integration`, target 120 s), `pipeline` (`tests/pipeline`, minus `tests/pipeline/integration`, target 90 s), `pipeline-integration` (`tests/pipeline/integration`, target 120 s). Targets are targets, not measurements.
 - Proof of Life run: `npm run proof:run -- <options>` (`tsx src/proof/cli.ts`; exit codes 0 alive, 1 restless, 2 inconclusive, 64 usage error)
+- Resurrect (Local_Runner, runs the Medium or a stub): `npm run resurrect -- <package> [--stub <fixture-dir>]` (`tsx scripts/resurrect.ts`); the push and the workflow dispatch are done by `scripts/push-resurrection.ts`. A stub run uses no credit.
+- Measure ip: `npm run measure:ip` (`tsx scripts/measureIp.ts`; needs the recorded ip tarball); the result is `docs/measurements/ip-2.0.1.json`.
 - Record the lodash.set tarball: `npm run fixtures:record-tarball` (manual; needs network, no credentials)
 - Record engine fixtures: `npm run fixtures:record` (manual; needs network)
 - Requirement trace: `npm run trace` (`tsx scripts/trace.ts`; not a test; reads test headers and the spec, writes `docs/traceability.md`; every `tests/proof/**/*.test.ts` carries a `// Requirements: N.M, ...` header line; `; <spec-name> N.M, ...` after it cites another spec)

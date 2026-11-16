@@ -1,4 +1,4 @@
-// Requirements: 16.22, 16.23
+// Requirements: 14.16, 16.22, 16.23
 // Feature: resurrection-pipeline, Property 29: Not-resurrected entries are never proof failures
 import fc from "fast-check";
 import { describe, it, expect } from "vitest";

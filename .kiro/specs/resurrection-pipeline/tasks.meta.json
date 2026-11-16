@@ -170,6 +170,16 @@
         "executionId": "e8e570f0-82a7-4e69-a4d4-46459db82b18",
         "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
         "timestamp": 1794846244105
+      },
+      {
+        "executionId": "6e113bc8-1e6c-4016-aa07-b1db171249bf",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794850183080
+      },
+      {
+        "executionId": "6e113bc8-1e6c-4016-aa07-b1db171249bf",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794851169485
       }
     ],
     "4.1 Implement the pure validator and limits": [
@@ -608,6 +618,16 @@
         "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
         "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
         "timestamp": 1794821257126
+      },
+      {
+        "executionId": "f7652785-8523-4abc-a504-ee785c1096cb",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794853425625
+      },
+      {
+        "executionId": "f7652785-8523-4abc-a504-ee785c1096cb",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794855515256
       }
     ],
     "8.18 Write `resurrect.yml`, add `workflow_dispatch` to `ci.yml`, and the workflow lint": [
@@ -1047,6 +1067,16 @@
         "executionId": "331fcfc6-c0ec-41da-aa76-c9a1b023fd16",
         "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
         "timestamp": 1794839250130
+      },
+      {
+        "executionId": "6e113bc8-1e6c-4016-aa07-b1db171249bf",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794850183499
+      },
+      {
+        "executionId": "6e113bc8-1e6c-4016-aa07-b1db171249bf",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794851170178
       }
     ],
     "13.8 Write `nightly.yml`": [
@@ -1080,6 +1110,115 @@
         "executionId": "513f7019-6b15-47f1-bf55-c7811b42b4b9",
         "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
         "timestamp": 1794844149053
+      }
+    ],
+    "14.1 Update the steering files and the README": [
+      {
+        "executionId": "6e113bc8-1e6c-4016-aa07-b1db171249bf",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794851179993
+      },
+      {
+        "executionId": "6e113bc8-1e6c-4016-aa07-b1db171249bf",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794851547064
+      }
+    ],
+    "14.2 Reconcile the demo docs, the predicate references and the Journal": [
+      {
+        "executionId": "6e113bc8-1e6c-4016-aa07-b1db171249bf",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794851180275
+      },
+      {
+        "executionId": "6e113bc8-1e6c-4016-aa07-b1db171249bf",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794851547302
+      }
+    ],
+    "14.3 Update `PREEXISTING.md`, `.gitignore` and `.env.example`": [
+      {
+        "executionId": "6e113bc8-1e6c-4016-aa07-b1db171249bf",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794851180458
+      },
+      {
+        "executionId": "6e113bc8-1e6c-4016-aa07-b1db171249bf",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794851547526
+      }
+    ],
+    "14.4 Add the `resurrection-pipeline` section to the traceability script": [
+      {
+        "executionId": "6e113bc8-1e6c-4016-aa07-b1db171249bf",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794851547840
+      },
+      {
+        "executionId": "6e113bc8-1e6c-4016-aa07-b1db171249bf",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794852210245
+      },
+      {
+        "executionId": "f7652785-8523-4abc-a504-ee785c1096cb",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794852501583
+      },
+      {
+        "executionId": "f7652785-8523-4abc-a504-ee785c1096cb",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794855513965
+      }
+    ],
+    "14.5 Write the layout and documentation consistency test": [
+      {
+        "executionId": "6e113bc8-1e6c-4016-aa07-b1db171249bf",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794852210600
+      },
+      {
+        "executionId": "6e113bc8-1e6c-4016-aa07-b1db171249bf",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794852317544
+      },
+      {
+        "executionId": "f7652785-8523-4abc-a504-ee785c1096cb",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794853425135
+      },
+      {
+        "executionId": "f7652785-8523-4abc-a504-ee785c1096cb",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794855514686
+      }
+    ],
+    "14.8 Typecheck and lint pass": [
+      {
+        "executionId": "6e113bc8-1e6c-4016-aa07-b1db171249bf",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794852318046
+      },
+      {
+        "executionId": "6e113bc8-1e6c-4016-aa07-b1db171249bf",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794852347181
+      },
+      {
+        "executionId": "f7652785-8523-4abc-a504-ee785c1096cb",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794853425452
+      },
+      {
+        "executionId": "f7652785-8523-4abc-a504-ee785c1096cb",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794855513588
+      }
+    ],
+    "14. Step (f): documentation and traceability": [
+      {
+        "executionId": "6e113bc8-1e6c-4016-aa07-b1db171249bf",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794852347404
       }
     ]
   }

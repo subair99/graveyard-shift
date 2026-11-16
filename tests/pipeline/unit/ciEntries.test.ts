@@ -128,6 +128,8 @@ function attestFixture(over: Parameters<typeof reportText>[0] = {}, env: Record<
       GS_JOB_PROVE: "success",
       GS_MEDIUM_MODE: "local",
       GS_BRANCH_COMMIT: SHA,
+      GS_INTAKE_SHA256_TARBALL: sha256Hex(enc("packed")),
+      GS_INTAKE_SHA256_CERTIFICATE: sha256Hex(enc("{}")),
       GITHUB_RUN_ID: "123",
       GITHUB_RUN_ATTEMPT: "1",
       ...env,
@@ -188,6 +190,36 @@ describe("attest prepare", () => {
     const { deps, files, io } = attestFixture({}, { GS_JOB_CHECKS: "failure" });
     expect(await prepareStep(deps)).toBe(1);
     expect(io.outputs["decision"]).toBe("skip");
+    expect(files.store.has("attest/predicate.json")).toBe(false);
+  });
+
+  it.each([
+    ["a tarball that differs from the intake digest", "resurrection.tgz"],
+    ["a certificate that differs from the intake digest", "certificate.json"],
+  ])("%s ends without signing", async (_label, file) => {
+    const { deps, files, io } = attestFixture();
+    files.store.set(file, enc("replaced after intake"));
+    expect(await prepareStep(deps)).toBe(1);
+    expect(io.outputs["decision"]).toBe("skip");
+    expect(files.store.has("attest/predicate.json")).toBe(false);
+  });
+
+  it.each([
+    ["GS_INTAKE_SHA256_TARBALL", ""],
+    ["GS_INTAKE_SHA256_CERTIFICATE", ""],
+    ["GS_INTAKE_SHA256_TARBALL", "not-a-digest"],
+    ["GS_INTAKE_SHA256_CERTIFICATE", sha256Hex(enc("{}")).toUpperCase()],
+  ])("a missing or malformed %s (%s) ends without signing", async (name, value) => {
+    const { deps, files, io } = attestFixture({}, { [name]: value });
+    expect(await prepareStep(deps)).toBe(1);
+    expect(io.outputs["decision"]).toBe("skip");
+    expect(files.store.has("attest/predicate.json")).toBe(false);
+  });
+
+  it("an unset intake digest ends without signing", async () => {
+    const { deps, files } = attestFixture();
+    const { GS_INTAKE_SHA256_TARBALL: _removed, ...env } = deps.env as Record<string, string>;
+    expect(await prepareStep({ ...deps, env })).toBe(1);
     expect(files.store.has("attest/predicate.json")).toBe(false);
   });
 

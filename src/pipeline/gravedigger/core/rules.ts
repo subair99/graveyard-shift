@@ -134,18 +134,40 @@ function unavailableCauseInputs(cert: DeathCertificate): string[] {
   return CAUSE_INPUTS.filter((k) => unavailable[k]);
 }
 
+/**
+ * Inputs each cause depends on (src/engine/core/causes.ts, detectCauses):
+ * - maintainer-gone: maintainers (lines 37-39).
+ * - repo-archived: githubRepo, the archived flag (lines 40-42).
+ * - unpatched-cve: openVulnerabilities (lines 43-45).
+ * - runtime-rot: timeOfDeath (lines 46-47) and githubRepo, the last push (lines 49-50). An
+ *   unavailable push date is treated as "no push date" and still yields the cause (line 53), and
+ *   certificate.ts (lines 341-353) passes the unavailable GitHub signal as `lastPush`. So a found
+ *   runtime-rot is reliable only when githubRepo was available.
+ */
+const CAUSE_DEPENDS_ON: Record<string, readonly (typeof CAUSE_INPUTS)[number][]> = {
+  "maintainer-gone": ["maintainers"],
+  "repo-archived": ["githubRepo"],
+  "unpatched-cve": ["openVulnerabilities"],
+  "runtime-rot": ["timeOfDeath", "githubRepo"],
+};
+
 function causesRule(cert: DeathCertificate): RuleResult {
-  // A cause found is a positive observation that does not depend on the missing input, so the rule
-  // holds even when another input is unavailable (user decision). One exception in detectCauses:
-  // runtime-rot counts an unavailable GitHub last push as "no push date" (engine/core/causes.ts),
-  // so with GitHub unavailable that cause rests on the Time_Of_Death alone. With no cause found, an
-  // unavailable input means "unknown", not "none": the rule is unverified (R2.6) and names every
-  // unavailable input, comma-separated (no spaces) in the CAUSE_INPUTS order.
-  if (cert.causes.length === 0) {
-    const missing = unavailableCauseInputs(cert);
-    if (missing.length > 0) return unverified("causes", missing.join(","));
+  // The rule holds when at least one listed cause has every input it depends on available.
+  // Otherwise it is unverified (R2.6). The missingField set, comma-separated without spaces in
+  // CAUSE_INPUTS order, is:
+  // - found causes exist but all are unreliable: the unavailable inputs of those causes only;
+  // - no cause found: every unavailable input (unknown, not "none");
+  // - a reliable cause coexists with an unreliable one: the rule holds, no missingField.
+  const unavailable = new Set<string>(unavailableCauseInputs(cert));
+  const observed = cert.causes.length;
+  if (observed === 0) {
+    if (unavailable.size > 0) return unverified("causes", [...unavailable].join(","));
+    return { rule: "causes", holds: false, observed };
   }
-  return { rule: "causes", holds: cert.causes.length >= 1, observed: cert.causes.length };
+  const missingOf = (c: string): string[] => (CAUSE_DEPENDS_ON[c] ?? []).filter((i) => unavailable.has(i));
+  if (cert.causes.some((c) => missingOf(c).length === 0)) return { rule: "causes", holds: true, observed };
+  const missing = new Set(cert.causes.flatMap(missingOf));
+  return unverified("causes", CAUSE_INPUTS.filter((k) => missing.has(k)).join(","));
 }
 
 /** The seven rules in fixed order. Never throws; an unreadable field gives an `unverified` failure. */

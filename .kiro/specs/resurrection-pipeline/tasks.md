@@ -539,8 +539,8 @@ Conventions for every task:
     - Paste back (V9, V10, V13): the report lines, the `gh` version on the runner (2.67.0 or later), whether `gh attestation verify` worked with the `contents: read` and `attestations: read` token (needs an `alive` entry on `main`; M9 runs only after spec (b) and is not a prerequisite, so if no such entry exists yet, say so and record `gh attestation verify` as not checked in the nightly), and the JSON field names. Check the GitHub documentation on scheduled workflows in public repositories and note the inactivity rule in the Journal; observe whether the schedule fires after the merge.
     - _Requirements: 16.1, 16.9, 16.10, 16.14, 16.21_
 
-- [ ] 14. Step (f): documentation and traceability
-  - [ ] 14.1 Update the steering files and the README
+- [x] 14. Step (f): documentation and traceability
+  - [x] 14.1 Update the steering files and the README
     - `.kiro/steering/product.md`, `README.md`, `.kiro/steering/tech.md`, `.kiro/steering/structure.md`: the Medium runs on demand on the user's machine; CI re-runs the Coroner and the Gravedigger, runs the Proof of Life, attests only an `alive` verdict and opens the pull request; the nightly job re-verifies without an LLM and without credits. Replace the "resurrect them overnight" wording and the user-flow step 4; replace the `tech.md` sentence "CI does the verification, the Proof of Life, the attestation and the pull request" with one that also states the nightly re-verification and the on-demand Medium.
     - `tech.md`: `npm run resurrect`, `npm run measure:ip`, `PINNED_NODE_VERSION`, `gh` at least 2.67.0, no new secret, the Proof of Life runs only in CI, the `pipeline` and `pipeline-integration` vitest projects (targets only), `tar` importer rule if changed in task 8.15.
     - `structure.md`: `src/pipeline/` with its subdirectories, `scripts/resurrect.ts`, `push-resurrection.ts`, `measureIp.ts`, `scripts/ci/`, `tests/pipeline/` and fixtures, the Stub_Fixture, `docs/measurements/`, `graveyard/`, `ledger.json`, the two workflows, and the added `workflow_dispatch` of `ci.yml`; the stub run (copies a fixture, no credit, labelled "stub run", not Medium-produced).
@@ -548,21 +548,21 @@ Conventions for every task:
     - `README.md`, in the stub run text: closing a stub PR leaves a red, job-less CI run ("workflow file issue", `jobs: []`) on its publish branch; this is expected (A5).
     - _Requirements: 7.11, 17.2, 17.5, 18.1, 18.2, 18.3, 18.5, 20.1, 20.2, 20.3, 20.4, 20.5, 20.6, 20.8, 20.9, 20.10, 20.12, 20.13, 13.12_
 
-  - [ ] 14.2 Reconcile the demo docs, the predicate references and the Journal
+  - [x] 14.2 Reconcile the demo docs, the predicate references and the Journal
     - `docs/demo-packages.md`: reconcile with A9 and the ip measurement (functions and inputs of the ip delta, the planned fate of ip, the "verified on" dates), citing the measured values from the Journal. `docs/proof-of-life-ordering.md` and the proof-of-life-engine spec (`.kiro/specs/proof-of-life-engine/`): replace any reference to `https://graveyard-shift.dev/attestation/spike/v1` with a reference to the Predicate_Type of this spec by the name `PREDICATE_TYPE` (R17.2, R17.4; spike files and Journal entries of 2026-11-15 keep the spike URI).
     - `docs/kiro-journal.md`: the Node pin entry (D1: `26.13.1`, source manifest and release, research date 2026-11-15, the open checks V1 and the full-suite check, R12.9), and the entries for the V13, V14 and V16 answers.
     - _Requirements: 12.9, 17.2, 17.3, 17.4, 20.7_
 
-  - [ ] 14.3 Update `PREEXISTING.md`, `.gitignore` and `.env.example`
+  - [x] 14.3 Update `PREEXISTING.md`, `.gitignore` and `.env.example`
     - `PREEXISTING.md`: `actions/attest`, `actions/checkout`, `actions/setup-node`, `actions/upload-artifact`, `actions/download-artifact`, the GitHub CLI, Sigstore as used by GitHub Artifact Attestations, Kiro CLI (user-side), the YAML parser and `semver` (MIT, a direct dependency, `^7.8.6`; list it if not already listed), each with its license and source URL.
     - Confirm the four `.gitignore` lines of task 7.10 are present; confirm `.env.example` has no new variable.
     - _Requirements: 22.2, 22.3, 22.4_
 
-  - [ ] 14.4 Add the `resurrection-pipeline` section to the traceability script
+  - [x] 14.4 Add the `resurrection-pipeline` section to the traceability script
     - `scripts/trace.ts`: a third section reading `tests/pipeline` headers (bare list = this spec; `; <spec-name> N.M` cites another spec) and this spec's `requirements.md`. `docs/traceability-gaps.json`: classify each criterion that only a manual task covers (class and evidence, including M1 to M10 results and the criteria of the Workflow YAML that only a run verifies). Exit code 1 for an unclassified gap or a stale entry.
     - _Requirements: 21.6, 21.7_
 
-  - [ ] 14.5 Write the layout and documentation consistency test
+  - [x] 14.5 Write the layout and documentation consistency test
     - `tests/pipeline/unit/docsConsistency.test.ts`: every file name of `ENTRY_FILES` and the two entry kinds appear in `README.md` and `structure.md` (the writer, the nightly reader and the docs list the same names).
     - _Requirements: 14.12_
 
@@ -574,7 +574,7 @@ Conventions for every task:
     - README text for `gh attestation trusted-root`, `--bundle` and `--custom-trusted-root`, marked "not yet verified" while no user run has confirmed it.
     - _Requirements: 18.4_
 
-  - [ ] 14.8 Typecheck and lint pass
+  - [x] 14.8 Typecheck and lint pass
     - Run `npm run typecheck` and `npm run lint` and fix findings. Do not run the full suite.
     - _Requirements: 21.3_
 

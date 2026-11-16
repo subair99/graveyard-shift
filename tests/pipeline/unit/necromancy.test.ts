@@ -1,4 +1,4 @@
-// Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.9
+// Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.9, 22.10
 
 import { describe, expect, it } from "vitest";
 import { checkNecromancy, isLicenseFileName, type NecromancyInput } from "../../../src/pipeline/necromancy/core/gate";

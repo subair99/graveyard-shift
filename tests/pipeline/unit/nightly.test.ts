@@ -95,6 +95,8 @@ interface Rig {
   ghCalls: { argv: string[]; cwd: string | undefined }[];
   fetched: string[];
   coronerCalls: string[];
+  /** Entry (package) name to the report text the replay stub writes instead of the committed one. */
+  replayReports: Map<string, Uint8Array>;
 }
 
 function rig(opts: {
@@ -111,6 +113,7 @@ function rig(opts: {
   const ghCalls: Rig["ghCalls"] = [];
   const fetched: string[] = [];
   const coronerCalls: string[] = [];
+  const replayReports = new Map<string, Uint8Array>();
   const norm = (p: string): string => p.replaceAll("\\", "/");
   const prefix = (dir: string): string => `${norm(dir)}${norm(dir).endsWith("/") ? "" : "/"}`;
 
@@ -118,8 +121,11 @@ function rig(opts: {
     ...baseProve(files),
     runCli: async (a: readonly string[], cli: CliDeps = {}): Promise<CliResult> => {
       await cli.loadHarness!("pipeline");
-      const src = [...files.keys()].find((k) => norm(k).endsWith("/proof-report.json") && !norm(k).startsWith("work/"));
-      files.set(a[a.indexOf("--out") + 1]!, files.get(src!)!);
+      // The replay stages the entry's tarball as work/resurrection.tgz; addEntry writes the entry directory name as
+      // its bytes, so the stub resolves the report of the entry being replayed.
+      const entryName = dec(files.get(join("work", "resurrection.tgz"))!);
+      const report = replayReports.get(entryName) ?? files.get(join("graveyard", entryName, "proof-report.json"));
+      files.set(a[a.indexOf("--out") + 1]!, report!);
       return { exitCode: 0, stdout: "", stderr: "" };
     },
   };
@@ -186,7 +192,7 @@ function rig(opts: {
     identity: { pathValues: [], userName: undefined },
     platform: "posix",
   };
-  return { deps, files, logs, errors, summaries, ghCalls, fetched, coronerCalls };
+  return { deps, files, logs, errors, summaries, ghCalls, fetched, coronerCalls, replayReports };
 }
 
 async function addEntry(r: Rig, dir: string, spec: EntrySpec = {}): Promise<void> {
@@ -196,7 +202,7 @@ async function addEntry(r: Rig, dir: string, spec: EntrySpec = {}): Promise<void
   put("eligibility.json", ELIGIBILITY);
   put("deltas.json", DELTAS);
   put("harness.json", HARNESS);
-  put("lodash.set-4.3.2.tgz", new Uint8Array([9, 9]));
+  put("lodash.set-4.3.2.tgz", enc(dir));
   put("proof-report.json", await reportText({ verdict: spec.verdict ?? "alive", tools: spec.tools ?? TOOLS }));
   if (spec.stub) put("stub-run.json", JSON.stringify({ schemaVersion: 1, mode: "stub", label: "stub run" }));
   if (spec.bundles ?? (spec.verdict ?? "alive") === "alive") {
@@ -229,6 +235,35 @@ describe("runNightly", () => {
     }
     expect(r.logs[0]).toContain("gh version 2.67.0");
     expect(r.summaries[0]).toContain("lodash.set: verified");
+  });
+
+  it("replays each entry against its own report: the first is verified, the second is a replay-mismatch, the run fails", async () => {
+    const r = rig({});
+    // The real runProve compiles the harness, which only accepts the package lodash.set; the report is keyed by
+    // package, so two entries need two names. This test therefore replaces runProve by a stand-in that only runs the CLI.
+    r.deps = {
+      ...r.deps,
+      replay: {
+        ...r.deps.replay,
+        runProve: async (d, dir) => {
+          const argv = ["--cases", "1", "--out", join(dir, "proof-report.json")];
+          const res = await d.runCli(argv, { loadHarness: async () => ({}) as never });
+          return { verdict: "alive", exitCode: res.exitCode, fallbackWritten: false, argv };
+        },
+      },
+    };
+    await addEntry(r, "first");
+    await addEntry(r, "second");
+    const committed = JSON.parse(dec(r.files.get(join("graveyard", "second", "proof-report.json"))!)) as Record<string, unknown>;
+    r.replayReports.set("second", enc(JSON.stringify({ ...committed, verdict: "restless" })));
+    const out = await runNightly(r.deps);
+    expect(out.exitCode).toBe(1);
+    expect(r.fetched).toEqual(["lodash.set@4.3.2", "lodash.set@4.3.2"]);
+    expect(primary(r, 0)).toEqual(["verified"]);
+    expect(primary(r, 1)).toContain("replay-mismatch");
+    expect(primary(r, 1)).not.toContain("verified");
+    expect(out.report.entries[1]!.firstDiffPath).toBe("$.verdict");
+    expect(out.report.entries[0]!.firstDiffPath).toBeNull();
   });
 
   it("lists entries in code point order", async () => {

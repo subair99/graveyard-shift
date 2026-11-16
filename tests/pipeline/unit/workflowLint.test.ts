@@ -131,6 +131,23 @@ describe("workflow lint", () => {
     expect((resurrect?.doc as { permissions?: unknown }).permissions).toEqual({});
   });
 
+  it("binds attest to the digests that intake emits as job outputs (V16)", () => {
+    const resurrect = loadWorkflows().find((f) => f.name === "resurrect.yml");
+    const jobs = (resurrect?.doc.jobs ?? {}) as Record<string, Job & { outputs?: Record<string, string>; env?: Record<string, string> }>;
+    expect(jobs["intake"]?.outputs?.["certificate_digest"]).toBe("${{ steps.coroner.outputs.certificate_digest }}");
+    expect(jobs["intake"]?.outputs?.["tarball_digest"]).toBe("${{ steps.pack.outputs.tarball_digest }}");
+    const prepare = (jobs["attest"]?.steps ?? []).find((s) => (s.run ?? "").includes("attest.ts prepare")) as
+      | (Step & { env?: Record<string, string> })
+      | undefined;
+    expect(prepare?.env?.["GS_INTAKE_SHA256_TARBALL"]).toBe("${{ needs.intake.outputs.tarball_digest }}");
+    expect(prepare?.env?.["GS_INTAKE_SHA256_CERTIFICATE"]).toBe("${{ needs.intake.outputs.certificate_digest }}");
+    expect(needsOf(jobs["attest"] as Job)).toContain("intake");
+    // prove uploads under its own name, never intake-data, and without overwrite
+    const uploads = (jobs["prove"]?.steps ?? []).filter((s) => (s.uses ?? "").startsWith("actions/upload-artifact@"));
+    expect(uploads.map((s) => s.with?.["name"])).toEqual(["prove-data"]);
+    expect(uploads.every((s) => s.with?.["overwrite"] === undefined)).toBe(true);
+  });
+
   it("asserts ci.yml has workflow_dispatch", () => {
     const ci = loadWorkflows().find((f) => f.name === "ci.yml");
     expect(ci?.doc.on).toHaveProperty("workflow_dispatch");
