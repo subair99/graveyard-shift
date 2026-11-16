@@ -72,6 +72,12 @@ jobs:
       - id: validate
         name: Validate inputs
         run: npx tsx scripts/ci/intake.ts validate-inputs
+      - name: Check the publish branch
+        # Read-only, no token: an anonymous git ls-remote of the public repository. Fails before prove and attest.
+        env:
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: npx tsx scripts/ci/intake.ts check-publish-branch
       - id: coroner
         name: Coroner and Gravedigger
         env:

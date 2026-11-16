@@ -374,7 +374,7 @@ Items marked "decision" were assumptions that the user resolved in review; they 
 #### Acceptance Criteria
 
 1. THE `publish` job SHALL create the Resurrection_Entry `graveyard/<package>/` for every run that reached the Proof_Engine and whose `checks` job succeeded, whatever the Verdict is (U1).
-2. THE Resurrection_Entry SHALL contain `certificate.json`, `eligibility.json`, `deltas.json`, `harness.json`, the resurrection tarball `<package>-<resurrection version>.tgz` and `proof-report.json`, all produced or checked by CI as in Requirements 11 and 12.
+2. THE Resurrection_Entry SHALL contain `certificate.json`, `eligibility.json`, `deltas.json`, `harness.json`, the resurrection tarball `resurrection.tgz` (one fixed name, because the Proof_Report and the attestation predicate already record the package name and the resurrection version) and `proof-report.json`, all produced or checked by CI as in Requirements 11 and 12.
 3. WHEN the Verdict is `alive`, THE Resurrection_Entry SHALL also contain one Attestation_Bundle for each of the three subjects of Requirement 13.4.
 4. WHEN the Verdict is `restless` or `inconclusive`, THE Resurrection_Entry SHALL contain no Attestation_Bundle and no file whose name ends in `.sigstore.json`.
 5. THE Resurrection_Entry for a Verdict other than `alive` SHALL show the Verdict in the `proof-report.json` and in the pull request title and body in plain words, and SHALL list every Divergence, not-demonstrated Declared_Delta and harness error that the Proof_Report holds.

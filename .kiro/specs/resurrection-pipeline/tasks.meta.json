@@ -590,6 +590,72 @@
         "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
         "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
         "timestamp": 1794821479611
+      },
+      {
+        "executionId": "cbce9dd1-5891-4eff-8d32-c9f07c2e9cdd",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794825660149
+      }
+    ],
+    "10.1 Manual task (yours): M3, set up `gh`, a separate clone and `git` in WSL": [
+      {
+        "executionId": "cbce9dd1-5891-4eff-8d32-c9f07c2e9cdd",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794825643889
+      }
+    ],
+    "10.2 Manual task (yours): M4, allow Actions to create pull requests": [
+      {
+        "executionId": "cbce9dd1-5891-4eff-8d32-c9f07c2e9cdd",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794825644099
+      }
+    ],
+    "10.3 Manual task (yours): M5, commit the workflows to `main` and run the first stub run": [
+      {
+        "executionId": "cbce9dd1-5891-4eff-8d32-c9f07c2e9cdd",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794825648267
+      }
+    ],
+    "10.4 Manual task (yours): M6, check the stub pull request and the attestations": [
+      {
+        "executionId": "cbce9dd1-5891-4eff-8d32-c9f07c2e9cdd",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794825652319
+      }
+    ],
+    "10.5 Manual task (yours): M7, re-run once to confirm the collision message": [
+      {
+        "executionId": "cbce9dd1-5891-4eff-8d32-c9f07c2e9cdd",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794825656286
+      }
+    ],
+    "10.6 Manual task (yours): record the observations": [
+      {
+        "executionId": "cbce9dd1-5891-4eff-8d32-c9f07c2e9cdd",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794825660305
+      },
+      {
+        "executionId": "cbce9dd1-5891-4eff-8d32-c9f07c2e9cdd",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794826076736
+      }
+    ],
+    "10. Step (c): checkpoint, the first lodash.set stub run end to end": [
+      {
+        "executionId": "cbce9dd1-5891-4eff-8d32-c9f07c2e9cdd",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794826076940
+      }
+    ],
+    "11. Checkpoint: stop until the user reports the observations": [
+      {
+        "executionId": "cbce9dd1-5891-4eff-8d32-c9f07c2e9cdd",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794826084859
       }
     ]
   }

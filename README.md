@@ -45,6 +45,12 @@ The table numbers are targets, not measurements. Projects run in parallel, so a 
 
 Copy `.env.example` to `.env` and fill in `GITHUB_TOKEN`.
 
+### Running the Medium in WSL
+- Git and `gh` are set up separately from Windows: use a separate clone at `~/graveyard-shift`, install `gh` from GitHub's apt repository, and set the GitHub no-reply commit email in WSL git too.
+- Never run `npm ci` or `npm install` in WSL inside `/mnt/c`.
+- A stub run (and any `npm run resurrect`) leaves `resurrection/`, `deltas.json`, `harness.json` and `.graveyard-work/` in the clone root. Remove them before the next run: the Local_Runner refuses to start when they exist.
+- `ledger.json` is committed by the user.
+
 ## Recording fixtures
 The engine's fixture tests replay recorded upstream responses from `tests/engine/fixtures/`.
 Recording is a manual step: it calls the live npm, OSV, deps.dev and GitHub APIs, so it needs

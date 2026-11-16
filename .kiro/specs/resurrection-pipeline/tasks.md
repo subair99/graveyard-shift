@@ -329,14 +329,14 @@ Conventions for every task:
     - **Property 20: Node pin lint**
     - **Validates: Requirements 12.6, 12.8**
 
-- [-] 9. Checkpoint: end of step (b), full suite run by the user
+- [ ] 9. Checkpoint: end of step (b), full suite run by the user
   - Agent: run `npm run typecheck` and `npm run lint` and fix findings. Do not run `npm test`.
   - Ready for you to run: `npm test` (M11). Paste the output. Add the observed span of the `pipeline` project to `docs/kiro-journal.md` only from that pasted output.
   - Ensure all tests pass, ask the user if questions arise.
   - _Requirements: 21.2, 21.3, 21.8, 21.9_
 
-- [ ] 10. Step (c): checkpoint, the first lodash.set stub run end to end
-  - [ ] 10.1 Manual task (yours): M3, set up `gh`, a separate clone and `git` in WSL
+- [x] 10. Step (c): checkpoint, the first lodash.set stub run end to end
+  - [x] 10.1 Manual task (yours): M3, set up `gh`, a separate clone and `git` in WSL
     - **NEVER run `npm ci` or `npm install` in WSL inside `/mnt/c/dev/graveyard-shift`.** Linux binaries would replace the Windows `node_modules`. All WSL work uses the separate clone `~/graveyard-shift` created below.
     - Install `gh` in WSL (Ubuntu) from GitHub's official apt repository, not Ubuntu's default package. These are the commands of the [GitHub CLI Linux install instructions](https://github.com/cli/cli/blob/trunk/docs/install_linux.md) (fetched 2026-11-15; re-read that page if it has changed):
       ```bash
@@ -367,12 +367,12 @@ Conventions for every task:
     - Paste back: `gh --version`, `gh auth status`, `node --version`, and the output of `git -C ~/graveyard-shift config user.name` and `git -C ~/graveyard-shift config user.email`. Do not paste tokens or `.env` content.
     - _Requirements: 8.10_
 
-  - [ ] 10.2 Manual task (yours): M4, allow Actions to create pull requests
+  - [x] 10.2 Manual task (yours): M4, allow Actions to create pull requests
     - In the browser: repository Settings, Actions, General, Workflow permissions, tick "Allow GitHub Actions to create and approve pull requests", Save.
     - Check from PowerShell: `gh api repos/subair99/graveyard-shift/actions/permissions/workflow` and paste back the JSON (`can_approve_pull_request_reviews` should be `true`).
     - _Requirements: 15.8_
 
-  - [ ] 10.3 Manual task (yours): M5, commit the workflows to `main` and run the first stub run
+  - [x] 10.3 Manual task (yours): M5, commit the workflows to `main` and run the first stub run
     - In PowerShell from the repository root, check `git status`, then commit everything of steps (a) and (b) to `main` (stage files by name) and push: `git push origin main`.
     - In WSL, in the separate clone (never in `/mnt/c/dev/graveyard-shift`): `cd ~/graveyard-shift`, then `git pull origin main`, `npm ci`, then
       `npm run resurrect -- lodash.set --stub tests/pipeline/fixtures/stub/lodash.set`
@@ -380,24 +380,24 @@ Conventions for every task:
     - Paste back: the full terminal output (the printed dispatch command and runs URL), then `gh run list --workflow resurrect.yml --limit 3`, and `gh run view <run-id>` for the dispatch run. Commit `ledger.json` to `main` yourself (the Push_Script does not): in WSL, `cd ~/graveyard-shift`, `git add ledger.json`, commit, `git push origin main`; then `git pull origin main` in the Windows clone.
     - _Requirements: 6.15, 8.4, 8.5, 23.1, 23.2, 23.16_
 
-  - [ ] 10.4 Manual task (yours): M6, check the stub pull request and the attestations
+  - [x] 10.4 Manual task (yours): M6, check the stub pull request and the attestations
     - From PowerShell: `gh pr list --state open`, `gh pr view <number>`, `gh pr checks <number>`, `gh run list --workflow ci.yml --limit 5`.
     - Check out the pull request branch: `gh pr checkout <number>`; in `graveyard/lodash.set/` run the three commands of the pull request body, which have this form (replace `<file>` with `lodash.set-4.3.3.tgz`, `proof-report.json`, `certificate.json`):
       `gh attestation verify <file> --repo subair99/graveyard-shift --predicate-type https://github.com/subair99/graveyard-shift/attestation/resurrection/v1 --signer-workflow subair99/graveyard-shift/.github/workflows/resurrect.yml --format json`
     - Observe and paste back (V1, V2, V3, V5, V7, V8): the `node --version` step output of the jobs; whether the `publish/...` push started a `ci.yml` run; whether the `pull_request` event created an approval-required `ci.yml` run or none; what the merge box shows; whether the anonymous fetch in `intake` worked; whether each of the three `gh attestation verify` commands found its own attestation, with the JSON field names and the exit code of any failing case. Do not merge the stub pull request.
     - _Requirements: 11.14, 13.4, 13.9, 15.10, 15.12, 18.1, 23.9, 23.12_
 
-  - [ ] 10.5 Manual task (yours): M7, re-run once to confirm the collision message
+  - [x] 10.5 Manual task (yours): M7, re-run once to confirm the collision message
     - From PowerShell: `gh run rerun <run-id> --repo subair99/graveyard-shift` (the run of M5), then `gh run watch <new run id>` or read it in the browser.
     - Paste back (V4): whether `publish` failed with the message that names the existing `publish/lodash-set-run<id>-a1` branch and the command `git push origin --delete <branch>`.
     - Then clean up: `gh pr close <number> --delete-branch`, and `git push origin --delete resurrect/lodash.set`.
     - _Requirements: 8.3, 14.7_
 
-  - [ ] 10.6 Manual task (yours): record the observations
+  - [x] 10.6 Manual task (yours): record the observations
     - Write the observations of M3 to M7 in `docs/kiro-journal.md` (dated, user-run, only what you observed, including the run URLs). State the verified-or-failed status of V1 to V8 in that entry.
     - _Requirements: 21.8, 22.8_
 
-- [ ] 11. Checkpoint: stop until the user reports the observations
+- [x] 11. Checkpoint: stop until the user reports the observations
   - Do not start step (d) until the user has pasted the M3 to M7 results. Fixes to the workflows that follow from them (for example the D3 wording or the artifact flow) are made first, with one test file run per change. After such a fix reaches `main`, the user runs `cd ~/graveyard-shift && git pull origin main` in WSL before any further WSL run.
   - Ensure all tests pass, ask the user if questions arise.
 

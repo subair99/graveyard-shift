@@ -1,6 +1,6 @@
 /**
- * CI entry of the `intake` job: `tsx scripts/ci/intake.ts <step>` with one of validate-inputs, coroner, plan,
- * resolve-branch, fetch-and-validate, pack. Inputs arrive as environment variables only (see INPUT_ENV).
+ * CI entry of the `intake` job: `tsx scripts/ci/intake.ts <step>` with one of validate-inputs, check-publish-branch,
+ * coroner, plan, resolve-branch, fetch-and-validate, pack. Inputs arrive as environment variables only (see INPUT_ENV).
  * All logic is in scripts/ci/lib/intakeSteps.ts; this file only wires the real side effects.
  */
 import { appendFileSync } from "node:fs";
@@ -65,6 +65,7 @@ async function main(): Promise<number> {
       ),
     gravedigger: (cert) => runGravedigger(cert, { fetch, clock: systemClock }),
     runGh: (argv, ghEnv) => nodeCommandRunner.run("gh", argv, { env: ghEnv }),
+    runGit: (argv, gitEnv) => nodeCommandRunner.run("git", argv, { env: gitEnv }),
     readGitEntries,
     extractOriginal,
     packTarball,

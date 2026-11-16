@@ -24,6 +24,7 @@ import type { LicenseFile, PackageJson } from "../../../src/pipeline/necromancy/
 import { validateDispatchInputs } from "../../../src/pipeline/undertaker/core/dispatchInputs";
 import type { ValidDispatchInputs } from "../../../src/pipeline/undertaker/core/dispatchInputs";
 import { BRANCH_REQUIRED_MESSAGE, planIntake } from "../../../src/pipeline/undertaker/core/planIntake";
+import { checkPublishCollision } from "../../../src/pipeline/undertaker/shell/publishCollision";
 import type { ExtractedFile, PackEntry } from "../../../src/proof/shell/tarball/tarballExtractor";
 import type { Result } from "../../../src/engine/types";
 
@@ -99,6 +100,8 @@ export interface IntakeDeps {
   readonly gravedigger: (cert: DeathCertificate) => Promise<GravediggerResult>;
   /** Runs `gh` with an argument list and exactly this environment. */
   readonly runGh: (argv: readonly string[], env: Readonly<Record<string, string>>) => Promise<CommandResult>;
+  /** Runs `git` with an argument list and exactly this environment (added to the process environment). */
+  readonly runGit: (argv: readonly string[], env: Readonly<Record<string, string>>) => Promise<CommandResult>;
   readonly readGitEntries: (options: GitEntriesOptions) => Promise<Result<IntakeEntry[], string>>;
   /** Extracts the Original tarball in memory terms (no file of the package is kept). */
   readonly extractOriginal: (tarball: Uint8Array) => Promise<Result<ExtractedFile[], string>>;
@@ -136,6 +139,29 @@ export async function validateInputsStep(deps: IntakeDeps): Promise<number> {
   deps.io.setOutput("version", inputs.value.version);
   deps.io.setOutput("medium_mode", inputs.value.mediumMode);
   deps.io.setOutput("has_branch", inputs.value.branch === null ? "false" : "true");
+  return 0;
+}
+
+/**
+ * Step `check-publish-branch`: read-only, no token. Fails when a `publish/<slug>-run<run_id>-*` branch already exists
+ * (any attempt of this run) or when `git ls-remote` fails, so a re-run stops before `prove` and `attest` sign
+ * anything. The same check runs again in `publish` (shared code: checkPublishCollision). The ls-remote of the public
+ * repository is anonymous: the checkout keeps no credentials and the step has no token.
+ */
+export async function checkPublishBranchStep(deps: IntakeDeps): Promise<number> {
+  const inputs = readInputs(deps);
+  if (!inputs.ok) return fail(deps, "invalid dispatch inputs", inputs.error);
+  const rawRunId = deps.env["GITHUB_RUN_ID"] ?? "";
+  const runId = Number(rawRunId);
+  if (!/^[0-9]+$/.test(rawRunId) || !Number.isSafeInteger(runId) || runId < 1) {
+    return fail(deps, "GITHUB_RUN_ID is not a positive integer", []);
+  }
+  const checked = await checkPublishCollision(
+    (argv) => deps.runGit(argv, { GIT_TERMINAL_PROMPT: "0" }),
+    { package: inputs.value.package, runId },
+  );
+  if (!checked.ok) return fail(deps, "publish branch check failed", [checked.error]);
+  deps.io.log(`no publish branch exists for run ${runId}`);
   return 0;
 }
 
@@ -320,6 +346,7 @@ export async function packStep(deps: IntakeDeps): Promise<number> {
 
 export const STEPS = {
   "validate-inputs": validateInputsStep,
+  "check-publish-branch": checkPublishBranchStep,
   coroner: coronerStep,
   plan: planStep,
   "resolve-branch": resolveBranchStep,

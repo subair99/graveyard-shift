@@ -8,6 +8,7 @@ import type { EligibilityRecord } from "../../../src/pipeline/gravedigger/core/e
 import type { IntakeEntry } from "../../../src/pipeline/intake/core/types";
 import { extractTarball, packTarball } from "../../../src/proof/shell/tarball/tarballExtractor";
 import {
+  checkPublishBranchStep,
   coronerStep,
   createRedactingIo,
   fetchAndValidateStep,
@@ -110,6 +111,7 @@ function makeDeps(
     coroner: () => Promise.resolve({ certificates: [IP_CERT], errors: [], notes: [] }),
     gravedigger: () => Promise.resolve({ record: record(true), tarball: originalTar.bytes }),
     runGh: () => Promise.resolve({ code: 0, stdout: `${SHA}\n`, stderr: "" }),
+    runGit: () => Promise.resolve({ code: 0, stdout: "", stderr: "" }),
     readGitEntries: () => Promise.resolve({ ok: true, value: goodEntries() }),
     extractOriginal: async (bytes) => {
       const dir = await mkdtemp(join(tmpdir(), "gs-intake-extract-"));
@@ -146,6 +148,46 @@ describe("validate-inputs", () => {
     const cap = fresh();
     expect(await validateInputsStep(makeDeps(BASE_ENV, cap, { nodeVersion: "v22.0.0" }))).toBe(1);
     expect(cap.summary.join("\n")).toContain(`v${PINNED_NODE_VERSION}`);
+  });
+});
+
+describe("check-publish-branch", () => {
+  const env: Env = { ...BASE_ENV, GITHUB_RUN_ID: "4376", GITHUB_RUN_ATTEMPT: "2" };
+  const earlier = "publish/ip-run4376-a1";
+
+  it("passes when no branch matches, asking ls-remote with the run glob and no token", async () => {
+    const cap = fresh();
+    const calls: { argv: readonly string[]; env: Readonly<Record<string, string>> }[] = [];
+    const deps = makeDeps({ ...env, GITHUB_TOKEN: "tok" }, cap, {
+      runGit: (argv, e) => {
+        calls.push({ argv, env: e });
+        return Promise.resolve({ code: 0, stdout: "", stderr: "" });
+      },
+    });
+    expect(await checkPublishBranchStep(deps)).toBe(0);
+    expect(calls).toEqual([
+      { argv: ["ls-remote", "--heads", "origin", "publish/ip-run4376-*"], env: { GIT_TERMINAL_PROMPT: "0" } },
+    ]);
+  });
+
+  it("fails with the branch name and the delete command when an earlier attempt left a branch", async () => {
+    const cap = fresh();
+    const deps = makeDeps(env, cap, {
+      runGit: () => Promise.resolve({ code: 0, stdout: `${SHA}\trefs/heads/${earlier}\n`, stderr: "" }),
+    });
+    expect(await checkPublishBranchStep(deps)).toBe(1);
+    const text = cap.errors.join("\n");
+    expect(text).toContain(earlier);
+    expect(text).toContain(`git push origin --delete ${earlier}`);
+    expect(cap.outputs).toEqual({});
+  });
+
+  it("fails closed when ls-remote fails or the run id is invalid", async () => {
+    const failing = makeDeps(env, fresh(), { runGit: () => Promise.resolve({ code: 128, stdout: "", stderr: "x" }) });
+    expect(await checkPublishBranchStep(failing)).toBe(1);
+    const cap = fresh();
+    expect(await checkPublishBranchStep(makeDeps({ ...env, GITHUB_RUN_ID: "" }, cap))).toBe(1);
+    expect(cap.errors.join("\n")).toContain("GITHUB_RUN_ID");
   });
 });
 

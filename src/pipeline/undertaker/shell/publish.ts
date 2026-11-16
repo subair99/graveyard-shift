@@ -17,8 +17,6 @@ import {
   gitCheckoutNewBranchArgv,
   gitCommitArgv,
   gitConfigArgv,
-  gitDeleteBranchCommand,
-  gitLsRemoteHeadsArgv,
   gitPushArgv,
   parseOpenPrs,
   parsePrUrl,
@@ -32,6 +30,7 @@ import {
   type EntryKind,
 } from "../core/layout";
 import { parsePredicate } from "../core/predicate";
+import { checkPublishCollision } from "./publishCollision";
 
 export interface PublishFs {
   readFile(path: string): Promise<Uint8Array>;
@@ -231,18 +230,11 @@ export async function pushPr(input: PushPrInput, deps: PublishDeps): Promise<Res
     if (!r.ok) return err(r.error);
   }
 
-  const ls = await must(deps, "git", gitLsRemoteHeadsArgv(`publish/${slug}-run${input.runId}-*`));
-  if (!ls.ok) return err(ls.error);
-  const existing = ls.value
-    .split(/\r?\n/)
-    .map((l) => l.trim().split(/\s+/)[1])
-    .find((ref) => ref !== undefined && ref.startsWith("refs/heads/"));
-  if (existing !== undefined) {
-    const name = existing.slice("refs/heads/".length);
-    return err(
-      `branch ${name} already exists from an earlier attempt of this run. Delete it yourself and re-run: ${gitDeleteBranchCommand(name)}`,
-    );
-  }
+  const collision = await checkPublishCollision((argv) => deps.runner.run("git", argv), {
+    package: input.package,
+    runId: input.runId,
+  });
+  if (!collision.ok) return err(collision.error);
 
   await deps.fs.writeFile(input.bodyFile, encode(input.body));
 
