@@ -39,7 +39,7 @@ Conventions for every task:
   - [ ]* 1.4 Write property test for ip delta derivation
     - **Property 5: ip deltas come only from measured `true` results**
     - **Validates: Requirements 3.5, 3.6, 3.8, 3.11, 4.12**
-    - File: `tests/pipeline/property/p05-ip-deltas.test.ts`. The compile-side half ("a `returns-expected` input not in the set is an error") is added in task 12.3.
+    - File: `tests/pipeline/property/p05-ip-deltas.test.ts`. The compile-side half ("a `returns-expected` input, or an explicit case of a `returns-expected-class` delta, not in the set is an error") is added in tasks 12.3 and 12.10.
 
   - [x] 1.5 Write `scripts/measureIp.ts` and the `measure:ip` npm script
     - Runs the Original ip@2.0.1 from `tests/proof/fixtures/ip/ip-2.0.1.tgz` (integrity verified against `.meta.json`) through the `Executor` interface (`createSandboxExecutorFactory`, open side, call), with no network, calls `isPublic` for the five addresses and `informational` inputs, and records the exact returned value or the redacted thrown error, the Node version, the ip version and the integrity string.
@@ -63,7 +63,7 @@ Conventions for every task:
 
   - [x] 1.8 Apply the measurement (agent, after the pasted result)
     - Read the pasted export list. Correct the table in design.md "ip coverage" (names, arguments, generator shapes) and mark which entries were read from the tarball (V16).
-    - If the Original returned `false` for all five addresses: record in the Journal and in `docs/demo-packages.md` that the Original already classifies the five addresses as not public, with the measured values, and remove ip from the demo set. Task group 12 then shrinks to the documentation (the ip tasks 12.1 to 12.5 are not started, and the ip run in task 16.1 is skipped).
+    - If the Original returned `false` for all five addresses: record in the Journal and in `docs/demo-packages.md` that the Original already classifies the five addresses as not public, with the measured values, and remove ip from the demo set. Task group 12 then shrinks to the documentation (the ip tasks 12.1 to 12.9 are not started, and the ip run in task 16.1 is skipped).
     - If at least one returned `true`: no change to the demo; the addresses to declare are exactly those (A10). Never adjust an expected value or an input to make a Resurrection pass.
     - If the result is ambiguous, stop and ask the user.
     - _Requirements: 3.5, 3.6, 3.7, 3.8, 5.12, 5.13, 19.3, 19.4, 20.7_
@@ -329,7 +329,7 @@ Conventions for every task:
     - **Property 20: Node pin lint**
     - **Validates: Requirements 12.6, 12.8**
 
-- [ ] 9. Checkpoint: end of step (b), full suite run by the user
+- [x] 9. Checkpoint: end of step (b), full suite run by the user
   - Agent: run `npm run typecheck` and `npm run lint` and fix findings. Do not run `npm test`.
   - Ready for you to run: `npm test` (M11). Paste the output. Add the observed span of the `pipeline` project to `docs/kiro-journal.md` only from that pasted output.
   - Ensure all tests pass, ask the user if questions arise.
@@ -402,29 +402,83 @@ Conventions for every task:
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 12. Step (d): ip preset and ip run (only while ip stays in the demo, see task 1.8)
-  - [ ] 12.1 Implement the ip preset and its setup module
+  - [x] 12.1 Implement the ip preset and its setup module
     - `src/pipeline/harness/core/presets/ipAddress.ts` with one generator for every export of ip@2.0.1 as read from the recorded tarball (task 1.8), using the shapes of the design (`ipString` with the forms of `spikes/candidates/IP-SKETCH.md` and explicit cases for the five Advisory_Addresses plus `0` and `017700000001`, `ipPair`, `ipMaskPair`, `cidrString`, `prefixLen`, `longInt`, `bufferArgs` (Buffers of at most 64 bytes), `familyArg`), registered in `presets/index.ts`. `src/pipeline/harness/sandbox/ipSetup.cjs` replaces `os.networkInterfaces()` identically on both sides.
     - Tests in `tests/pipeline/unit/ipPreset.test.ts`: each generator produces values the Value_Codec encodes (one example per generator), and the list test of R5.12 in `tests/pipeline/integration/ipExports.integration.test.ts`: the preset's covered exports equal the export list of the recorded tarball, read through the Sandbox_Executor.
     - _Requirements: 5.6, 5.8, 5.12_
 
-  - [ ] 12.2 Implement the `returns-expected` lowering
+  - [x] 12.2 Implement the `returns-expected` lowering
     - `src/pipeline/harness/sandbox/returnsExpected.cjs` and the `returns-expected` branch of `compiler.ts` (an equality predicate on the listed inputs, explicit cases from the listed inputs, per-delta data through the channel found in task 6.4, V14). Remove the `returns-expected-not-implemented` error and its test. Every case of one delta must have the same expected value; the compiler rejects a delta whose cases differ with the error code `delta-expected-differs`, naming the delta and saying to split it (unit test). The `ip` measurement rule: every `returns-expected` input must be listed as `true` in the measurement.
     - Example tests in `tests/pipeline/unit/compilerReturnsExpected.test.ts`.
     - _Requirements: 4.4, 4.6, 4.7, 4.12, 3.6_
 
-  - [ ] 12.3 Add the ip Deltas_File and Harness_File examples and their compile tests
+  - [x] 12.3 Add the ip Deltas_File and Harness_File examples and their compile tests
+    - **Rework note (decision A18):** the per-case `returns-expected` delta described below is superseded by one `returns-expected-class` delta; task 12.12 updates the example files and tests. The Harness_File part stays.
     - Example files under `tests/pipeline/fixtures/ip/` (a Deltas_File with one `returns-expected` delta for `isPublic` with one case per measured-`true` address (the five addresses when all five are `true`), expected `false`, advisory `GHSA-2p57-rm9w-gvfp`, source the advisory URL with `checkedOn` 2026-11-15; a Harness_File selecting the `ip-address` preset for every export). These are test data, not Medium output.
     - Tests: compile examples; no delta for `isPrivate`, `isLoopback` or any other function; an input not in the measured-`true` set is a compile error (the compile half of Property 5).
     - _Requirements: 4.12, 4.13, 3.5, 3.6, 3.7_
 
-  - [ ] 12.4 Write the R5.8 integration example
+  - [x] 12.4 Write the R5.8 integration example
     - `tests/pipeline/integration/ipSetup.integration.test.ts`: the setup module replaces `os.networkInterfaces()` identically on both sides (one example with the real Sandbox_Executor).
     - _Requirements: 5.8_
 
-  - [ ] 12.5 Missing-generator behavior and the uncoverable-export list
+  - [x] 12.5 Missing-generator behavior and the uncoverable-export list
     - Tests: a Harness_File that omits one function gives a compile error or the harness error `missing-generator`, never `alive`; the argument list built by `prove.ts` still never contains `--radius`.
     - If task 1.8 found an export with no honest generator, write the list with the reasons in design.md ("Uncoverable exports") and in the Journal (R5.13); otherwise write "none" with the date of the tarball read. For such an export the ip run ends `inconclusive` with `missing-generator`; it is shown as such and never excluded or narrowed (R5.14).
     - _Requirements: 5.4, 5.12, 5.13, 5.14, 12.12_
+
+  - [x] 12.6 Add the `ip-alive` test fixture, its byte pins and its "only" test
+    - `tests/proof/fixtures/ip-alive/`: a copy of ip@2.0.1 taken from the recorded tarball `tests/proof/fixtures/ip/ip-2.0.1.tgz`, with the smallest fix to `isPublic` (and only the code `isPublic` needs) so that `isPublic` returns false for the five Advisory_Addresses. `package.json` `version` is `2.0.2`; license file, `author` and `contributors` unchanged. Never change the expected values or inputs of the deltas to fit the fix. A `README.md` in the fixture says it is a hand-written development fixture, not Medium output and not a demo entry.
+    - Pin the bytes of every file of the fixture in `tests/proof/unit/fixtureIntegrity.test.ts`, as for the lodash.set fixtures; the header line of that file cites R23.22 (`// Requirements: ...` extended; keep the existing citations).
+    - Unit test `tests/proof/unit/ipAliveFixture.test.ts` (header cites R23.23): extract the recorded tarball and the fixture, then check "only" as follows: the same file list (the fixture's extra `README.md` is the one allowed addition and is excluded by name); every file other than `package.json` and the file that holds `isPublic` has equal bytes; `package.json` is equal after removing `version` from both, and `version` is `2.0.2`; in the `isPublic` file, the lines that differ from the Original (line diff) are exactly a list written in the test, each tied to the `isPublic` fix. Also check that `isPublic` returns false for the five addresses in `ip-alive` and true for the Original (run in a spawned node child, as in `lodashAliveFixture.test.ts`).
+    - _Requirements: 23.22, 23.23_
+
+  - [x] 12.7 Write the ip `alive` integration test with a negative control
+    - **Rework note (decision A18):** the test must be re-run once after tasks 12.10 to 12.12, against the class delta (task 12.13 does the re-run and the report). Its delta description below is the old per-case one.
+    - `tests/pipeline/integration/ipAlive.integration.test.ts` with the real Sandbox_Executor: compile the ip preset and the ip Deltas_File and Harness_File of task 12.3, then run the Proof_Engine (same runner path as `lodashAlive`). Case 1: the Original against `ip-alive` gives the verdict `alive`, with the `isPublic` delta demonstrated, every export covered (equal to the export list of the recorded tarball) and no `missing-generator`. Case 2 (negative control): the Original against itself is not `alive` and the delta is not demonstrated.
+    - Depends on tasks 12.1 to 12.3 and 12.6. Run this one file only (`npx vitest run tests/pipeline/integration/ipAlive.integration.test.ts`) if it takes under about 30 seconds; otherwise stop and ask the user to run it.
+    - _Requirements: 23.24, 5.12, 4.12_
+
+  - [x] 12.8 Add the ip Stub_Fixture and its tests
+    - **Rework note (decision A18):** `deltas.json` of this fixture holds the old per-case delta; task 12.14 redoes it from the final `ip-alive` bytes and the new `deltas.json` (the byte-equality test then refers to the files of task 12.12).
+    - `tests/pipeline/fixtures/stub/ip/` containing exactly `resurrection/` (a copy of `ip-alive` with `package.json` `name` `@graveyard-shift/ip` and `version` `2.0.2`; the fixture README is not copied), `deltas.json` and `harness.json` (the same canonical bytes as the ip files of task 12.3). Do not use `tests/proof/fixtures/ip-alive` directly as `--stub`, and do not edit it.
+    - Tests in `tests/pipeline/unit/stubFixtureIp.test.ts`: the directory holds exactly the three entries; the necromancy gate passes against the recorded ip@2.0.1 `package.json` and license text; the Intake_Validator accepts the directory as a Medium_Output without path change; `deltas.json` and `harness.json` are byte-equal to the task 12.3 files and compile against the ip certificate (`spikes/candidates/certificates/ip.json` or the recorded certificate used in 12.3).
+    - Stop after this task: the next task is a manual one. Print "Ready for you to run: npm run resurrect -- ip --stub tests/pipeline/fixtures/stub/ip (task 12.9, in WSL)".
+    - _Requirements: 23.25, 23.26, 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 9.10_
+
+  - [x] 12.10 Implement the `returns-expected-class` schema, parser, compiler lowering and the preset delta allowlist
+    - `src/pipeline/harness/core/deltas.ts`: add the kind `returns-expected-class` to `DeltaSchema` with `function`, `advisory`, `class` (`ClassName`, a name only), `expected` (one `JsonValue`) and `cases` (inputs with `source`), add its key order to the `*_KEY_ORDER` table, and keep the strict schema (no code, predicate or pattern field). The kinds accepted are now three (R4.2, R4.14).
+    - `compiler.ts` and the preset types (`presets/index.ts` or the types module it uses): a preset declares `deltaFunctions` (allowlist) and `inputClasses` (name to pure parent-side predicate). The compiler rejects a delta of any kind on a function outside the allowlist (ip: `isPublic` only; lodash-set: `default`), and rejects a class not in the preset menu, each with a `CompileError` naming the delta and the function or class (R4.16, R4.20). Lower `returns-expected-class` to a `DeclaredDelta` with the class predicate as `predicate`, the listed `cases` as `explicitCases` and the generated `returnsExpected.cjs` with the single `expected` value (R4.15). Extend the measurement rule: every explicit case must be listed as `true` in the measurement, and `0` or `017700000001` is rejected as an explicit case (A10). Add the compile half of Property 5 for explicit class cases.
+    - Tests in `tests/pipeline/unit/deltasFile.test.ts` and `tests/pipeline/unit/compilerReturnsExpectedClass.test.ts`, using a test preset with a fake class (the real ip class comes in task 12.11): parse and canonical round trip of the new kind, unknown class, delta on a function outside the allowlist for each kind (closes the R4.13 gap), explicit case not measured `true`, a code or predicate field in the file, lowering result (predicate selects class members only, `expected` embedded), idempotent compile.
+    - Size note: this task covers one schema kind, one lowering and one allowlist check in three existing modules; it is the largest of the new group but stays one task. If it grows beyond that while writing, split the allowlist (R4.20) into its own task before continuing.
+    - _Requirements: 4.2, 4.13, 4.14, 4.15, 4.16, 4.20, 3.6, 3.7, 4.8, 4.10_
+  - [x] 12.11 Implement the ip class `non-public-address` and its unit tests
+    - `src/pipeline/harness/core/presets/ipNonPublicAddress.ts` (pure, in the determinism lint scope): `isNonPublicAddress(input: unknown): boolean`, a reference classifier written by us. It parses dotted, short, octal, hexadecimal, long-integer and IPv6 forms (including `::`, zero-padded groups and IPv4-mapped `::ffff:a.b.c.d` and `::ffff:7f00:1`) and returns `true` for an input it can canonicalize whose canonical form falls in a range that the `isPrivate` function of ip@2.0.1 treats as private or loopback: IPv4 127.0.0.0/8, 10.0.0.0/8, 192.168.0.0/16, 172.16.0.0/12, 169.254.0.0/16; IPv6 `::1`, `::`, fc00::/7, fe80::/16; and the IPv4-mapped IPv6 forms of the IPv4 ranges (classified by the embedded IPv4 address). Ranges that `isPrivate` does not cover (0.0.0.0/8, 100.64.0.0/10, 198.18.0.0/15, ...) are not in the class. A code comment cites the file `package/lib/ip.js` of the recorded ip-2.0.1.tgz and the line numbers of `isPrivate`, `isPublic` and `isLoopback`, with RFC 1918, RFC 3927 and RFC 4291 as supporting references (extract the tarball and read the code when writing the ranges; do not write ranges from memory). An input that cannot be parsed, or is not a string, returns `false` (not in the class). Register it in the `ip-address` preset as `inputClasses["non-public-address"]` (predicate over the argument array: one string argument) and set the preset's `deltaFunctions` to `["isPublic"]`; the `lodash-set` preset gets `["default"]` and no class.
+    - Tests in `tests/pipeline/unit/nonPublicAddress.test.ts`: the five Advisory_Addresses, `017700000001` and `::ffff:7f00:1` (in the class), `0`, `0x0` and `0.0.0.0` (not in the class), canonical private and loopback examples inside the covered ranges (`10.0.0.1`, `172.16.0.1`, `192.168.1.1`, `127.0.0.1`, `169.254.1.1`, `::1`, `fe80::1`), canonical public examples (`8.8.8.8`, `1.1.1.1`, `2606:4700:4700::1111`), `100.64.0.1` and `198.18.0.1` (not in the class), unparseable and non-string inputs are not in the class, and purity (same input, same output; no I/O). Add one compile example that the ip preset exposes the class and the allowlist.
+    - _Requirements: 4.17, 4.18, 4.19, 4.20, 5.6_
+  - [x] 12.12 Update the ip example files and their compile tests
+    - `tests/pipeline/fixtures/ip/deltas.json`: now ONE `returns-expected-class` delta for `isPublic`, advisory `GHSA-2p57-rm9w-gvfp`, class `non-public-address`, expected `false`, `cases` the five Advisory_Addresses (each measured `true` on the Original, A10), each with the advisory URL and `checkedOn` 2026-11-15; `0` and `017700000001` are not cases. `harness.json` is unchanged. Write both in canonical bytes.
+    - Update `tests/pipeline/unit/` ip compile tests (task 12.3 tests): the new file compiles; no delta for `isPrivate`, `isLoopback` or any other function (allowlist error); an explicit case not measured `true` is a compile error; `0` and `017700000001` as cases are rejected; canonical bytes round trip. Extend the Property 5 test file (`tests/pipeline/property/p05-ip-deltas.test.ts`) with the explicit-case half if it was not done in task 12.10.
+    - _Requirements: 4.12, 4.13, 4.14, 4.20, 3.5, 3.6, 3.7_
+  - [x] 12.13 Re-run the ip `alive` integration test once (task 12.7, after 12.10 to 12.12)
+    - Run only `npx vitest run tests/pipeline/integration/ipAlive.integration.test.ts`, once, if it takes under about 30 seconds; otherwise stop and ask the user to run it. The test compiles the new `deltas.json` of task 12.12 (class delta) with the ip preset and runs the Original against `ip-alive` and, as negative control, against itself.
+    - Report: the verdict, `functionsTested` (equal to the export list of the recorded tarball), every divergence (function, input, both outcomes) and whether the `isPublic` delta is demonstrated. Expected: `alive`, delta demonstrated, no divergence outside the class.
+    - If the verdict is `restless` (or anything but `alive`): show the divergences and STOP. Do not change the `ip-alive` fix, the class, the cases or the expected value to make it pass; ask the user (R3.7). Mark task 12.7 done only after this task reports `alive`.
+    - _Requirements: 23.24, 5.12, 4.15, 3.7_
+  - [x] 12.14 Redo the ip Stub_Fixture (task 12.8) from the final `ip-alive` bytes and the new `deltas.json`
+    - Rebuild `tests/pipeline/fixtures/stub/ip/` after 12.13 reported `alive`: `resurrection/` is a copy of the final `tests/proof/fixtures/ip-alive` bytes with `name` `@graveyard-shift/ip` and `version` `2.0.2` (README not copied), and `deltas.json` and `harness.json` are the canonical bytes of task 12.12. Update `tests/pipeline/unit/stubFixtureIp.test.ts` so that the byte-equality check refers to the task 12.12 files and the compile check uses the class delta.
+    - Stop after this task: the next task is the manual one. Print "Ready for you to run: npm run resurrect -- ip --stub tests/pipeline/fixtures/stub/ip (task 12.9, in WSL)".
+    - _Requirements: 23.25, 23.26, 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 9.10_
+  - [ ] 12.9 Manual task (yours): M12, ip stub run, check, record, clean up
+    - This task is after 12.14; the stop before it is intentional. Commit and push the work of 12.6 to 12.14 to `main` first.
+    - In WSL, in the separate clone (never in `/mnt/c/dev/graveyard-shift`): `cd ~/graveyard-shift`; first remove leftovers of earlier runs from the clone root (`rm -rf resurrection deltas.json harness.json .graveyard-work`); `git pull origin main`; `npm ci` only if `package-lock.json` changed; then
+      `npm run resurrect -- ip --stub tests/pipeline/fixtures/stub/ip`
+      Confirm the printed commit email when asked.
+    - From PowerShell: `gh pr list --state open`, `gh pr view <number>`, `gh pr checks <number>`. Check out the pull request branch (`gh pr checkout <number>`) and in `graveyard/ip/` run the three commands of the pull request body, of the form of task 10.4 (replace `<file>` with `resurrection.tgz`, `proof-report.json`, `certificate.json`):
+      `gh attestation verify <file> --repo subair99/graveyard-shift --predicate-type https://github.com/subair99/graveyard-shift/attestation/resurrection/v1 --signer-workflow subair99/graveyard-shift/.github/workflows/resurrect.yml --format json`
+    - Paste back the terminal output, the pull request view and the three verify results (JSON field names and exit code of any failing case). Record them in `docs/kiro-journal.md` (dated, user-run, only what you observed, with the run URLs).
+    - Then clean up, do not merge: `gh pr close <number> --delete-branch`, and `git push origin --delete resurrect/ip` if the branch is still there.
+    - _Requirements: 23.27, 13.4, 13.9, 15.10, 18.1_
 
 - [ ] 13. Step (e): nightly re-verification
   - [ ] 13.1 Implement the nightly classification
@@ -548,7 +602,7 @@ Conventions for every task:
 
 - Tasks marked with `*` are optional and can be skipped for a faster MVP. The first to cut, in the design's order: 34, 33, 32, 31, 30, 27, 26, 25, 12, 14, 17, 18, 20, 3, 4, 7, 9, 5, 2, 24, 19 (property numbers), then R16.19 and R16.20 (13.9), R18.4 (14.7), R20.11 (14.6). The verdict gate, `gh attestation verify` and the mode label are never cut.
 - Required property tests: 1, 6, 8, 10, 11, 13, 15, 16, 21, 22, 23, 28, 29 (the twelve criteria of R21.5).
-- Manual tasks (yours): M1 (1.6), M2 (1.7), M3 (10.1), M4 (10.2), M5 (10.3), M6 (10.4), M7 (10.5), the observation record (10.6), M10 (13.11), M8 (13.12), and M11 (checkpoints 9 and 15), and M9 (16.1, after spec (b); blocks nothing above), and M8 (second run) (16.2, after an `alive` M9 entry is merged; blocks nothing).
+- Manual tasks (yours): M1 (1.6), M2 (1.7), M3 (10.1), M4 (10.2), M5 (10.3), M6 (10.4), M7 (10.5), the observation record (10.6), M12 (12.9, after 12.14; the stop before it is intentional), M10 (13.11), M8 (13.12), and M11 (checkpoints 9 and 15), and M9 (16.1, after spec (b); blocks nothing above), and M8 (second run) (16.2, after an `alive` M9 entry is merged; blocks nothing).
 - Deviation from the work-order wording: `verifyCommands` is built in step (b) (task 8.11) because the pull request text needs it; step (e) reuses it in the nightly (task 13.7).
 - The pull request text never claims that the Existing_CI runs; it uses the D3 sentence.
 - Design properties map to the tasks above: 1 (3.2), 2 (3.3), 3 (3.4), 4 (3.6), 5 (1.4), 6 (6.2), 7 (6.6), 8 (6.3), 9 (6.7), 10 (6.5), 11 (7.2), 12 (7.3), 13 (4.2), 14 (4.3), 15 (5.2), 16 (5.3), 17 (5.4), 18 (8.9), 19 (8.10), 20 (8.19), 21 (8.4), 22 (8.6), 23 (8.7), 24 (8.2), 25 (2.2), 26 (8.12), 27 (8.13), 28 (13.2), 29 (13.3), 30 (13.4), 31 (7.9), 32 (7.5), 33 (7.7), 34 (13.10).
@@ -577,19 +631,25 @@ Conventions for every task:
     { "id": 16, "tasks": ["10.4"] },
     { "id": 17, "tasks": ["10.5"] },
     { "id": 18, "tasks": ["10.6"] },
-    { "id": 19, "tasks": ["12.1", "12.2"] },
+    { "id": 19, "tasks": ["12.1", "12.2", "12.6"] },
     { "id": 20, "tasks": ["12.3", "12.4", "12.5"] },
-    { "id": 21, "tasks": ["13.1"] },
-    { "id": 22, "tasks": ["13.2", "13.3", "13.4", "13.5", "13.6"] },
-    { "id": 23, "tasks": ["13.7", "13.10"] },
-    { "id": 24, "tasks": ["13.8"] },
-    { "id": 25, "tasks": ["13.9", "13.11"] },
-    { "id": 26, "tasks": ["13.12"] },
-    { "id": 27, "tasks": ["14.1", "14.2", "14.3", "14.4"] },
-    { "id": 28, "tasks": ["14.5", "14.6", "14.7"] },
-    { "id": 29, "tasks": ["14.8"] },
-    { "id": 30, "tasks": ["16.1"] },
-    { "id": 31, "tasks": ["16.2"] }
+    { "id": 21, "tasks": ["12.7", "12.8"] },
+    { "id": 22, "tasks": ["12.10", "12.11"] },
+    { "id": 23, "tasks": ["12.12"] },
+    { "id": 24, "tasks": ["12.13"] },
+    { "id": 25, "tasks": ["12.14"] },
+    { "id": 26, "tasks": ["12.9"] },
+    { "id": 27, "tasks": ["13.1"] },
+    { "id": 28, "tasks": ["13.2", "13.3", "13.4", "13.5", "13.6"] },
+    { "id": 29, "tasks": ["13.7", "13.10"] },
+    { "id": 30, "tasks": ["13.8"] },
+    { "id": 31, "tasks": ["13.9", "13.11"] },
+    { "id": 32, "tasks": ["13.12"] },
+    { "id": 33, "tasks": ["14.1", "14.2", "14.3", "14.4"] },
+    { "id": 34, "tasks": ["14.5", "14.6", "14.7"] },
+    { "id": 35, "tasks": ["14.8"] },
+    { "id": 36, "tasks": ["16.1"] },
+    { "id": 37, "tasks": ["16.2"] }
   ]
 }
 ```

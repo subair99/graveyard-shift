@@ -80,8 +80,8 @@ describe("compileHarness", () => {
   });
 
   it("rejects an unknown preset and names it", () => {
-    const errors = errorsOf(input(deltasFile(), harnessFile({ default: { preset: "ip-address" } })));
-    expect(errors[0]).toMatchObject({ code: "unknown-preset", key: "ip-address" });
+    const errors = errorsOf(input(deltasFile(), harnessFile({ default: { preset: "no-such-preset" } })));
+    expect(errors[0]).toMatchObject({ code: "unknown-preset", key: "no-such-preset" });
     expect(errors[0]?.message).toContain("lodash-set");
   });
 
@@ -128,23 +128,6 @@ describe("compileHarness", () => {
   it("rejects a package that differs from the certificate", () => {
     const errors = errorsOf(input(deltasFile(undefined, "ip"), harnessFile(undefined, "ip")));
     expect(errors.map((e) => e.code)).toEqual(["package-mismatch", "package-mismatch"]);
-  });
-
-  it("returns returns-expected-not-implemented for a valid returns-expected delta", () => {
-    const delta = {
-      kind: "returns-expected",
-      id: "re",
-      function: "default",
-      advisory: "GHSA-p6mc-m468-83gw",
-      cases: [
-        {
-          input: ["a"],
-          expected: 1,
-          source: { url: "https://github.com/advisories/GHSA-p6mc-m468-83gw", fetchedAt: "2026-11-15T10:00:00Z" },
-        },
-      ],
-    };
-    expect(errorsOf(input(deltasFile([delta]))).map((e) => e.code)).toEqual(["returns-expected-not-implemented"]);
   });
 
   it("never throws on malformed input", () => {
@@ -199,7 +182,8 @@ describe("compileHarnessFiles: forbidden content", () => {
       ],
     };
     const errors = fileErrors(deltasFile([delta]), harnessFile());
-    expect(errors.map((e) => e.code)).toEqual(["returns-expected-not-implemented"]);
+    // Only the missing module output is reported: no forbidden-key error for the data keys.
+    expect(errors.map((e) => e.code)).toEqual(["module-output-required"]);
   });
 
   it("reports malformed JSON and schema failures with the file name", () => {

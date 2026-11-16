@@ -62,6 +62,19 @@ const DeltaCaseSchema = z
   .strict();
 export type DeltaCase = z.infer<typeof DeltaCaseSchema>;
 
+/** A name from a preset's class menu (R4.14); never code, a predicate or a pattern. */
+export const CLASS_NAME_PATTERN = /^[a-z0-9][a-z0-9-]{0,63}$/;
+export const ClassNameSchema = z.string().regex(CLASS_NAME_PATTERN, "must match ^[a-z0-9][a-z0-9-]{0,63}$");
+
+/** An explicit demonstration input of a class delta: no per-case expected value (one per delta). */
+const ClassCaseSchema = z
+  .object({
+    input: z.array(JsonValueSchema).max(8),
+    source: z.object({ url: SourceUrlSchema, fetchedAt: UtcTimestampSchema }).strict(),
+  })
+  .strict();
+export type ClassCase = z.infer<typeof ClassCaseSchema>;
+
 export const DeltaSchema = z.discriminatedUnion("kind", [
   z
     .object({
@@ -78,6 +91,17 @@ export const DeltaSchema = z.discriminatedUnion("kind", [
       function: z.string().min(1),
       advisory: AdvisoryIdSchema,
       cases: z.array(DeltaCaseSchema).min(1),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("returns-expected-class"),
+      id: DeltaIdSchema,
+      function: z.string().min(1),
+      advisory: AdvisoryIdSchema,
+      class: ClassNameSchema,
+      expected: JsonValueSchema,
+      cases: z.array(ClassCaseSchema).min(1),
     })
     .strict(),
 ]);
@@ -97,6 +121,7 @@ export const DELTAS_KEY_ORDER = {
   file: ["schemaVersion", "package", "deltas"],
   prototypeUnchanged: ["kind", "id", "function", "advisory"],
   returnsExpected: ["kind", "id", "function", "advisory", "cases"],
+  returnsExpectedClass: ["kind", "id", "function", "advisory", "class", "expected", "cases"],
   case: ["input", "expected", "source"],
   source: ["url", "fetchedAt"],
 } as const;
@@ -124,6 +149,18 @@ export function sortJsonKeys(v: unknown): unknown {
 
 function orderDelta(d: unknown): unknown {
   const o = d as Obj;
+  if (o["kind"] === "returns-expected-class") {
+    return ordered(o, DELTAS_KEY_ORDER.returnsExpectedClass, {
+      expected: sortJsonKeys,
+      cases: (cs) =>
+        (cs as unknown[]).map((c) =>
+          ordered(c as Obj, DELTAS_KEY_ORDER.case, {
+            input: sortJsonKeys,
+            source: (s) => ordered(s as Obj, DELTAS_KEY_ORDER.source),
+          }),
+        ),
+    });
+  }
   if (o["kind"] === "returns-expected") {
     return ordered(o, DELTAS_KEY_ORDER.returnsExpected, {
       cases: (cs) =>

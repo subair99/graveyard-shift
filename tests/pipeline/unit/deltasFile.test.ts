@@ -91,6 +91,71 @@ describe("parseDeltasFile", () => {
   });
 });
 
+const classDelta = {
+  kind: "returns-expected-class",
+  id: "ip-class",
+  function: "isPublic",
+  advisory: "GHSA-2p57-rm9w-gvfp",
+  class: "non-public-address",
+  expected: false,
+  cases: [
+    {
+      input: ["127.1"],
+      source: { url: "https://github.com/advisories/GHSA-2p57-rm9w-gvfp", fetchedAt: "2026-11-15T10:00:00Z" },
+    },
+  ],
+};
+
+describe("returns-expected-class (R4.2, R4.14)", () => {
+  it("is accepted as the third kind", () => {
+    expect(parseDeltasFile(file([proto, returns, classDelta])).ok).toBe(true);
+  });
+
+  it("allows only a class name, never code, a predicate or a pattern", () => {
+    expect(parseDeltasFile(file([{ ...classDelta, class: "Not A Name" }])).ok).toBe(false);
+    expect(parseDeltasFile(file([{ ...classDelta, class: "(a) => true" }])).ok).toBe(false);
+    for (const extra of ["predicate", "pattern", "code"]) {
+      expect(issues(file([{ ...classDelta, [extra]: "x" }])).join("\n")).toContain(extra);
+    }
+  });
+
+  it("requires class, expected, a source on each case and at least one case", () => {
+    const { class: _c, ...noClass } = classDelta;
+    expect(parseDeltasFile(file([noClass])).ok).toBe(false);
+    const { expected: _e, ...noExpected } = classDelta;
+    expect(parseDeltasFile(file([noExpected])).ok).toBe(false);
+    expect(parseDeltasFile(file([{ ...classDelta, cases: [] }])).ok).toBe(false);
+    const noSource = { ...classDelta, cases: [{ input: ["127.1"] }] };
+    expect(issues(file([noSource])).join("\n")).toContain("deltas.0.cases.0.source");
+  });
+
+  it("rejects a per-case expected value (one expected per delta)", () => {
+    const perCase = { ...classDelta, cases: [{ ...classDelta.cases[0], expected: false }] };
+    expect(issues(file([perCase])).join("\n")).toContain("expected");
+  });
+
+  it("writes the fixed key order and round-trips", () => {
+    const shuffled = {
+      cases: [{ source: classDelta.cases[0]?.source, input: ["127.1"] }],
+      expected: { b: 1, a: 2 },
+      class: "non-public-address",
+      advisory: "GHSA-2p57-rm9w-gvfp",
+      function: "isPublic",
+      id: "ip-class",
+      kind: "returns-expected-class",
+    };
+    const r = parseDeltasFile(file([shuffled]));
+    if (!r.ok) throw new Error("parse failed");
+    const text = canonicalDeltasJson(r.value);
+    expect(text).toContain(
+      '{"kind":"returns-expected-class","id":"ip-class","function":"isPublic","advisory":"GHSA-2p57-rm9w-gvfp","class":"non-public-address","expected":{"a":2,"b":1},"cases":[{"input":["127.1"],"source":{"url":',
+    );
+    const again = parseDeltasFile(text);
+    expect(again.ok && again.value).toEqual(r.value);
+    expect(again.ok && canonicalDeltasJson(again.value)).toBe(text);
+  });
+});
+
 describe("canonicalDeltasJson", () => {
   it("writes the fixed key order without whitespace", () => {
     const shuffled = JSON.stringify({

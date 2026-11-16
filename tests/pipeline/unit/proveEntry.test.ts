@@ -1,8 +1,12 @@
 // Requirements: 5.4, 5.11, 12.1, 12.2, 12.3, 12.4, 12.5, 12.12
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   buildProveArgv,
   CI_CASE_COUNT,
+  MODULES_DIR_NAME,
+  RETURNS_EXPECTED_TEMPLATE_PATH,
   runProve,
   type ProveDeps,
 } from "../../../scripts/ci/prove";
@@ -92,6 +96,37 @@ function setup(
 }
 
 /** A schema-valid report text, taken from a fallback report written by the script itself. */
+describe("runProve: generated returns-expected modules", () => {
+  it("writes each generated module into the work directory the config points at", async () => {
+    const template = readFileSync("src/pipeline/harness/sandbox/returnsExpected.cjs", "utf8");
+    const deltas = JSON.stringify({
+      schemaVersion: 1,
+      package: "lodash.set",
+      deltas: [
+        {
+          kind: "returns-expected",
+          id: "re",
+          function: "default",
+          advisory: "GHSA-p6mc-m468-83gw",
+          cases: [
+            {
+              input: ["a"],
+              expected: 1,
+              source: { url: "https://github.com/advisories/GHSA-p6mc-m468-83gw", fetchedAt: "2026-11-15T10:00:00Z" },
+            },
+          ],
+        },
+      ],
+    });
+    const s = setup({ files: { "deltas.json": deltas, [RETURNS_EXPECTED_TEMPLATE_PATH]: template } });
+    await runProve(s.deps);
+    const modulePath = resolve(MODULES_DIR_NAME, "returns-expected-re.cjs");
+    expect(s.files.get(modulePath)).toContain('JSON.parse("1")');
+    expect(s.loaded[0]?.deltas[0]?.propertyModule).toBe(modulePath);
+    expect(s.loaded[0]?.readPaths).toEqual([modulePath]);
+  });
+});
+
 async function validReportText(): Promise<string> {
   const s = setup({ files: { "deltas.json": "{" } });
   await runProve(s.deps);

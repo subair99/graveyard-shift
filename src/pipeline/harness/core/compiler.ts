@@ -5,20 +5,26 @@
 // V14 (engine read at task 6.4, journal entry 2026-11-16): a sandbox-side property module is called
 // with `{ functionName, kind, prototypeDelta, result }` only, so there is no channel for per-delta
 // data. A `prototype-unchanged` delta needs none (it reuses pollution.cjs). A `returns-expected`
-// delta will get one generated property module per delta from a template (task 12.2), written to
-// the work directory by CI as data; this compiler does not lower that kind yet.
+// delta gets one generated property module per delta (task 12.2): the compiler renders the template
+// text it is given (`sandbox/returnsExpected.cjs`) with the expected value embedded as a JSON string
+// literal that the module parses at load. The compiler stays pure: it returns the module text and a
+// relative file name in `CompiledHarness.modules`, and the caller (`prove.ts`) writes the files into
+// `returnsExpected.modulesDir`, the absolute directory the compiled config's paths point into.
 
+import * as path from "node:path";
 import type { DeathCertificate } from "../../../engine/types";
 import type { Result } from "../../common/result";
 import { compareCodePoints } from "../../../proof/child/codec/order";
 import type { DeclaredDelta, FunctionHarness, HarnessConfig } from "../../../proof/types";
 import type { Delta, DeltasFile } from "./deltas";
-import { parseDeltasFile } from "./deltas";
+import { parseDeltasFile, sortJsonKeys } from "./deltas";
+import type { JsonValue } from "./deltas";
 import type { HarnessFile } from "./harnessFile";
 import { parseHarnessFile } from "./harnessFile";
 import { deriveIpDeltas } from "./ipMeasurement";
 import type { IpMeasurement } from "./ipMeasurement";
-import { findPreset, PRESET_NAMES } from "./presets";
+import { findPreset, PRESETS } from "./presets";
+import type { PresetMenu } from "./presets";
 
 export type CompileErrorCode =
   | "parse-error"
@@ -32,11 +38,14 @@ export type CompileErrorCode =
   | "duplicate-delta-id"
   | "unknown-advisory"
   | "delta-function-not-selected"
+  | "delta-function-not-allowed"
+  | "unknown-class"
   | "delta-kind-unsupported"
   | "missing-source"
   | "measurement-required"
   | "input-not-measured"
-  | "returns-expected-not-implemented"
+  | "delta-expected-differs"
+  | "module-output-required"
   | "internal-error";
 
 export interface CompileError {
@@ -53,6 +62,25 @@ export interface CompiledHarness {
   config: HarnessConfig;
   /** Names of the presets the Harness_File selected, sorted. */
   presetsUsed: string[];
+  /**
+   * Generated property modules, one per `returns-expected` delta, sorted by `name`. The caller writes
+   * each `text` to `<modulesDir>/<name>`; the config's `propertyModule` and `readPaths` point there.
+   */
+  modules: GeneratedModule[];
+}
+
+export interface GeneratedModule {
+  /** File name relative to `modulesDir`, e.g. `returns-expected-<deltaId>.cjs`. */
+  name: string;
+  text: string;
+}
+
+/** What a `returns-expected` lowering needs from the caller (the compiler does no I/O). */
+export interface ReturnsExpectedOutput {
+  /** The text of `src/pipeline/harness/sandbox/returnsExpected.cjs`. */
+  template: string;
+  /** Absolute directory the caller writes the generated modules into. */
+  modulesDir: string;
 }
 
 export interface CompileInput {
@@ -61,6 +89,35 @@ export interface CompileInput {
   certificate: DeathCertificate;
   /** Required when the package is `ip` and a `returns-expected` delta exists. */
   measurement?: IpMeasurement;
+  /** Required when a `returns-expected` delta exists. */
+  returnsExpected?: ReturnsExpectedOutput;
+  /** Preset menu to compile against. Defaults to the reviewed menu; tests inject a small one. */
+  presets?: PresetMenu;
+}
+
+/** The token of the template that is replaced by the JSON string literal of the expected value. */
+export const EXPECTED_PLACEHOLDER = '"__EXPECTED_JSON__"';
+
+/** File name of the generated module of one delta. */
+export function returnsExpectedModuleName(deltaId: string): string {
+  return `returns-expected-${deltaId}.cjs`;
+}
+
+/**
+ * Renders the module of one delta. The expected value is serialized to JSON text, and that text is
+ * itself serialized as a string literal (JSON.stringify of a string is a valid JavaScript string
+ * literal), so the value is data the module parses with JSON.parse and never code.
+ */
+export function renderReturnsExpectedModule(template: string, expected: JsonValue): string | null {
+  const parts = template.split(EXPECTED_PLACEHOLDER);
+  if (parts.length !== 2) return null;
+  const literal = JSON.stringify(JSON.stringify(sortJsonKeys(expected)));
+  return `${parts[0] ?? ""}${literal}${parts[1] ?? ""}`;
+}
+
+/** Equality of two JSON values, independent of object key order. */
+function jsonEqual(a: unknown, b: unknown): boolean {
+  return JSON.stringify(sortJsonKeys(a)) === JSON.stringify(sortJsonKeys(b));
 }
 
 /**
@@ -176,7 +233,9 @@ function certificateHasAdvisory(cert: DeathCertificate, advisory: string): boole
 }
 
 function compileInner(input: CompileInput): Result<CompiledHarness, CompileError[]> {
-  const { deltas, harness, certificate, measurement } = input;
+  const { deltas, harness, certificate, measurement, returnsExpected } = input;
+  const menu: PresetMenu = input.presets ?? PRESETS;
+  const modules: GeneratedModule[] = [];
   const errors: CompileError[] = [];
   const add = (e: CompileError): void => {
     errors.push(e);
@@ -207,17 +266,18 @@ function compileInner(input: CompileInput): Result<CompiledHarness, CompileError
   const functions: Record<string, FunctionHarness> = {};
   const presetOfFunction = new Map<string, string>();
   const presetsUsed = new Set<string>();
+  const setupModules = new Set<string>();
   for (const name of Object.keys(harness.functions).sort(compareCodePoints)) {
     const entry = harness.functions[name];
     if (entry === undefined) continue;
     const where = `harness.json functions.${name}`;
-    const preset = findPreset(entry.preset);
+    const preset = findPreset(entry.preset, menu);
     if (preset === undefined) {
       add({
         code: "unknown-preset",
         where,
         key: entry.preset,
-        message: `${where}: unknown preset "${entry.preset}" (known: ${PRESET_NAMES.join(", ")})`,
+        message: `${where}: unknown preset "${entry.preset}" (known: ${Object.keys(menu).sort(compareCodePoints).join(", ")})`,
       });
       continue;
     }
@@ -251,10 +311,62 @@ function compileInner(input: CompileInput): Result<CompiledHarness, CompileError
       }
       continue;
     }
-    functions[name] = preset.build(parsed.data);
+    functions[name] = preset.build(parsed.data, name);
+    if (preset.setupModule !== undefined) setupModules.add(preset.setupModule);
     presetOfFunction.set(name, preset.name);
     presetsUsed.add(preset.name);
   }
+
+  /** Every explicit case needs a source url and fetch date (R4.6). Returns false after adding errors. */
+  const checkSources = (
+    cases: readonly { source?: unknown }[],
+    where: string,
+    base: { where: string; deltaId: string },
+  ): boolean => {
+    let ok = true;
+    cases.forEach((c, j) => {
+      if (c.source === undefined) {
+        ok = false;
+        add({ ...base, code: "missing-source", message: `${where} cases[${j}]: a source url and fetchedAt are required` });
+      }
+    });
+    return ok;
+  };
+
+  /**
+   * ip measurement rule (A10, R3.6, R3.7): every explicit case must be an address the Original
+   * measured as `true`. The informational inputs `0` and `017700000001` are never measured `true`
+   * in the derived list, so they are rejected as explicit cases here.
+   */
+  const checkMeasured = (
+    cases: readonly { input: readonly unknown[] }[],
+    where: string,
+    base: { where: string; deltaId: string },
+  ): boolean => {
+    if (pkg !== "ip") return true;
+    if (measurement === undefined) {
+      add({
+        ...base,
+        code: "measurement-required",
+        message: `${where}: package ip needs docs/measurements/ip-2.0.1.json to check explicit case inputs`,
+      });
+      return false;
+    }
+    let ok = true;
+    const measured = new Set(deriveIpDeltas(measurement).addresses);
+    cases.forEach((c, j) => {
+      const first: unknown = c.input[0];
+      if (c.input.length !== 1 || typeof first !== "string" || !measured.has(first)) {
+        ok = false;
+        add({
+          ...base,
+          code: "input-not-measured",
+          message: `${where} cases[${j}]: the input is not an address the Original measured as true`,
+        });
+      }
+    });
+    return ok;
+  };
 
   // Deltas, ordered by id (R5.5). A duplicate id is an error.
   const sorted = [...deltas.deltas].sort((a, b) => compareCodePoints(a.id, b.id));
@@ -286,7 +398,17 @@ function compileInner(input: CompileInput): Result<CompiledHarness, CompileError
       });
       return;
     }
-    const preset = findPreset(presetName);
+    const preset = findPreset(presetName, menu);
+    // Allowlist (R4.13, R4.20): a delta of any kind only on a function the preset lets carry one.
+    if (preset !== undefined && !preset.deltaFunctions.includes(d.function)) {
+      add({
+        ...base,
+        code: "delta-function-not-allowed",
+        key: d.function,
+        message: `${where}: function "${d.function}" may not carry a delta in preset "${presetName}" (allowed: ${preset.deltaFunctions.join(", ")})`,
+      });
+      return;
+    }
     if (d.kind === "prototype-unchanged") {
       if (preset?.prototypeUnchangedDelta === undefined) {
         add({
@@ -300,58 +422,120 @@ function compileInner(input: CompileInput): Result<CompiledHarness, CompileError
       declared.push(preset.prototypeUnchangedDelta(d.id, d.function));
       return;
     }
-    // returns-expected: validate everything, then report that the lowering is not built yet.
-    let valid = true;
-    d.cases.forEach((c, j) => {
-      if (c.source === undefined) {
-        valid = false;
-        add({ ...base, code: "missing-source", message: `${where} cases[${j}]: a source url and fetchedAt are required` });
-      }
-    });
-    if (pkg === "ip") {
-      if (measurement === undefined) {
-        valid = false;
+    if (d.kind === "returns-expected-class") {
+      // Menu check (R4.16): the class must be in the menu of the preset that tests the function.
+      const classPredicate =
+        preset !== undefined && Object.hasOwn(preset.inputClasses, d.class) ? preset.inputClasses[d.class] : undefined;
+      let classValid = true;
+      if (classPredicate === undefined) {
+        classValid = false;
+        const menuNames = Object.keys(preset?.inputClasses ?? {}).sort(compareCodePoints);
         add({
           ...base,
-          code: "measurement-required",
-          message: `${where}: package ip needs docs/measurements/ip-2.0.1.json to check returns-expected inputs`,
-        });
-      } else {
-        const measured = new Set(deriveIpDeltas(measurement).addresses);
-        d.cases.forEach((c, j) => {
-          const first: unknown = c.input[0];
-          if (c.input.length !== 1 || typeof first !== "string" || !measured.has(first)) {
-            valid = false;
-            add({
-              ...base,
-              code: "input-not-measured",
-              message: `${where} cases[${j}]: the input is not an address the Original measured as true`,
-            });
-          }
+          code: "unknown-class",
+          key: d.class,
+          message: `${where}: class "${d.class}" is not in the class menu of preset "${presetName}" (menu: ${menuNames.length === 0 ? "empty" : menuNames.join(", ")})`,
         });
       }
+      const sourcesOk = checkSources(d.cases, where, base);
+      const measuredOk = checkMeasured(d.cases, where, base);
+      if (!sourcesOk || !measuredOk) classValid = false;
+      if (!classValid || classPredicate === undefined) return;
+      if (returnsExpected === undefined) {
+        add({
+          ...base,
+          code: "module-output-required",
+          message: `${where}: compiling a returns-expected-class delta needs the module template and the directory for the generated module`,
+        });
+        return;
+      }
+      const classText = renderReturnsExpectedModule(returnsExpected.template, d.expected);
+      if (classText === null) {
+        add({
+          ...base,
+          code: "internal-error",
+          message: `${where}: the module template must contain the placeholder ${EXPECTED_PLACEHOLDER} exactly once`,
+        });
+        return;
+      }
+      const classModuleName = returnsExpectedModuleName(d.id);
+      modules.push({ name: classModuleName, text: classText });
+      declared.push({
+        id: d.id,
+        function: d.function,
+        predicate: (args) => classPredicate(args) === true,
+        propertyModule: path.join(returnsExpected.modulesDir, classModuleName),
+        explicitCases: d.cases.map((c) => c.input as readonly unknown[]),
+      });
+      return;
     }
-    if (valid) {
+    // returns-expected: validate everything, then lower to an equality predicate on the listed inputs,
+    // explicit cases from the listed inputs and one generated property module.
+    let valid = checkSources(d.cases, where, base);
+    const firstCase = d.cases[0];
+    if (firstCase !== undefined && d.cases.some((c) => !jsonEqual(c.expected, firstCase.expected))) {
+      valid = false;
       add({
         ...base,
-        code: "returns-expected-not-implemented",
-        key: d.kind,
-        message: `${where}: deltas of kind "returns-expected" cannot be compiled yet`,
+        code: "delta-expected-differs",
+        key: d.id,
+        message: `${where}: the cases do not all have the same expected value; split the delta so that each delta has one expected value`,
       });
     }
+    if (!checkMeasured(d.cases, where, base)) valid = false;
+    if (!valid || firstCase === undefined) return;
+    if (returnsExpected === undefined) {
+      add({
+        ...base,
+        code: "module-output-required",
+        message: `${where}: compiling a returns-expected delta needs the module template and the directory for the generated module`,
+      });
+      return;
+    }
+    const text = renderReturnsExpectedModule(returnsExpected.template, firstCase.expected);
+    if (text === null) {
+      add({
+        ...base,
+        code: "internal-error",
+        message: `${where}: the module template must contain the placeholder ${EXPECTED_PLACEHOLDER} exactly once`,
+      });
+      return;
+    }
+    const name = returnsExpectedModuleName(d.id);
+    modules.push({ name, text });
+    const inputs = d.cases.map((c) => c.input as readonly unknown[]);
+    declared.push({
+      id: d.id,
+      function: d.function,
+      predicate: (args) => inputs.some((input) => jsonEqual(input, args)),
+      propertyModule: path.join(returnsExpected.modulesDir, name),
+      explicitCases: inputs,
+    });
   });
+
+  if (setupModules.size > 1) {
+    add({
+      code: "internal-error",
+      where: "harness.json (root)",
+      message: "the selected presets need different setup modules; only one is supported",
+    });
+  }
 
   if (errors.length > 0) return { ok: false, error: errors };
 
+  // The executor grants read access to the setup module on its own; it needs no readPaths entry.
+  const setupModule = [...setupModules][0];
   const readPaths = [...new Set(declared.map((d) => d.propertyModule))].sort(compareCodePoints);
   const config: HarnessConfig = {
     package: pkg,
     ...CI_RUN_DEFAULTS,
     functions,
     deltas: declared,
+    ...(setupModule === undefined ? {} : { setupModule }),
     ...(readPaths.length > 0 ? { readPaths } : {}),
   };
-  return { ok: true, value: { config, presetsUsed: [...presetsUsed].sort(compareCodePoints) } };
+  modules.sort((a, b) => compareCodePoints(a.name, b.name));
+  return { ok: true, value: { config, presetsUsed: [...presetsUsed].sort(compareCodePoints), modules } };
 }
 
 /** Compiles parsed files into a HarnessConfig. Never throws; every problem is listed. */
@@ -388,6 +572,8 @@ export function compileHarnessFiles(input: {
   harnessJson: string;
   certificate: DeathCertificate;
   measurement?: IpMeasurement;
+  returnsExpected?: ReturnsExpectedOutput;
+  presets?: PresetMenu;
 }): Result<CompiledHarness, CompileError[]> {
   try {
     const errors: CompileError[] = [];
@@ -417,6 +603,8 @@ export function compileHarnessFiles(input: {
       harness: harness.value,
       certificate: input.certificate,
       ...(input.measurement === undefined ? {} : { measurement: input.measurement }),
+      ...(input.returnsExpected === undefined ? {} : { returnsExpected: input.returnsExpected }),
+      ...(input.presets === undefined ? {} : { presets: input.presets }),
     });
   } catch (e) {
     const detail = e instanceof Error ? e.message : String(e);

@@ -595,6 +595,11 @@
         "executionId": "cbce9dd1-5891-4eff-8d32-c9f07c2e9cdd",
         "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
         "timestamp": 1794825660149
+      },
+      {
+        "executionId": "bbe71b2c-4ea7-47db-8861-1cd670fa5bdb",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794826879544
       }
     ],
     "10.1 Manual task (yours): M3, set up `gh`, a separate clone and `git` in WSL": [
@@ -656,6 +661,197 @@
         "executionId": "cbce9dd1-5891-4eff-8d32-c9f07c2e9cdd",
         "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
         "timestamp": 1794826084859
+      }
+    ],
+    "12.1 Implement the ip preset and its setup module": [
+      {
+        "executionId": "bbe71b2c-4ea7-47db-8861-1cd670fa5bdb",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794827081417
+      },
+      {
+        "executionId": "bbe71b2c-4ea7-47db-8861-1cd670fa5bdb",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794827604748
+      }
+    ],
+    "12.2 Implement the `returns-expected` lowering": [
+      {
+        "executionId": "bbe71b2c-4ea7-47db-8861-1cd670fa5bdb",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794827081632
+      },
+      {
+        "executionId": "bbe71b2c-4ea7-47db-8861-1cd670fa5bdb",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794827604955
+      }
+    ],
+    "12.6 Add the `ip-alive` test fixture, its byte pins and its \"only\" test": [
+      {
+        "executionId": "bbe71b2c-4ea7-47db-8861-1cd670fa5bdb",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794827085931
+      },
+      {
+        "executionId": "bbe71b2c-4ea7-47db-8861-1cd670fa5bdb",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794827605151
+      }
+    ],
+    "12.3 Add the ip Deltas_File and Harness_File examples and their compile tests": [
+      {
+        "executionId": "bbe71b2c-4ea7-47db-8861-1cd670fa5bdb",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794827609383
+      },
+      {
+        "executionId": "bbe71b2c-4ea7-47db-8861-1cd670fa5bdb",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794827835662
+      }
+    ],
+    "12.4 Write the R5.8 integration example": [
+      {
+        "executionId": "bbe71b2c-4ea7-47db-8861-1cd670fa5bdb",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794827840291
+      },
+      {
+        "executionId": "bbe71b2c-4ea7-47db-8861-1cd670fa5bdb",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794828034172
+      }
+    ],
+    "12.5 Missing-generator behavior and the uncoverable-export list": [
+      {
+        "executionId": "bbe71b2c-4ea7-47db-8861-1cd670fa5bdb",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794827840780
+      },
+      {
+        "executionId": "bbe71b2c-4ea7-47db-8861-1cd670fa5bdb",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794828034484
+      }
+    ],
+    "12.7 Write the ip `alive` integration test with a negative control": [
+      {
+        "executionId": "bbe71b2c-4ea7-47db-8861-1cd670fa5bdb",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794827852981
+      },
+      {
+        "executionId": "514967df-37ee-40ed-87b7-5603af727b7a",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794828787623
+      },
+      {
+        "executionId": "1b8503ff-b7b7-4240-ba25-189a447f98e2",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794830312832
+      }
+    ],
+    "12.8 Add the ip Stub_Fixture and its tests": [
+      {
+        "executionId": "bbe71b2c-4ea7-47db-8861-1cd670fa5bdb",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794827853443
+      },
+      {
+        "executionId": "bbe71b2c-4ea7-47db-8861-1cd670fa5bdb",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794828034670
+      }
+    ],
+    "12.10 Implement the `returns-expected-class` schema, parser, compiler lowering and the preset delta allowlist": [
+      {
+        "executionId": "514967df-37ee-40ed-87b7-5603af727b7a",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794828787856
+      },
+      {
+        "executionId": "514967df-37ee-40ed-87b7-5603af727b7a",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794829115922
+      }
+    ],
+    "12.11 Implement the ip class `non-public-address` and its unit tests": [
+      {
+        "executionId": "514967df-37ee-40ed-87b7-5603af727b7a",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794829116284
+      },
+      {
+        "executionId": "514967df-37ee-40ed-87b7-5603af727b7a",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794829473908
+      },
+      {
+        "executionId": "1b8503ff-b7b7-4240-ba25-189a447f98e2",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794829837840
+      },
+      {
+        "executionId": "1b8503ff-b7b7-4240-ba25-189a447f98e2",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794830267946
+      }
+    ],
+    "12.12 Update the ip example files and their compile tests": [
+      {
+        "executionId": "514967df-37ee-40ed-87b7-5603af727b7a",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794829474121
+      },
+      {
+        "executionId": "514967df-37ee-40ed-87b7-5603af727b7a",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794829587688
+      }
+    ],
+    "12.13 Re-run the ip `alive` integration test once (task 12.7, after 12.10 to 12.12)": [
+      {
+        "executionId": "514967df-37ee-40ed-87b7-5603af727b7a",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794829587982
+      },
+      {
+        "executionId": "1b8503ff-b7b7-4240-ba25-189a447f98e2",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794829837671
+      },
+      {
+        "executionId": "1b8503ff-b7b7-4240-ba25-189a447f98e2",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794830268187
+      },
+      {
+        "executionId": "1b8503ff-b7b7-4240-ba25-189a447f98e2",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794830312346
+      }
+    ],
+    "12.14 Redo the ip Stub_Fixture (task 12.8) from the final `ip-alive` bytes and the new `deltas.json`": [
+      {
+        "executionId": "1b8503ff-b7b7-4240-ba25-189a447f98e2",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794830313633
+      },
+      {
+        "executionId": "1b8503ff-b7b7-4240-ba25-189a447f98e2",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794830468616
+      },
+      {
+        "executionId": "f8d7c1e2-0b0c-4a9c-9af8-a61ba398e592",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794830772678
+      },
+      {
+        "executionId": "f8d7c1e2-0b0c-4a9c-9af8-a61ba398e592",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794830901751
       }
     ]
   }

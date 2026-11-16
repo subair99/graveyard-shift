@@ -19,8 +19,10 @@ export const LODASH_SET_PRESET: Preset = {
   package: "lodash.set",
   // lodash.set's `module.exports` IS the function; the engine lists that export as `default`.
   functions: ["default"],
+  deltaFunctions: ["default"],
+  inputClasses: {},
   optionsSchema: z.strictObject({}),
-  build: () => ({
+  build: (_options, _fn) => ({
     args: ordinaryArgs,
     explicitCases: ordinaryExplicitCases,
     caseCount: 100,

@@ -38,6 +38,8 @@ export const CERTIFICATE_FILE = "certificate.json";
 export const DELTAS_FILE = "deltas.json";
 export const HARNESS_FILE = "harness.json";
 export const IP_MEASUREMENT_PATH = "docs/measurements/ip-2.0.1.json";
+export const RETURNS_EXPECTED_TEMPLATE_PATH = "src/pipeline/harness/sandbox/returnsExpected.cjs";
+export const MODULES_DIR_NAME = "harness-modules";
 const HARNESS_SPEC = "pipeline";
 const UNKNOWN = "unknown";
 
@@ -168,14 +170,21 @@ export async function runProve(deps: ProveDeps, dir = "."): Promise<ProveOutcome
   }
 
   if (certificate !== null && deltasJson !== null && harnessJson !== null) {
+    // The compiler is pure: it returns the generated returns-expected modules, and this script writes
+    // them into `<dir>/harness-modules` (absolute, so the engine can grant read access to each file).
+    const template = deps.readText(RETURNS_EXPECTED_TEMPLATE_PATH);
+    const modulesDir = path.resolve(dir, MODULES_DIR_NAME);
     const compiled = compileHarnessFiles({
       deltasJson,
       harnessJson,
       certificate,
       ...(measurement === undefined ? {} : { measurement }),
+      ...(template === null ? {} : { returnsExpected: { template, modulesDir } }),
     });
-    if (compiled.ok) config = compiled.value.config;
-    else for (const e of compiled.error) problems.push(e.message);
+    if (compiled.ok) {
+      config = compiled.value.config;
+      for (const m of compiled.value.modules) deps.writeText(path.join(modulesDir, m.name), m.text);
+    } else for (const e of compiled.error) problems.push(e.message);
   }
 
   const argv = buildProveArgv({ dir, ...who, seed });

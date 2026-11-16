@@ -57,10 +57,29 @@ const returnsExpected = fc.record({
   cases: fc.array(deltaCase, { minLength: 1, maxLength: 3 }),
 });
 
+const returnsExpectedClass = fc.record({
+  kind: fc.constant("returns-expected-class" as const),
+  id: deltaId,
+  function: fn,
+  advisory,
+  class: fc.stringMatching(/^[a-z0-9][a-z0-9-]{0,15}$/),
+  expected: jsonValue,
+  cases: fc.array(
+    fc.record({
+      input: fc.array(jsonValue, { maxLength: 3 }),
+      source: fc.record({ url: fc.webUrl(), fetchedAt: timestamp }),
+    }),
+    { minLength: 1, maxLength: 3 },
+  ),
+});
+
 const deltasFile: fc.Arbitrary<DeltasFile> = fc.record({
   schemaVersion: fc.constant(1 as const),
   package: fc.string({ minLength: 1, maxLength: 12 }),
-  deltas: fc.array(fc.oneof(prototypeUnchanged, returnsExpected), { minLength: 1, maxLength: 4 }),
+  deltas: fc.array(fc.oneof(prototypeUnchanged, returnsExpected, returnsExpectedClass), {
+    minLength: 1,
+    maxLength: 4,
+  }),
 }) as fc.Arbitrary<DeltasFile>;
 
 function parseOk(text: string): DeltasFile {

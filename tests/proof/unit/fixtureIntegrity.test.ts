@@ -9,7 +9,7 @@ import type { ExtractedFile } from "../../../src/proof/shell/tarball/tarballExtr
 import { extractTarball } from "../../../src/proof/shell/tarball/tarballExtractor";
 import { computeDirectoryTreeHash } from "../../../src/proof/shell/treeHash";
 
-// Requirements: 14.1, 14.2, 14.3, 14.4, 14.5; resurrection-pipeline 3.9
+// Requirements: 14.1, 14.2, 14.3, 14.4, 14.5; resurrection-pipeline 3.9, 23.22
 // Validates: Requirements 14.1, 14.2, 14.3
 
 const ROOT = process.cwd();
@@ -31,6 +31,12 @@ const ORIGINAL_TREE_HASH =
 // Recorded when the test was written, from the committed files; update with `npx tsx scripts/printFixtureHashes.ts` whenever a fixture file changes on purpose.
 // Keys are paths relative to tests/proof/fixtures.
 const PINS: Readonly<Record<string, string>> = {
+  "ip-alive/README.md":
+    "sha512-x5L5Fd5EpVyRUAwlNGFq8on/i7KiD3CeJ0bpjYgwWLOt/cHV5oMtQIakrSITJ1G748K7ONXb4BSHNU8ZCaVV4w==",
+  "ip-alive/lib/ip.js":
+    "sha512-8akg4O4b13PysIWlqT+8VDQjchT52PuSpR1Vc/IfN3TNcoiDG8nTFVmyLUBrV580TYD0aztx5BBE/eQTSJK6kg==",
+  "ip-alive/package.json":
+    "sha512-GLY7A8AvsYisns7BDouvBwYHWWfwW4F/8Ri9u5D2jcjt2LF+NyLZ8ypDJh1zZC7lb9AorcJ7ZyVjRm8v7tUlsQ==",
   "ip/ip-2.0.1.meta.json":
     "sha512-czJ+3YxqX1tmcO7a9Kpd71QCKIUfcP4LUScv5SF345njXT8kyWj0Aw9T9Ezsxd3gUrCCPHL2wb8wkC4KNTQAkg==",
   "ip/ip-2.0.1.tgz":
