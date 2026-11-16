@@ -4,6 +4,7 @@ import { z } from "zod";
 import { FactSchema } from "../../../engine/types";
 import type { Result } from "../../../engine/types";
 import { canonicalJsonText, compareCodePoints, orderKeys } from "../../common/canonical";
+import { MAX_PROVENANCE } from "./record";
 import { RULE_IDS } from "./rules";
 
 export const RuleIdSchema = z.enum(RULE_IDS);
@@ -17,6 +18,22 @@ export const RuleResultSchema = z
     missingField: z.string().optional(),
   })
   .strict();
+
+/**
+ * A record fact: the engine Fact plus `provenanceTotal`, the count of contributing sources, written
+ * only when more than MAX_PROVENANCE entries contributed and the first MAX_PROVENANCE were kept.
+ */
+export const RecordFactSchema = FactSchema.extend({
+  provenanceTotal: z
+    .number()
+    .int()
+    .min(MAX_PROVENANCE + 1)
+    .optional(),
+}).refine((f) => f.provenanceTotal === undefined || f.provenance.length === MAX_PROVENANCE, {
+  message: `provenanceTotal is set only when exactly ${MAX_PROVENANCE} provenance entries were kept`,
+  path: ["provenanceTotal"],
+});
+export type RecordFact = z.infer<typeof RecordFactSchema>;
 
 export const EligibilityRecordSchema = z
   .object({
@@ -34,7 +51,7 @@ export const EligibilityRecordSchema = z
     rules: z.array(RuleResultSchema),
     failedRules: z.array(RuleIdSchema),
     successor: z.string().optional(),
-    facts: z.array(FactSchema),
+    facts: z.array(RecordFactSchema),
   })
   .strict();
 
@@ -56,7 +73,7 @@ export const ELIGIBILITY_KEY_ORDER = {
   package: ["name", "version"],
   integrity: ["expected", "computed", "matches"],
   rule: ["rule", "holds", "observed", "reason", "missingField"],
-  fact: ["key", "value", "provenance", "stale"],
+  fact: ["key", "value", "provenance", "provenanceTotal", "stale"],
   provenance: ["sourceUrl", "fetchedAt"],
 } as const;
 

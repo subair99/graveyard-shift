@@ -358,4 +358,24 @@ describe("failedRulesOf", () => {
     expect(license).toEqual({ rule: "license", observed: null, missingField: "package.json", sources: [] });
     expect(prBody(rules)).toContain("- license: unverified, field package.json could not be read (source: none recorded)");
   });
+
+  it("passes the fact's stale flag and provenanceTotal on, and the PR text shows both", () => {
+    const lookups = Array.from({ length: 25 }, (_, n) => ({
+      key: `successorLookup:c${String(n).padStart(2, "0")}`,
+      value: { result: "not-found" },
+      provenance: [{ sourceUrl: `https://registry.npmjs.org/c${String(n).padStart(2, "0")}`, fetchedAt: "2026-11-15T19:03:19Z" }],
+      stale: true,
+    }));
+    const cert = { ...INFLIGHT_CERT, facts: [...INFLIGHT_CERT.facts, ...lookups] };
+    const record = buildEligibilityRecord(recordInput({ name: "inflight", version: "1.0.6", cert }));
+    const fact = record.facts.find((f) => f.key === "rule.status")!;
+    const status = failedRulesOf(record).find((r) => r.rule === "status")!;
+    expect(status.stale).toBe(true);
+    expect(status.sources).toHaveLength(20);
+    expect(status.sourcesTotal).toBe(fact.provenanceTotal);
+    expect(status.sourcesTotal).toBeGreaterThan(20);
+    const body = prBody([status]);
+    expect(body).toContain(`- status: observed retired-with-successor (first 20 of ${fact.provenanceTotal} sources: source: `);
+    expect(body.match(/\(stale\)/g)).toHaveLength(20);
+  });
 });

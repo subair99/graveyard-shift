@@ -13,6 +13,10 @@ const heavyFiles = [
   "tests/proof/property/p26b-declared-delta.test.ts",
 ];
 
+// Pipeline tests with real sandbox children or real git repositories; their own project and budget
+// (target 120 s), so the `pipeline` project (target 90 s) keeps the unit and property files.
+const pipelineIntegrationFiles = "tests/pipeline/integration/**/*.test.ts";
+
 export default defineConfig({
   test: {
     environment: "node",
@@ -51,6 +55,14 @@ export default defineConfig({
         test: {
           name: "pipeline",
           include: ["tests/pipeline/**/*.test.ts"],
+          exclude: [...configDefaults.exclude, pipelineIntegrationFiles],
+          testTimeout: 60000,
+        },
+      }),
+      defineProject({
+        test: {
+          name: "pipeline-integration",
+          include: [pipelineIntegrationFiles],
           testTimeout: 60000,
         },
       }),

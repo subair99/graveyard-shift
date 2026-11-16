@@ -127,6 +127,7 @@ function parseReport(text: string): ProofReport | null {
  * The failed rules with every Source_URL and Fetch_Date of the `rule.<id>` fact that recorded each
  * one. A rule without such a fact (an unverified rule, or a fact omitted for missing provenance)
  * gets no sources, which the PR text shows as "source: none recorded"; no other fact stands in.
+ * The fact's `stale` flag and `provenanceTotal` (set when entries were dropped) are passed on.
  */
 export function failedRulesOf(record: EligibilityRecord): PrFailedRule[] {
   return record.failedRules.map((id) => {
@@ -139,6 +140,8 @@ export function failedRulesOf(record: EligibilityRecord): PrFailedRule[] {
         ? { missingField: result.missingField }
         : {}),
       sources: (fact?.provenance ?? []).map((p) => ({ sourceUrl: p.sourceUrl, fetchedAt: p.fetchedAt })),
+      ...(fact?.stale === true ? { stale: true } : {}),
+      ...(fact?.provenanceTotal === undefined ? {} : { sourcesTotal: fact.provenanceTotal }),
     };
   });
 }

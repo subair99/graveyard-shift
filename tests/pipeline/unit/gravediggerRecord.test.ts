@@ -215,7 +215,39 @@ describe("buildEligibilityRecord", () => {
     expect(status.provenance).toHaveLength(20);
     const all = [...new Set([...IP_CERT.facts, ...lookups].flatMap((f) => f.provenance.map((x) => x.sourceUrl)))].sort();
     expect(status.provenance.map((x) => x.sourceUrl)).toEqual(all.slice(0, 20));
-    expect(deserializeEligibilityRecord(serializeEligibilityRecord(rec)).ok).toBe(true);
+    expect(status.provenanceTotal).toBe(all.length);
+    expect(all.length).toBeGreaterThan(20);
+    const text = serializeEligibilityRecord(rec);
+    expect(text).toContain(`"provenance":[`);
+    expect(text).toContain(`],"provenanceTotal":${all.length}`);
+    const back = deserializeEligibilityRecord(text);
+    expect(back.ok && serializeEligibilityRecord(back.value)).toBe(text);
+  });
+
+  it("writes provenanceTotal only when entries were dropped, and the schema rejects it otherwise", () => {
+    const rec = buildEligibilityRecord(input({}));
+    expect(rec.facts.some((f) => "provenanceTotal" in f)).toBe(false);
+    const raw = JSON.parse(serializeEligibilityRecord(rec)) as { facts: Array<Record<string, unknown>> };
+    raw.facts[0]!.provenanceTotal = 21; // only one provenance entry kept: inconsistent
+    const r = deserializeEligibilityRecord(JSON.stringify(raw));
+    expect(r).toMatchObject({ ok: false, error: { field: "facts.0.provenanceTotal" } });
+  });
+
+  it("causes unverified when no cause was found and GitHub was not read: no rule.causes fact", () => {
+    const cert = withCert(IP_CERT, { causes: [], facts: IP_CERT.facts.filter((f) => f.key !== "githubRepo") });
+    const rec = buildEligibilityRecord(input({ cert }));
+    expect(rec.rules[5]).toEqual({
+      rule: "causes",
+      holds: false,
+      observed: null,
+      reason: "unverified",
+      missingField: "githubRepo",
+    });
+    expect(rec.failedRules).toContain("causes");
+    expect(rec.facts.some((f) => f.key === "rule.causes")).toBe(false);
+    const text = serializeEligibilityRecord(rec);
+    const back = deserializeEligibilityRecord(text);
+    expect(back.ok && serializeEligibilityRecord(back.value)).toBe(text);
   });
 
   it("OSV unavailable: open-vulnerability is unverified, has no fact, and the record is not eligible", () => {

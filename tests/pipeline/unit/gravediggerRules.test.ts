@@ -101,6 +101,61 @@ describe("evaluateRules", () => {
     });
   });
 
+  describe("causes with an unavailable input (R2.6)", () => {
+    const off = (source: "npm" | "osv" | "github") => ({
+      available: false as const,
+      source,
+      attemptedUrl: "https://example.org/x",
+      attemptedAt: "2026-11-15T19:03:19Z",
+      reason: "timeout after 10 seconds",
+    });
+    const noGithub = IP_CERT.facts.filter((f) => f.key !== "githubRepo");
+    const causesOf = (patch: Partial<typeof IP_CERT>) =>
+      evaluateRules({ pkg: goodPkg, lineCount: 1, cert: withCert(IP_CERT, patch) })[5]!;
+
+    it("no cause found and one input unavailable: unverified, naming the input", () => {
+      const cases: Array<[Partial<typeof IP_CERT>, string]> = [
+        [{ vitalSigns: { ...IP_CERT.vitalSigns, maintainers: off("npm") } }, "maintainers"],
+        [{ facts: noGithub }, "githubRepo"],
+        [{ vitalSigns: { ...IP_CERT.vitalSigns, openVulnerabilities: off("osv") } }, "openVulnerabilities"],
+        [{ timeOfDeath: off("npm") }, "timeOfDeath"],
+      ];
+      for (const [patch, field] of cases) {
+        expect(causesOf({ ...patch, causes: [] }), field).toEqual({
+          rule: "causes",
+          holds: false,
+          observed: null,
+          reason: "unverified",
+          missingField: field,
+        });
+      }
+    });
+
+    it("names every unavailable input, comma-separated in detectCauses order", () => {
+      const rule = causesOf({
+        causes: [],
+        timeOfDeath: off("npm"),
+        facts: noGithub,
+        vitalSigns: { ...IP_CERT.vitalSigns, maintainers: off("npm"), openVulnerabilities: off("osv") },
+      });
+      expect(rule.missingField).toBe("maintainers,githubRepo,openVulnerabilities,timeOfDeath");
+    });
+
+    it("a githubRepo fact omitted for missing provenance counts as read", () => {
+      const notes = { ...IP_CERT.notes, omittedFacts: [{ key: "githubRepo", reason: "missing-provenance" as const }] };
+      expect(causesOf({ causes: [], facts: noGithub, notes })).toEqual({ rule: "causes", holds: false, observed: 0 });
+    });
+
+    it("a cause found holds even when another input is unavailable", () => {
+      const rule = causesOf({
+        causes: ["runtime-rot"],
+        facts: noGithub,
+        vitalSigns: { ...IP_CERT.vitalSigns, openVulnerabilities: off("osv") },
+      });
+      expect(rule).toEqual({ rule: "causes", holds: true, observed: 1 });
+    });
+  });
+
   it("fails causes and open-vulnerability when the lists are empty", () => {
     const cert = withCert(IP_CERT, { causes: [], openVulnerabilityIds: [] });
     const rules = evaluateRules({ pkg: goodPkg, lineCount: 1, cert });

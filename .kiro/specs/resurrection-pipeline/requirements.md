@@ -149,6 +149,10 @@ Items marked "decision" were assumptions that the user resolved in review; they 
 9. THE Eligibility_Record SHALL be serialized as JSON with a fixed key order, and FOR ALL valid Eligibility_Records, deserializing the serialized record and serializing the result SHALL produce an identical string (round-trip property).
 10. IF the JSON supplied for deserialization is malformed or lacks a required field, THEN THE deserializer SHALL reject it with an error that names the invalid field and SHALL NOT return a partial record.
 11. WHEN the Gravedigger is run twice with identical registry responses, THE Gravedigger SHALL produce byte-identical Eligibility_Records.
+12. WHEN the Death_Certificate lists no cause and one or more cause inputs were unavailable (maintainers: `vitalSigns.maintainers.available` false; githubRepo: no `githubRepo` fact and no `notes.omittedFacts` entry for it; openVulnerabilities: `vitalSigns.openVulnerabilities.available` false; timeOfDeath: `timeOfDeath.available` false), THE Gravedigger SHALL record the causes rule as `unverified` with `missingField` naming every unavailable input, comma-separated without spaces, in the order maintainers, githubRepo, openVulnerabilities, timeOfDeath. WHEN at least one cause is listed, THE causes rule SHALL hold, whatever inputs were unavailable.
+13. IF `vitalSigns.openVulnerabilities` of the Death_Certificate is unavailable, THEN THE Gravedigger SHALL record the open-vulnerability rule as `unverified` with `missingField` `openVulnerabilities`.
+14. THE Eligibility_Record SHALL keep at most 20 provenance entries per Fact, the first 20 in sourceUrl then fetchedAt order (autopsy-engine R3.4), and WHEN more than 20 entries contributed, THE Fact SHALL carry `provenanceTotal`, the number of distinct contributing entries.
+15. THE Gravedigger SHALL give the Facts of the rules `rule.status`, `rule.causes` and `rule.open-vulnerability` the union of the provenance entries of the Death_Certificate facts that contributed to each rule, with the Coroner's own Fetch_Dates, and SHALL NOT use the Gravedigger's clock as the Fetch_Date of those Facts.
 
 ### Requirement 3: ip measurement before any ip harness work
 
@@ -393,7 +397,7 @@ Items marked "decision" were assumptions that the user resolved in review; they 
 11. THE Graveyard_Entry files SHALL contain no credential, no Identity_Value, no absolute local path and no wall-clock timestamp other than the Fetch_Date and Analysis_Date facts of the certificate.
 12. THE Pipeline SHALL define the file names, the layout and the two kinds of the Graveyard_Entry once in one module, and a test SHALL fail WHEN the writer, the Nightly_Workflow reader and the documentation list different names or kinds.
 13. WHEN the CI run found the Package not eligible (Requirement 11.2) and the `checks` job succeeded, THE `publish` job SHALL create the Not_Resurrected_Entry `graveyard/<package>/` containing `certificate.json` and `eligibility.json` only, as produced by the CI run, with no resurrection tarball, no `deltas.json`, no `harness.json`, no `proof-report.json` and no Attestation_Bundle.
-14. THE Not_Resurrected_Entry SHALL state the failed rules of the Eligibility_Record with their observed values, Source_URL and Fetch_Date, so that the UI of spec (c) can show it as "not resurrected" with the reason.
+14. THE Not_Resurrected_Entry SHALL state the failed rules of the Eligibility_Record with their observed values, each failed rule with its Source_URL and Fetch_Date, or states that no source was recorded, so that the UI of spec (c) can show it as "not resurrected" with the reason.
 15. THE Pipeline SHALL derive the kind of a Graveyard_Entry from one function: an entry that contains `proof-report.json` is a Resurrection_Entry, and an entry without it is a Not_Resurrected_Entry whose `eligibility.json` has `eligible` false.
 16. THE Pipeline SHALL NOT present a Not_Resurrected_Entry as a failed run, a Restless outcome or a successful resurrection.
 
@@ -413,9 +417,13 @@ Items marked "decision" were assumptions that the user resolved in review; they 
 8. IF the repository does not allow GitHub Actions to create pull requests, THEN THE `publish` job SHALL fail with a message that names the repository setting, and SHALL leave the artifacts of the run available.
 9. THE pull request body SHALL contain no credential, no Identity_Value and no absolute local path.
 10. THE pull request body of every entry SHALL list the Check_Results (typecheck, lint, full test suite) as passed with a link to the workflow run (decision A5), because a pull request exists only WHEN all three checks passed (Requirement 11.16).
-11. THE pull request body for a Not_Resurrected_Entry SHALL state the failed eligibility rules with their Source_URL and Fetch_Date, the link to the workflow run, and that nothing was resurrected, proven or attested.
+11. THE pull request body for a Not_Resurrected_Entry SHALL state the failed eligibility rules, each failed rule with its Source_URL and Fetch_Date, or states that no source was recorded, the link to the workflow run, and that nothing was resurrected, proven or attested.
 12. THE repository SHALL add the `workflow_dispatch` trigger to `ci.yml` so that the user can run the Existing_CI on any branch, and the pull request body SHALL tell the reviewer that the Existing_CI is not started automatically for this pull request.
 13. THE Pipeline SHALL use no personal access token and no GitHub App to start the Existing_CI.
+14. WHEN the Eligibility_Record has a reason, THE pull request body SHALL show `Reason: <reason>` whether or not failed rules are listed.
+15. WHEN the Fact of a failed rule is stale, THE pull request body SHALL mark each of its sources with `(stale)`, because staleness is recorded per Fact, not per source.
+16. WHEN a Fact carries `provenanceTotal`, THE pull request body SHALL say `first 20 of N sources` for that rule.
+17. THE pull request body SHALL show every provenance entry of a failed rule and SHALL NOT substitute another Fact's source.
 
 ### Requirement 16: Nightly re-verification (the Undertaker)
 
@@ -523,7 +531,7 @@ Items marked "decision" were assumptions that the user resolved in review; they 
 6. EVERY test file of this spec SHALL carry a header line `// Requirements: N.M, ...` in the form that `npm run trace` reads, and WHEN a test cites a criterion of another spec THE header SHALL name that spec after a semicolon.
 7. THE traceability output SHALL cover this spec as a third section, and SHALL classify each criterion that no automated test covers (for example a criterion that only a Manual_Task verifies) in `docs/traceability-gaps.json`, with the class and the evidence.
 8. THE timings recorded in the Journal SHALL come from the user's pasted runs and not from an agent's own runs.
-9. THE new tests SHALL belong to an existing Vitest project or to one new project defined in `vitest.config.mts`, and the task list SHALL state the project and its target time as a target and not as a measurement.
+9. THE new tests SHALL belong to existing Vitest projects or to the new projects `pipeline` and `pipeline-integration` defined in `vitest.config.mts`, and the task list SHALL state each project and its target time as a target and not as a measurement.
 10. THE Pipeline SHALL be tested for the Windows and WSL conditions of the Local_Runner, using path and process injection in the unit tests, and the WSL run itself SHALL be a Manual_Task.
 
 ### Requirement 22: Repository hygiene, licenses and scope

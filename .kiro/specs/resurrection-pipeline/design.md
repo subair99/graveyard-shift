@@ -22,7 +22,7 @@ Four facts shape the design:
 | `publish` has a minimal YAML `if` and an authoritative pure `publishGate` evaluated in its first step | The gate logic is unit-tested as a pure function. The YAML condition only guarantees the `checks` and `intake` precondition even if the script were skipped (R11.17). |
 | One entry-layout module defines file names, kinds and the single `deriveEntryKind` function | Writer, nightly reader, tests and docs cannot drift (R14.12, R14.15). |
 | Nightly classification returns a list of results with a fixed precedence, and the run fails if any listed result is a failing kind | R16.18 makes `tool-versions-changed` the primary result whenever the Tool_Versions differ. The list stops that from hiding a failed attestation. This refines R16 and is flagged in "Design decisions beyond the requirements". |
-| `fast-check` for property tests, `vitest` project `pipeline` | Same tooling as the engine and the proof engine (R21.5, R21.9). |
+| `fast-check` for property tests, vitest projects `pipeline` and `pipeline-integration` | Same tooling as the engine and the proof engine (R21.5, R21.9). |
 
 ### Research summary
 
@@ -213,7 +213,7 @@ Scope rules:
 - `eslint.config.mjs` adds `src/pipeline/**/core/**/*.ts` to `deterministicFiles`. `common/shell/system.ts` is the only reader of the clock, the random source and `process.env` outside the other `shell/` directories (R1.6).
 - `npm run lint` is `eslint src tests`, so `scripts/` is not linted. A source-scan test (`tests/pipeline/unit/sourceScan.test.ts`) covers `src/pipeline/` and `scripts/` for LLM client imports (R1.5), `shell: true`, `exec(` with a string, and `console.` outside the documented entries.
 - `src/pipeline` imports `src/engine` and `src/proof` only through their public `index.ts` and the two named internals: `src/proof/cli.ts` (`runCli`) and `src/proof/core/report.ts` (`fallbackReport`). `src/engine` and `src/proof` import nothing from `src/pipeline`.
-- The vitest project `pipeline` (`tests/pipeline/**/*.test.ts`) is the one new project (R21.9). The target is 90 s as a target, not a measurement. `budgetReporter.ts` gets one table entry.
+- The vitest projects `pipeline` (`tests/pipeline/**/*.test.ts` minus `tests/pipeline/integration`, target 90 s) and `pipeline-integration` (`tests/pipeline/integration/**/*.test.ts`, target 120 s) are the new projects (R21.9); targets, not measurements. `budgetReporter.ts` gets one table entry each.
 
 ## Components and Interfaces
 
@@ -246,9 +246,25 @@ function countLines(files: readonly { path: string; bytes: Uint8Array }[]): numb
 ```
 
 - Steps (R2.1, R2.2): fetch the packument `https://registry.npmjs.org/<name>` and the tarball URL from `versions[version].dist.tarball` (the registry host is checked; redirects are refused as in `recordTarball`), compute sha512 SRI of the bytes, compare with `dist.integrity`. On a mismatch the record has `eligible: false`, `reason: "integrity-mismatch"` with both strings, and `tarball` is `null`.
-- Rules (R2.3): (a) license is a plain SPDX id in the set; (b) `dependencies` absent or empty; (c) `type` is not `module`; (d) `countLines` at most 5,000; (e) `cert.status` is `dead` or `dying`; (f) `cert.causes` non-empty; (g) `cert.openVulnerabilityIds` non-empty. A rule whose field cannot be read has `holds: false`, `reason: "unverified"` and `missingField` (R2.6). `retired-with-successor` fails (e) and records `cert.successor` (R2.8). If `cert.status` is absent because of `statusError`, rule (e) is `unverified` with `missingField: "status"`. If `cert.vitalSigns.openVulnerabilities` is unavailable, rule (g) is `unverified` with `missingField: "openVulnerabilities"` (R2.6), never "holds false, observed 0".
+- Rules (R2.3): (a) license is a plain SPDX id in the set; (b) `dependencies` absent or empty; (c) `type` is not `module`; (d) `countLines` at most 5,000; (e) `cert.status` is `dead` or `dying`; (f) `cert.causes` non-empty; (g) `cert.openVulnerabilityIds` non-empty. A rule whose field cannot be read has `holds: false`, `reason: "unverified"` and `missingField` (R2.6). `retired-with-successor` fails (e) and records `cert.successor` (R2.8). If `cert.status` is absent because of `statusError`, rule (e) is `unverified` with `missingField: "status"`. If `cert.vitalSigns.openVulnerabilities` is unavailable, rule (g) is `unverified` with `missingField: "openVulnerabilities"` (R2.6, R2.13), never "holds false, observed 0".
+- Causes rule (f), unverified case (R2.12): when `cert.causes` is empty and one or more cause inputs were unavailable, rule (f) is `unverified` and `missingField` names every unavailable input, joined with `,` and no spaces, in the fixed order below (for example `maintainers,githubRepo`). When `cert.causes` is empty and every input was available, rule (f) is `holds: false` without `reason`. When at least one cause is listed, rule (f) holds, whatever inputs were unavailable.
+
+  | Cause input | Unavailable when |
+  |---|---|
+  | `maintainers` | `vitalSigns.maintainers.available` is false |
+  | `githubRepo` | the certificate has no `githubRepo` fact and no `notes.omittedFacts` entry for it |
+  | `openVulnerabilities` | `vitalSigns.openVulnerabilities.available` is false |
+  | `timeOfDeath` | `timeOfDeath.available` is false |
 - `countLines` (R2.4): a text file is a file whose bytes contain no NUL and decode as strict UTF-8. Its lines are the number of `\n` plus one if the last byte is not `\n` and the file is not empty. The sum is taken over all text files of the tarball bytes. `dist.unpackedSize` is never read. (The exact definition of "text file" and "line" is a design choice; the 5,000 limit is the product rule.)
-- Every Fact carries `{ sourceUrl, fetchedAt }` (R2.7). The tarball-derived rule facts (`license`, `dependencies`, `module-type`, `line-count`) cite the tarball URL, and `integrity.expected` cites the packument URL, each with the Gravedigger's single `clock.now()` read. The certificate-derived facts `rule.status`, `rule.causes` and `rule.open-vulnerability` carry the union of the provenance of the contributing certificate facts, with the Coroner's own fetch dates (no Gravedigger date), deduplicated, ordered by `sourceUrl` then `fetchedAt` (the autopsy-engine order), stale if any contributor is stale, and capped at the first 20 entries (autopsy-engine R3.4). Such a fact is omitted when no contributing certificate fact exists. Contributing keys: `rule.causes` = `maintainers`, `githubRepo`, `openVulnerabilities`, `timeOfDeath`; `rule.status` = `successor`, every `successorLookup:*`, `deprecation`, plus the cause keys and the risk keys (`maintainers`, `openVulnerabilities`, `scorecard`, `dependents`, `weeklyDownloads`); `rule.open-vulnerability` = `openVulnerabilities`. No absolute local path enters the record: the tarball is referred to by name only.
+- Every Fact carries `{ sourceUrl, fetchedAt }` (R2.7). The tarball-derived rule facts (`license`, `dependencies`, `module-type`, `line-count`) cite the tarball URL, and `integrity.expected` cites the packument URL, each with the Gravedigger's single `clock.now()` read. The certificate-derived facts `rule.status`, `rule.causes` and `rule.open-vulnerability` carry the union of the provenance of the contributing certificate facts, with the Coroner's own fetch dates (no Gravedigger date), deduplicated, ordered by `sourceUrl` then `fetchedAt` (the autopsy-engine order), stale if any contributor is stale, and capped at the first 20 entries (autopsy-engine R3.4) (R2.14, R2.15). Such a fact is omitted when no contributing certificate fact exists. No absolute local path enters the record: the tarball is referred to by name only.
+
+  | Rule | Contributing certificate fact keys | Engine source |
+  |---|---|---|
+  | `rule.causes` | `maintainers`, `githubRepo`, `openVulnerabilities`, `timeOfDeath` | `detectCauses`, `src/engine/core/certificate.ts` lines 341-353 |
+  | `rule.status` | `successor`, every `successorLookup:*`, `deprecation`, plus the cause keys and the risk keys `maintainers`, `openVulnerabilities`, `scorecard`, `dependents`, `weeklyDownloads` | `computeRisk` and `assignStatus`, `src/engine/core/certificate.ts` lines 354-363 |
+  | `rule.open-vulnerability` | `openVulnerabilities` | `src/engine/core/certificate.ts` lines 369-383 |
+
+  Cap (R2.14): a Fact keeps at most 20 provenance entries, the first 20 in `sourceUrl` then `fetchedAt` order. When entries were dropped, the Fact carries `provenanceTotal`, the number of distinct contributing entries: an integer of at least 21, present only when exactly 20 entries are kept. The fact key order is `key`, `value`, `provenance`, `provenanceTotal`, `stale`. The pull request body then says "first 20 of N sources" for that rule (R15.16).
 
 ### Intake_Validator
 
@@ -804,9 +820,9 @@ Reflection results: the prework found one property per pure function or family o
 
 ### Property 2: Eligibility rules decide `eligible`
 
-*For any* generated `package.json`, line count and Death_Certificate (including absent fields and absent `status`), the record has `eligible` true if and only if all seven rules hold. `failedRules` lists exactly the rules that do not hold, in rule order. A rule whose input field is absent has `holds` false, `reason` `unverified` and the field name.
+*For any* generated `package.json`, line count and Death_Certificate (including absent fields and absent `status`), the record has `eligible` true if and only if all seven rules hold. `failedRules` lists exactly the rules that do not hold, in rule order. A rule whose input field is absent has `holds` false, `reason` `unverified` and the field name. When `vitalSigns.openVulnerabilities` is unavailable, the open-vulnerability rule is `unverified` with `missingField` `openVulnerabilities`. When the certificate lists no cause and one or more cause inputs were unavailable, the causes rule is `unverified` with `missingField` naming every unavailable input, comma-joined without spaces in the order maintainers, githubRepo, openVulnerabilities, timeOfDeath; when at least one cause is listed, the causes rule holds whatever inputs were unavailable.
 
-**Validates: Requirements 2.3, 2.5, 2.6, 2.8**
+**Validates: Requirements 2.3, 2.5, 2.6, 2.8, 2.12, 2.13**
 
 ### Property 3: Line count comes from the bytes
 
@@ -948,9 +964,9 @@ Reflection results: the prework found one property per pure function or family o
 
 ### Property 26: Pull request text
 
-*For any* generated Proof_Report, entry kind, stub flag and check results, the title and body contain the required fields: for a Resurrection_Entry the package, resurrection version, verdict, seed, tool versions, Branch_Commit, run link, case counts and one line per Declared_Delta; the verification commands if and only if the verdict is `alive`; the "not attested" sentence if and only if it is not; every Divergence and harness error of the report; the three checks as passed with the run link; the Existing_CI sentence. For a stub run the title ends with "stub run" and the first body line says so. For a Not_Resurrected_Entry the title has the words "not resurrected" and the body lists the failed rules with Source_URL and Fetch_Date.
+*For any* generated Proof_Report, entry kind, stub flag and check results, the title and body contain the required fields: for a Resurrection_Entry the package, resurrection version, verdict, seed, tool versions, Branch_Commit, run link, case counts and one line per Declared_Delta; the verification commands if and only if the verdict is `alive`; the "not attested" sentence if and only if it is not; every Divergence and harness error of the report; the three checks as passed with the run link; the Existing_CI sentence. For a stub run the title ends with "stub run" and the first body line says so. For a Not_Resurrected_Entry the title has the words "not resurrected" and the body lists each failed rule with its Source_URL and Fetch_Date, or states that no source was recorded. When the Eligibility_Record has a reason, the body shows `Reason: <reason>` whether or not failed rules are listed. Every source of a stale fact is marked `(stale)`, because staleness is recorded per fact. Every provenance entry of a failed rule is shown and no other fact's source is substituted; a fact with `provenanceTotal` N shows "first 20 of N sources".
 
-**Validates: Requirements 14.5, 15.2, 15.3, 15.4, 15.5, 15.10, 15.11, 15.12, 23.12**
+**Validates: Requirements 14.5, 15.2, 15.3, 15.4, 15.5, 15.10, 15.11, 15.12, 15.14, 15.15, 15.16, 15.17, 23.12**
 
 ### Property 27: Verification command construction
 
@@ -962,7 +978,7 @@ Reflection results: the prework found one property per pure function or family o
 
 *For any* `NightlyInput`, `classifyEntry` satisfies all of these. If the kind is `resurrection` and the committed and running Tool_Versions differ, the first result is `tool-versions-changed` and no replay result is listed. An entry with bundles and a verdict other than `alive` lists `unexpected-attestation`. An `alive` entry with a failed attestation, or with a number of verification results other than exactly three, lists `attestation-failed` even when the Tool_Versions differ. A `different` replay with equal tool versions lists `replay-mismatch`. New advisory ids list `new-advisory` and never set `fails`. `fails` is true if and only if the list contains `replay-mismatch`, `attestation-failed` or `unexpected-attestation`. The list is in the fixed order, without duplicates.
 
-**Validates: Requirements 16.4, 16.5, 16.7, 16.11, 16.12, 16.13, 16.16, 16.18**
+**Validates: Requirements 16.4, 16.5, 16.7, 16.9, 16.11, 16.12, 16.13, 16.16, 16.18**
 
 ### Property 29: Not-resurrected entries are never proof failures
 
@@ -1070,7 +1086,7 @@ The twelve criteria give thirteen required design properties: 1, 6, 8, 10, 11, 1
 - `gh attestation verify` JSON parsing against a small recorded sample, marked as a sample of unverified field names until the user's first nightly run confirms them (R16.9, R16.11).
 - Traceability: `scripts/trace.ts` gets a third section for `resurrection-pipeline` reading `tests/pipeline`, and `docs/traceability-gaps.json` classifies each criterion that only a manual task covers (R21.7).
 
-### Integration tests (`tests/pipeline/integration/`, project `pipeline`)
+### Integration tests (`tests/pipeline/integration/`, project `pipeline-integration`)
 
 - R5.7: compile the lodash.set files and run the Proof_Engine with the real Sandbox_Executor against `tests/proof/fixtures/lodash.set-alive` (verdict `alive`) and `lodash.set-broken` (verdict `restless`). One example each, since a property over 100 sandbox runs costs too much.
 - R5.8: the ip preset's setup module replaces `os.networkInterfaces()` identically on both sides (one example).
@@ -1078,7 +1094,7 @@ The twelve criteria give thirteen required design properties: 1, 6, 8, 10, 11, 1
 
 ### Test project and targets
 
-One new Vitest project `pipeline` with `tests/pipeline/**/*.test.ts`. Its wall-clock target is 90 s as a target, not a measurement. The user records the first span from a pasted run (R21.9, R21.8). `budgetReporter.ts` gets the project in its table, and `npm test` still runs all projects.
+Two new Vitest projects: `pipeline` (`tests/pipeline/**/*.test.ts` minus `tests/pipeline/integration`, target 90 s) and `pipeline-integration` (`tests/pipeline/integration/**/*.test.ts`, target 120 s); targets, not measurements. The user records the first span of each from a pasted run (R21.9, R21.8). `budgetReporter.ts` gets one table entry each, and `npm test` still runs all projects.
 
 ### Manual tasks (the user's)
 
@@ -1106,7 +1122,7 @@ Every item needs network, `gh`, `kiro-cli`, repository settings or a meter readi
 | Step | Work | Required? |
 |---|---|---|
 | (a) | **ip measurement first (R3.1).** Generalize the tarball recorder (`--package`, `--version`, default lodash.set@4.3.2; R3.9). `IpMeasurementSchema`, `deriveIpDeltas` and `scripts/measureIp.ts`, with their example tests. **[USER] M1** record the ip tarball. **[USER] M2** run `npx tsx scripts/measureIp.ts` and log the result in the Journal with the two advisory URLs. The same step reads the export list of ip@2.0.1 from the tarball and corrects the table in "ip coverage". If the measurement leaves no delta, ip leaves the demo (R3.5) and steps (d) shrink to the docs. | required |
-| (b) | Build, in this order: `common` (constants, names, branch names, canonical helpers, `system.ts`); Gravedigger; Intake_Validator and `gitEntries`/`fsEntries`; necromancy gate; Deltas_File, Harness_File, compiler and the lodash.set preset (R5.7 integration test against `lodash.set-alive` and `lodash.set-broken`); the Stub_Fixture (`resurrection/`, `deltas.json`, `harness.json`, "Stub_Fixture layout") with its tests; Local_Runner, Ledger and Push_Script; `scripts/ci/*`, `resurrect.yml`, the `ci.yml` `workflow_dispatch` trigger, workflow lint, `publish`/`attest` code and entry layout; the `pipeline` vitest project and `budgetReporter` entry. The eleven required property tests of this group (1, 6, 8, 10, 11, 13, 15, 16, 21, 22, 23) are written next to their modules; the optional ones are separate tasks marked optional. Ends with a typecheck and lint pass, then **[USER] M11** (full suite). | required |
+| (b) | Build, in this order: `common` (constants, names, branch names, canonical helpers, `system.ts`); Gravedigger; Intake_Validator and `gitEntries`/`fsEntries`; necromancy gate; Deltas_File, Harness_File, compiler and the lodash.set preset (R5.7 integration test against `lodash.set-alive` and `lodash.set-broken`); the Stub_Fixture (`resurrection/`, `deltas.json`, `harness.json`, "Stub_Fixture layout") with its tests; Local_Runner, Ledger and Push_Script; `scripts/ci/*`, `resurrect.yml`, the `ci.yml` `workflow_dispatch` trigger, workflow lint, `publish`/`attest` code and entry layout; the `pipeline` vitest project and `budgetReporter` entry (later split into `pipeline` and `pipeline-integration`, see "Test project and targets"). The eleven required property tests of this group (1, 6, 8, 10, 11, 13, 15, 16, 21, 22, 23) are written next to their modules; the optional ones are separate tasks marked optional. Ends with a typecheck and lint pass, then **[USER] M11** (full suite). | required |
 | (c) | **Checkpoint: the first lodash.set stub run end to end.** **[USER] M3** set up WSL: `gh` from GitHub's official apt repository (2.67.0 or later), the separate clone `~/graveyard-shift` with `.env` copied from `/mnt/c/dev/graveyard-shift/.env`, `npm ci` there, and `git user.name` and `user.email` set there (never `npm ci` or `npm install` in WSL inside `/mnt/c/...`). **[USER] M4** turn on "Allow GitHub Actions to create and approve pull requests". **[USER] M5** commit the workflows to `main` and run `npm run resurrect -- lodash.set --stub tests/pipeline/fixtures/stub/lodash.set`. **[USER] M6** check the stub pull request (checks, `ci.yml` behavior, three `gh attestation verify` commands) and record what was observed. **[USER] M7** re-run once to confirm the D2 collision message. Work stops here until the user reports the observations; fixes to the workflows follow from them. | required |
 | (d) | ip preset (eight generators, `ipSetup.cjs`, a generator for every export of the recorded tarball and the list test of R5.12, the uncoverable-export list of R5.13 in the design and the Journal, "ip coverage"), the ip Deltas_File and Harness_File examples, `returnsExpected.cjs`, the R5.8 integration example, the `ip-alive` fixture, the ip integration test with a negative control, the ip Stub_Fixture and its tests (R23.22 to R23.26, "ip-alive fixture and ip Stub_Fixture"). **[USER] M12** the ip stub run, after the ip Stub_Fixture task; the stop before it is intentional. The real runs (M9) come after spec (b), see the last row. | required if ip stays in the demo |
 | (e) | Nightly: `nightlyClassify`, `nightlyReport`, `replay.ts`, `nightly.ts`, `nightly.yml`, `verifyCommands`; properties 28 and 29 (required) and the other nightly tests. **[USER] M10** dispatch `resurrect.yml` without a branch for inflight (`-f package=inflight -f version=1.0.6`). **[USER] M8** dispatch `nightly.yml` once and read its report. The `notify` job (R16.19, R16.20) is optional and the first to cut. | required (except `notify`) |

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This plan follows the "Planned work order" of `design.md`: (a) the ip measurement, (b) the building blocks up to the first full-suite checkpoint, (c) the first lodash.set stub run end to end, (d) the ip preset and the ip run, (e) the nightly re-verification, (f) documentation and traceability. Language: TypeScript (strict), as in `src/engine` and `src/proof`. Tests use vitest and fast-check in the new project `pipeline` (`tests/pipeline/**/*.test.ts`).
+This plan follows the "Planned work order" of `design.md`: (a) the ip measurement, (b) the building blocks up to the first full-suite checkpoint, (c) the first lodash.set stub run end to end, (d) the ip preset and the ip run, (e) the nightly re-verification, (f) documentation and traceability. Language: TypeScript (strict), as in `src/engine` and `src/proof`. Tests use vitest and fast-check in the new projects `pipeline` (`tests/pipeline/**/*.test.ts` minus `tests/pipeline/integration`, target 90 s) and `pipeline-integration` (`tests/pipeline/integration/**/*.test.ts`, target 120 s).
 
 Conventions for every task:
 
@@ -23,6 +23,7 @@ Conventions for every task:
   - [x] 1.1 Add the `pipeline` vitest project and its budget entry
     - In `vitest.config.mts` add the project `pipeline` (`tests/pipeline/**/*.test.ts`), with the network guard in the root `setupFiles` unchanged.
     - In `tests/proof/helpers/budgetReporter.ts` add the project to the target table (90 s, a target and not a measurement); extend `tests/proof/unit/budgetReporter.test.ts` for the new entry (no journal write).
+    - Later change (2026-11-16): the project was split into `pipeline` (`tests/pipeline/**/*.test.ts` minus `tests/pipeline/integration`, target 90 s) and `pipeline-integration` (`tests/pipeline/integration/**/*.test.ts`, target 120 s), each with its own budget entry; targets, not measurements.
     - Verify with `npm run typecheck`, `npm run lint` and `npx vitest run tests/proof/unit/budgetReporter.test.ts`.
     - _Requirements: 21.9_
 
@@ -331,7 +332,7 @@ Conventions for every task:
 
 - [x] 9. Checkpoint: end of step (b), full suite run by the user
   - Agent: run `npm run typecheck` and `npm run lint` and fix findings. Do not run `npm test`.
-  - Ready for you to run: `npm test` (M11). Paste the output. Add the observed span of the `pipeline` project to `docs/kiro-journal.md` only from that pasted output.
+  - Ready for you to run: `npm test` (M11). Paste the output. Add the observed spans of the `pipeline` and `pipeline-integration` projects to `docs/kiro-journal.md` only from that pasted output.
   - Ensure all tests pass, ask the user if questions arise.
   - _Requirements: 21.2, 21.3, 21.8, 21.9_
 
@@ -541,7 +542,7 @@ Conventions for every task:
 - [ ] 14. Step (f): documentation and traceability
   - [ ] 14.1 Update the steering files and the README
     - `.kiro/steering/product.md`, `README.md`, `.kiro/steering/tech.md`, `.kiro/steering/structure.md`: the Medium runs on demand on the user's machine; CI re-runs the Coroner and the Gravedigger, runs the Proof of Life, attests only an `alive` verdict and opens the pull request; the nightly job re-verifies without an LLM and without credits. Replace the "resurrect them overnight" wording and the user-flow step 4; replace the `tech.md` sentence "CI does the verification, the Proof of Life, the attestation and the pull request" with one that also states the nightly re-verification and the on-demand Medium.
-    - `tech.md`: `npm run resurrect`, `npm run measure:ip`, `PINNED_NODE_VERSION`, `gh` at least 2.67.0, no new secret, the Proof of Life runs only in CI, the `pipeline` vitest project (target only), `tar` importer rule if changed in task 8.15.
+    - `tech.md`: `npm run resurrect`, `npm run measure:ip`, `PINNED_NODE_VERSION`, `gh` at least 2.67.0, no new secret, the Proof of Life runs only in CI, the `pipeline` and `pipeline-integration` vitest projects (targets only), `tar` importer rule if changed in task 8.15.
     - `structure.md`: `src/pipeline/` with its subdirectories, `scripts/resurrect.ts`, `push-resurrection.ts`, `measureIp.ts`, `scripts/ci/`, `tests/pipeline/` and fixtures, the Stub_Fixture, `docs/measurements/`, `graveyard/`, `ledger.json`, the two workflows, and the added `workflow_dispatch` of `ci.yml`; the stub run (copies a fixture, no credit, labelled "stub run", not Medium-produced).
     - `README.md`: new section "Resurrecting a package" (commands, the stub run, the verification commands built from the same text as `verifyCommands`, the A12 statement, the `gh` minimum and the CVE-2025-25204 warning marked "to be re-checked before release", the Ledger statement that the user commits `ledger.json` and no script or workflow does, the Credit_Ceiling statement), the "Known limitations" text of the design, the `pipeline` row in the test projects table (target only). No figure that the Journal does not record as measured. Keep Halloween naming in user-facing names and plain wording in code and docs.
     - `README.md`, in the stub run text: closing a stub PR leaves a red, job-less CI run ("workflow file issue", `jobs: []`) on its publish branch; this is expected (A5).
@@ -578,7 +579,7 @@ Conventions for every task:
     - _Requirements: 21.3_
 
 - [ ] 15. Final checkpoint: full suite and traceability, run by the user
-  - Ready for you to run: `npm test` (M11). Paste the output. Journal timings come from this pasted output only.
+  - Ready for you to run: `npm test` (M11). Paste the output. Add the observed spans of the `pipeline` and `pipeline-integration` projects to `docs/kiro-journal.md`; Journal timings come from this pasted output only.
   - Ready for you to run: `npm run trace`. Paste the output (exit code 0 means no unclassified gap).
   - Ensure all tests pass, ask the user if questions arise.
   - _Requirements: 21.2, 21.7, 21.8_

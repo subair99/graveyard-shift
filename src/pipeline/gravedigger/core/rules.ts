@@ -108,6 +108,46 @@ function openVulnerabilityRule(cert: DeathCertificate): RuleResult {
   };
 }
 
+/**
+ * Inputs of detectCauses (src/engine/core/causes.ts), in its order, with how the certificate shows
+ * that each one could not be read (src/engine/core/certificate.ts, buildCertificate):
+ * - maintainers: `vitalSigns.maintainers.available === false`.
+ * - githubRepo (archived flag and last push): the certificate has no vital sign for GitHub; the
+ *   `githubRepo` fact is written only when the GitHub call succeeded. So GitHub was unavailable or
+ *   skipped when there is neither a `githubRepo` fact nor a `notes.omittedFacts` entry for it (an
+ *   omitted entry means the data was read but had no provenance).
+ * - openVulnerabilities: `vitalSigns.openVulnerabilities.available === false`.
+ * - timeOfDeath: `timeOfDeath.available === false`.
+ */
+export const CAUSE_INPUTS = ["maintainers", "githubRepo", "openVulnerabilities", "timeOfDeath"] as const;
+
+function unavailableCauseInputs(cert: DeathCertificate): string[] {
+  const githubRead =
+    cert.facts.some((f) => f.key === "githubRepo") ||
+    cert.notes.omittedFacts.some((o) => o.key === "githubRepo");
+  const unavailable: Record<(typeof CAUSE_INPUTS)[number], boolean> = {
+    maintainers: !cert.vitalSigns.maintainers.available,
+    githubRepo: !githubRead,
+    openVulnerabilities: !cert.vitalSigns.openVulnerabilities.available,
+    timeOfDeath: !cert.timeOfDeath.available,
+  };
+  return CAUSE_INPUTS.filter((k) => unavailable[k]);
+}
+
+function causesRule(cert: DeathCertificate): RuleResult {
+  // A cause found is a positive observation that does not depend on the missing input, so the rule
+  // holds even when another input is unavailable (user decision). One exception in detectCauses:
+  // runtime-rot counts an unavailable GitHub last push as "no push date" (engine/core/causes.ts),
+  // so with GitHub unavailable that cause rests on the Time_Of_Death alone. With no cause found, an
+  // unavailable input means "unknown", not "none": the rule is unverified (R2.6) and names every
+  // unavailable input, comma-separated (no spaces) in the CAUSE_INPUTS order.
+  if (cert.causes.length === 0) {
+    const missing = unavailableCauseInputs(cert);
+    if (missing.length > 0) return unverified("causes", missing.join(","));
+  }
+  return { rule: "causes", holds: cert.causes.length >= 1, observed: cert.causes.length };
+}
+
 /** The seven rules in fixed order. Never throws; an unreadable field gives an `unverified` failure. */
 export function evaluateRules(input: EvaluateInput): RuleResult[] {
   const { pkg, lineCount, cert } = input;
@@ -117,11 +157,7 @@ export function evaluateRules(input: EvaluateInput): RuleResult[] {
     moduleTypeRule(pkg),
     lineCountRule(lineCount),
     statusRule(cert),
-    {
-      rule: "causes",
-      holds: cert.causes.length >= 1,
-      observed: cert.causes.length,
-    },
+    causesRule(cert),
     openVulnerabilityRule(cert),
   ];
 }

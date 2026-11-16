@@ -160,6 +160,60 @@ describe("renderPrText", () => {
     expect(body).toContain("- causes: observed 0 (source: none recorded)");
   });
 
+  describe("not-resurrected: reason, stale sources, dropped sources, several missing fields", () => {
+    const src = (n: number) => ({ sourceUrl: `https://registry.npmjs.org/c${n}`, fetchedAt: "2026-11-15T19:03:19Z" });
+    const nr = (over: Partial<NotResurrectedPrInput>): NotResurrectedPrInput => ({
+      kind: "not-resurrected",
+      package: "ip",
+      version: "2.0.1",
+      failedRules: [],
+      runUrl: RUN,
+      stub: false,
+      identity,
+      platform: "posix",
+      ...over,
+    });
+
+    it("shows the integrity-mismatch reason also when failed rules are listed", () => {
+      const listed = renderPrBody(
+        nr({
+          reason: "integrity-mismatch",
+          failedRules: [{ rule: "license", observed: null, missingField: "package.json", sources: [] }],
+        }),
+      );
+      expect(listed).toContain("Reason: integrity-mismatch");
+      expect(listed).toContain("- license: unverified, field package.json could not be read");
+      const empty = renderPrBody(nr({ reason: "integrity-mismatch" }));
+      expect(empty).toContain("Reason: integrity-mismatch");
+      expect(empty).toContain("- none listed");
+      expect(renderPrBody(nr({}))).not.toContain("Reason:");
+    });
+
+    it("marks every source of a stale fact with (stale)", () => {
+      const body = renderPrBody(nr({ failedRules: [{ rule: "status", observed: "alive", stale: true, sources: [src(1), src(2)] }] }));
+      expect(body).toContain(
+        "- status: observed alive (source: https://registry.npmjs.org/c1, fetched 2026-11-15T19:03:19Z (stale); source: https://registry.npmjs.org/c2, fetched 2026-11-15T19:03:19Z (stale))",
+      );
+      const fresh = renderPrBody(nr({ failedRules: [{ rule: "status", observed: "alive", sources: [src(1)] }] }));
+      expect(fresh).not.toContain("(stale)");
+    });
+
+    it("says first 20 of N sources when entries were dropped", () => {
+      const sources = Array.from({ length: 20 }, (_, n) => src(n));
+      const body = renderPrBody(nr({ failedRules: [{ rule: "status", observed: "alive", sources, sourcesTotal: 26 }] }));
+      expect(body).toContain("- status: observed alive (first 20 of 26 sources: source: https://registry.npmjs.org/c0,");
+      const all = renderPrBody(nr({ failedRules: [{ rule: "status", observed: "alive", sources }] }));
+      expect(all).not.toContain("first 20 of");
+    });
+
+    it("names several missing fields of the causes rule", () => {
+      const body = renderPrBody(
+        nr({ failedRules: [{ rule: "causes", observed: null, missingField: "githubRepo,timeOfDeath", sources: [] }] }),
+      );
+      expect(body).toContain("- causes: unverified, fields githubRepo, timeOfDeath could not be read (source: none recorded)");
+    });
+  });
+
   it("stub: title ends with stub run and the first body line says so", () => {
     const i: ResurrectionPrInput = { ...base, stub: true };
     expect(renderPrTitle(i)).toBe("lodash.set 4.3.3: alive (stub run)");

@@ -34,6 +34,9 @@ export const BUDGET_SECONDS: Readonly<Record<string, number>> = {
   "proof-integration": 120,
   // A target, not a measurement (resurrection-pipeline R21.9); the first span comes from a pasted run.
   pipeline: 90,
+  // A target, not a measurement: tests/pipeline/integration, moved out of `pipeline` after a user run
+  // where the `pipeline` span came close to its 90 s target.
+  "pipeline-integration": 120,
 };
 
 /** Result of reading PROOF_BUDGET_SCALE. */

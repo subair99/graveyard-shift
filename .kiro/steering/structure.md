@@ -50,9 +50,11 @@ tests/proof/fixtures/lodash.set-alive/  Hand-written lodash.set 4.3.3 resurrecti
 tests/proof/unit/lodashAliveFixture.test.ts  Original vs alive fixture checks (pollution runs in a spawned node child)
 tests/proof/fixtures/lodash.set-broken/  Deliberately broken lodash.set 4.3.3 (numeric-index containers are `{}`; has the pollution guard); test fixture, never published
 tests/proof/unit/lodashBrokenFixture.test.ts  Original vs broken fixture checks (pollution runs in a spawned node child)
+tests/pipeline/  Resurrection pipeline tests (unit, property, helpers, fixtures); vitest project `pipeline`, except tests/pipeline/integration
+tests/pipeline/integration/  Pipeline tests with real sandbox children or a real local git repository, named *.integration.test.ts: gitEntries, ipAlive, ipExports, ipSetup, lodashHarness (vitest project `pipeline-integration`)
 scripts/spike/  Sandbox spike scripts (task 1; results in docs/kiro-journal.md)
 package.json      Scripts and dependencies (npm)
-vitest.config.mts  Vitest config: projects engine, proof-property, proof-heavy, proof-integration; budget reporter; network guard in the root setupFiles
+vitest.config.mts  Vitest config: projects engine, proof-property, proof-heavy, proof-integration, pipeline, pipeline-integration; budget reporter; network guard in the root setupFiles
 eslint.config.mjs  ESLint config (determinism rules over the pure directories)
 .github/workflows/ci.yml  CI (GitHub Actions): jobs test-linux, test-no-identity, test-windows; runs typecheck, lint and the full suite; no secrets
 tsconfig.json     TypeScript config (strict)

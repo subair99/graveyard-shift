@@ -44,6 +44,18 @@ const fact = fc.record(
   { requiredKeys: ["key", "value", "provenance"] },
 );
 
+/** A rule fact whose provenance was capped at 20 entries: provenanceTotal counts every source. */
+const cappedFact = fc.record(
+  {
+    key: fc.string({ minLength: 1, maxLength: 10 }),
+    value: jsonValue,
+    provenance: fc.array(provenance, { minLength: 20, maxLength: 20 }),
+    provenanceTotal: fc.integer({ min: 21, max: 1000 }),
+    stale: fc.boolean(),
+  },
+  { requiredKeys: ["key", "value", "provenance", "provenanceTotal"] },
+);
+
 const ruleId = fc.constantFrom(...RULE_IDS);
 
 const ruleResult = fc.record(
@@ -74,7 +86,7 @@ const record: fc.Arbitrary<EligibilityRecord> = fc.record(
     rules: fc.array(ruleResult, { maxLength: 7 }),
     failedRules: fc.array(ruleId, { maxLength: 7 }),
     successor: fc.string({ minLength: 1, maxLength: 12 }),
-    facts: fc.array(fact, { maxLength: 4 }),
+    facts: fc.array(fc.oneof({ arbitrary: fact, weight: 3 }, { arbitrary: cappedFact, weight: 1 }), { maxLength: 4 }),
   },
   {
     requiredKeys: [

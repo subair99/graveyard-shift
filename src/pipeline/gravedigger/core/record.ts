@@ -2,8 +2,8 @@
 
 import type { DeathCertificate, Fact, Provenance } from "../../../engine/types";
 import { compareCodePoints } from "../../common/canonical";
-import type { EligibilityRecord } from "./eligibility";
-import { evaluateRules } from "./rules";
+import type { EligibilityRecord, RecordFact } from "./eligibility";
+import { CAUSE_INPUTS, evaluateRules } from "./rules";
 import type { PackageJsonLike, RuleId, RuleResult } from "./rules";
 
 export interface BuildRecordInput {
@@ -32,7 +32,7 @@ export interface BuildRecordInput {
 // - `status` comes from assignStatus over the Successor (`successor` and every
 //   `successorLookup:<name>`), the deprecation message (`deprecation`), the causes and the risk score.
 // - `openVulnerabilityIds` is the `openVulnerabilities` fact.
-const CAUSE_FACT_KEYS = ["maintainers", "githubRepo", "openVulnerabilities", "timeOfDeath"];
+const CAUSE_FACT_KEYS: readonly string[] = CAUSE_INPUTS;
 const RISK_FACT_KEYS = ["maintainers", "openVulnerabilities", "scorecard", "dependents", "weeklyDownloads"];
 const STATUS_FACT_KEYS = new Set(["successor", "deprecation", ...CAUSE_FACT_KEYS, ...RISK_FACT_KEYS]);
 const SUCCESSOR_LOOKUP_PREFIX = "successorLookup:";
@@ -57,9 +57,15 @@ export const MAX_PROVENANCE = 20;
 /**
  * Union of the provenance of the given facts: each `{sourceUrl, fetchedAt}` pair once, ordered by
  * sourceUrl then fetchedAt (code point), as the engine orders provenance entries. Above 20 entries
- * the first 20 in that order are kept, as the engine does (R3.4 sets 20 as the maximum).
+ * the first 20 in that order are kept, as the engine does (R3.4 sets 20 as the maximum); the rule
+ * fact then records the full count in `provenanceTotal`.
  */
 export function unionProvenance(facts: readonly Fact[]): Provenance[] {
+  return fullUnion(facts).slice(0, MAX_PROVENANCE);
+}
+
+/** The whole union, before the cap; its length is the count of contributing sources. */
+function fullUnion(facts: readonly Fact[]): Provenance[] {
   const seen = new Set<string>();
   const out: Provenance[] = [];
   for (const f of facts) {
@@ -71,16 +77,16 @@ export function unionProvenance(facts: readonly Fact[]): Provenance[] {
     }
   }
   out.sort((a, b) => compareCodePoints(a.sourceUrl, b.sourceUrl) || compareCodePoints(a.fetchedAt, b.fetchedAt));
-  return out.slice(0, MAX_PROVENANCE);
+  return out;
 }
 
 const FROM_CERTIFICATE: readonly RuleId[] = ["status", "causes", "open-vulnerability"];
 
-function buildFacts(i: BuildRecordInput, rules: readonly RuleResult[]): Fact[] {
+function buildFacts(i: BuildRecordInput, rules: readonly RuleResult[]): RecordFact[] {
   const at = i.fetchedAt;
   const packument = [{ sourceUrl: i.packumentUrl, fetchedAt: at }];
   const tarball = [{ sourceUrl: i.tarballUrl, fetchedAt: at }];
-  const facts: Fact[] = [
+  const facts: RecordFact[] = [
     { key: "integrity.expected", value: i.expectedIntegrity, provenance: packument },
   ];
   if (i.computedIntegrity !== null) {
@@ -99,12 +105,14 @@ function buildFacts(i: BuildRecordInput, rules: readonly RuleResult[]): Fact[] {
   for (const r of rules) {
     if (r.reason === "unverified" || !FROM_CERTIFICATE.includes(r.rule)) continue;
     const contributing = i.cert.facts.filter((f) => contributesTo(r.rule, f.key));
-    const provenance = unionProvenance(contributing);
-    if (provenance.length === 0) continue;
+    const all = fullUnion(contributing);
+    if (all.length === 0) continue;
     facts.push({
       key: `rule.${r.rule}`,
       value: r.observed,
-      provenance,
+      provenance: all.slice(0, MAX_PROVENANCE),
+      // Written only when entries were dropped, so the record says how many sources contributed.
+      ...(all.length > MAX_PROVENANCE ? { provenanceTotal: all.length } : {}),
       ...(contributing.some((f) => f.stale === true) ? { stale: true } : {}),
     });
   }

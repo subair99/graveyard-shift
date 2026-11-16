@@ -46,6 +46,10 @@ export interface PrFailedRule {
   missingField?: string;
   /** Every provenance entry of the rule's fact, in record order; empty when the record has no fact. */
   sources: readonly PrSource[];
+  /** The fact's `stale` flag: at least one source was served from a stale cache entry. */
+  stale?: boolean;
+  /** The fact's `provenanceTotal`: set when only the first `sources.length` of this many were kept. */
+  sourcesTotal?: number;
 }
 
 interface PrCommon {
@@ -74,7 +78,7 @@ export interface NotResurrectedPrInput extends PrCommon {
   /** The exact Original version. */
   version: string;
   failedRules: readonly PrFailedRule[];
-  /** Set when the integrity check failed and no rule could be judged. */
+  /** The record's reason (integrity-mismatch); always shown, also next to listed failed rules. */
   reason?: string;
 }
 
@@ -168,23 +172,34 @@ function resurrectionLines(i: ResurrectionPrInput): string[] {
   return lines;
 }
 
+function failedRuleLine(f: PrFailedRule): string {
+  // The causes rule names several unavailable inputs comma-separated (gravedigger/core/rules.ts).
+  const fields = f.missingField?.split(",") ?? [];
+  const what =
+    f.missingField === undefined
+      ? `observed ${plain(f.observed)}`
+      : `unverified, ${fields.length > 1 ? "fields" : "field"} ${fields.join(", ")} could not be read`;
+  // Staleness is recorded per fact, not per entry, so every source of a stale fact is marked.
+  const mark = f.stale === true ? " (stale)" : "";
+  const listed = f.sources.map((s) => `source: ${s.sourceUrl}, fetched ${s.fetchedAt}${mark}`).join("; ");
+  const sources =
+    f.sources.length === 0
+      ? "source: none recorded"
+      : f.sourcesTotal !== undefined && f.sourcesTotal > f.sources.length
+        ? `first ${f.sources.length} of ${f.sourcesTotal} sources: ${listed}`
+        : listed;
+  return `- ${f.rule}: ${what} (${sources})`;
+}
+
 function notResurrectedLines(i: NotResurrectedPrInput): string[] {
   const lines: string[] = [];
+  // The record's reason (integrity-mismatch) is shown whether or not failed rules are listed.
+  if (i.reason !== undefined) lines.push(`Reason: ${i.reason}`, "");
   lines.push("## Failed eligibility rules");
   if (i.failedRules.length === 0) {
-    lines.push(`- none listed${i.reason === undefined ? "" : ` (reason: ${i.reason})`}`);
+    lines.push("- none listed");
   } else {
-    for (const f of i.failedRules) {
-      const what =
-        f.missingField === undefined
-          ? `observed ${plain(f.observed)}`
-          : `unverified, field ${f.missingField} could not be read`;
-      const sources =
-        f.sources.length === 0
-          ? "source: none recorded"
-          : f.sources.map((s) => `source: ${s.sourceUrl}, fetched ${s.fetchedAt}`).join("; ");
-      lines.push(`- ${f.rule}: ${what} (${sources})`);
-    }
+    for (const f of i.failedRules) lines.push(failedRuleLine(f));
   }
   lines.push("", `Workflow run: ${i.runUrl}`, "", NOT_RESURRECTED_SENTENCE, "");
   return lines;
