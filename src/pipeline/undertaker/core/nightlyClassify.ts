@@ -73,6 +73,7 @@ export function differingToolFields(committed: ToolVersions | null, running: Too
   return TOOL_FIELDS.filter((f) => committed[f] !== running[f]);
 }
 
+/** Exactly three attestations: resurrection.tgz, proof-report.json, certificate.json (R16.9). Any other count fails closed. */
 const REQUIRED_ATTESTATIONS = 3;
 
 export function classifyEntry(i: NightlyInput): NightlyClassification {
@@ -92,7 +93,7 @@ export function classifyEntry(i: NightlyInput): NightlyClassification {
     if (
       i.verdict === "alive" &&
       (i.attestations === "not-applicable" ||
-        i.attestations.length < REQUIRED_ATTESTATIONS ||
+        i.attestations.length !== REQUIRED_ATTESTATIONS ||
         i.attestations.some((a) => a !== "ok"))
     ) {
       found.add("attestation-failed");

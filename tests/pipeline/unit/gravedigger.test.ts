@@ -54,10 +54,12 @@ describe("runGravedigger", () => {
     const lines = out.record.rules.find((r) => r.rule === "line-count");
     expect(lines?.observed).toBeGreaterThan(2);
     for (const f of out.record.facts) {
-      if (f.key === "rule.open-vulnerability") {
-        // From the certificate: the OSV query and the Coroner's own Fetch_Date.
-        expect(f.provenance[0]!.sourceUrl).toBe("https://api.osv.dev/v1/query");
-        expect(f.provenance[0]!.fetchedAt).not.toBe("2026-11-16T10:00:00Z");
+      if (["rule.status", "rule.causes", "rule.open-vulnerability"].includes(f.key)) {
+        // From the certificate: the Coroner's sources and Fetch_Dates, never the Gravedigger clock.
+        if (f.key === "rule.open-vulnerability") {
+          expect(f.provenance).toEqual([{ sourceUrl: "https://api.osv.dev/v1/query", fetchedAt: "2026-11-15T19:03:19Z" }]);
+        }
+        expect(f.provenance.some((p) => p.fetchedAt === "2026-11-16T10:00:00Z")).toBe(false);
         continue;
       }
       expect(f.provenance[0]!.fetchedAt).toBe("2026-11-16T10:00:00Z");

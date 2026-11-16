@@ -105,7 +105,11 @@ describe("renderPrText", () => {
       package: "left-pad",
       version: "1.3.0",
       failedRules: [
-        { rule: "license", observed: "GPL-3.0", sourceUrl: "https://registry.npmjs.org/left-pad", fetchedAt: "2026-11-15T10:00:00Z" },
+        {
+          rule: "license",
+          observed: "GPL-3.0",
+          sources: [{ sourceUrl: "https://registry.npmjs.org/left-pad", fetchedAt: "2026-11-15T10:00:00Z" }],
+        },
       ],
       runUrl: RUN,
       stub: false,
@@ -119,6 +123,41 @@ describe("renderPrText", () => {
     expect(body).toContain(NOT_RESURRECTED_SENTENCE);
     expect(body).toContain(EXISTING_CI_SENTENCE);
     expect(body).not.toContain("Verdict:");
+  });
+
+  it("not-resurrected: every source of a rule, an unverified rule and a rule with no source", () => {
+    const i: NotResurrectedPrInput = {
+      kind: "not-resurrected",
+      package: "ip",
+      version: "2.0.1",
+      failedRules: [
+        {
+          rule: "status",
+          observed: "alive",
+          sources: [
+            { sourceUrl: "https://api.github.com/repos/indutny/node-ip", fetchedAt: "2026-11-15T19:03:19Z" },
+            { sourceUrl: "https://registry.npmjs.org/ip?t=ghp_abc123", fetchedAt: "2026-11-15T19:03:20Z" },
+          ],
+        },
+        { rule: "open-vulnerability", observed: null, missingField: "openVulnerabilities", sources: [] },
+        { rule: "causes", observed: 0, sources: [] },
+      ],
+      runUrl: RUN,
+      stub: false,
+      identity,
+      platform: "posix",
+    };
+    const body = renderPrBody(i);
+    expect(body).toContain(
+      "- status: observed alive (source: https://api.github.com/repos/indutny/node-ip, fetched 2026-11-15T19:03:19Z; source: https://registry.npmjs.org/ip?t=",
+    );
+    expect(body).toContain("fetched 2026-11-15T19:03:20Z)");
+    expect(body).not.toContain("ghp_abc123");
+    expect(body).toContain(
+      "- open-vulnerability: unverified, field openVulnerabilities could not be read (source: none recorded)",
+    );
+    expect(body).not.toContain("open-vulnerability: observed");
+    expect(body).toContain("- causes: observed 0 (source: none recorded)");
   });
 
   it("stub: title ends with stub run and the first body line says so", () => {

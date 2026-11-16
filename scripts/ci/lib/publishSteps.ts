@@ -123,19 +123,24 @@ function parseReport(text: string): ProofReport | null {
   }
 }
 
-/** The failed rules with the source URL and fetch date of the fact that recorded each one. */
-export function failedRulesOf(record: EligibilityRecord): { rules: PrFailedRule[]; unsourced: string[] } {
-  const rules: PrFailedRule[] = [];
-  const unsourced: string[] = [];
-  const fallback = record.facts.find((f) => f.key === "integrity.expected")?.provenance[0];
-  for (const id of record.failedRules) {
+/**
+ * The failed rules with every Source_URL and Fetch_Date of the `rule.<id>` fact that recorded each
+ * one. A rule without such a fact (an unverified rule, or a fact omitted for missing provenance)
+ * gets no sources, which the PR text shows as "source: none recorded"; no other fact stands in.
+ */
+export function failedRulesOf(record: EligibilityRecord): PrFailedRule[] {
+  return record.failedRules.map((id) => {
     const fact = record.facts.find((f) => f.key === `rule.${id}`);
-    const source = fact?.provenance[0] ?? fallback;
-    const observed = record.rules.find((r) => r.rule === id)?.observed ?? null;
-    if (source === undefined) unsourced.push(id);
-    else rules.push({ rule: id, observed, sourceUrl: source.sourceUrl, fetchedAt: source.fetchedAt });
-  }
-  return { rules, unsourced };
+    const result = record.rules.find((r) => r.rule === id);
+    return {
+      rule: id,
+      observed: result?.observed ?? null,
+      ...(result?.reason === "unverified" && result.missingField !== undefined
+        ? { missingField: result.missingField }
+        : {}),
+      sources: (fact?.provenance ?? []).map((p) => ({ sourceUrl: p.sourceUrl, fetchedAt: p.fetchedAt })),
+    };
+  });
 }
 
 /** Step `push-pr`. */
@@ -183,17 +188,12 @@ export async function pushPrStep(deps: PublishStepDeps): Promise<number> {
   } else {
     const record = deserializeEligibilityRecord(decodeText(await fs.readFile(source(ENTRY_FILES.eligibility))));
     if (!record.ok) return fail(deps, `${ENTRY_FILES.eligibility} is not valid: ${record.error.field}`);
-    const { rules, unsourced } = failedRulesOf(record.value);
-    const reasons = [
-      ...(record.value.reason === undefined ? [] : [record.value.reason]),
-      ...(unsourced.length === 0 ? [] : [`no source recorded for ${unsourced.join(", ")}`]),
-    ];
     input = {
       ...common,
       kind: "not-resurrected",
       version: record.value.package.version,
-      failedRules: rules,
-      ...(reasons.length === 0 ? {} : { reason: reasons.join("; ") }),
+      failedRules: failedRulesOf(record.value),
+      ...(record.value.reason === undefined ? {} : { reason: record.value.reason }),
     };
   }
 

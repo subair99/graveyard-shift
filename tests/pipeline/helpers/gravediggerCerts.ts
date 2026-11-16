@@ -23,3 +23,25 @@ export const LODASH_SET_CERT: DeathCertificate = {
 export function withCert(base: DeathCertificate, patch: Partial<DeathCertificate>): DeathCertificate {
   return { ...base, ...patch };
 }
+
+/**
+ * ip as the engine builds it when the OSV query fails: the vital sign is unavailable, the id list is
+ * empty, the `openVulnerabilities` fact is absent and the unpatched-cve cause is not detected
+ * (src/engine/core/certificate.ts).
+ */
+export const OSV_UNAVAILABLE_CERT: DeathCertificate = DeathCertificateSchema.parse({
+  ...IP_CERT,
+  causes: IP_CERT.causes.filter((c) => c !== "unpatched-cve"),
+  openVulnerabilityIds: [],
+  vitalSigns: {
+    ...IP_CERT.vitalSigns,
+    openVulnerabilities: {
+      available: false,
+      source: "osv",
+      attemptedUrl: "https://api.osv.dev/v1/query",
+      attemptedAt: "2026-11-15T19:03:19Z",
+      reason: "timeout after 10 seconds",
+    },
+  },
+  facts: IP_CERT.facts.filter((f) => f.key !== "openVulnerabilities"),
+});

@@ -94,6 +94,20 @@ function statusRule(cert: DeathCertificate): RuleResult {
   };
 }
 
+function openVulnerabilityRule(cert: DeathCertificate): RuleResult {
+  // When OSV could not be queried, the certificate marks the vital sign unavailable and leaves
+  // `openVulnerabilityIds` empty (engine/core/certificate.ts). An empty list then means "unknown",
+  // not "none", so the rule is unverified (R2.6) rather than failed with an observed 0.
+  if (!cert.vitalSigns.openVulnerabilities.available) {
+    return unverified("open-vulnerability", "openVulnerabilities");
+  }
+  return {
+    rule: "open-vulnerability",
+    holds: cert.openVulnerabilityIds.length >= 1,
+    observed: cert.openVulnerabilityIds.length,
+  };
+}
+
 /** The seven rules in fixed order. Never throws; an unreadable field gives an `unverified` failure. */
 export function evaluateRules(input: EvaluateInput): RuleResult[] {
   const { pkg, lineCount, cert } = input;
@@ -108,11 +122,7 @@ export function evaluateRules(input: EvaluateInput): RuleResult[] {
       holds: cert.causes.length >= 1,
       observed: cert.causes.length,
     },
-    {
-      rule: "open-vulnerability",
-      holds: cert.openVulnerabilityIds.length >= 1,
-      observed: cert.openVulnerabilityIds.length,
-    },
+    openVulnerabilityRule(cert),
   ];
 }
 

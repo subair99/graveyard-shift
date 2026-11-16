@@ -84,7 +84,7 @@ Conventions for every task:
     - _Requirements: 1.5, 6.12, 13.8, 17.2_
 
 - [x] 3. Gravedigger
-  - [x] 3.1 Implement the pure core: rules, line counter, record, serialization
+  - [-] 3.1 Implement the pure core: rules, line counter, record, serialization
     - `src/pipeline/gravedigger/core/rules.ts` (seven rules in fixed order, `evaluateRules`, `unverified` with `missingField`, `retired-with-successor` fails rule (e) and records the Successor), `countLines` (text file = no NUL and strict UTF-8; never `dist.unpackedSize`), `eligibility.ts` (`EligibilityRecordSchema`, `RuleResultSchema`, key-order table, canonical JSON, `deserialize` that names the invalid field and returns no partial record), `record.ts` (`buildEligibilityRecord`, `integrity-mismatch` record with both strings, facts with Source_URL and Fetch_Date, no absolute path).
     - Unit tests per module in `tests/pipeline/unit/` including the three demo packages as examples (lodash.set, ip, inflight with its successor).
     - _Requirements: 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 2.10_
@@ -481,7 +481,7 @@ Conventions for every task:
     - _Requirements: 23.27, 13.4, 13.9, 15.10, 18.1_
 
 - [ ] 13. Step (e): nightly re-verification
-  - [x] 13.1 Implement the nightly classification
+  - [-] 13.1 Implement the nightly classification
     - `src/pipeline/undertaker/core/nightlyClassify.ts`: `NightlyResult`, `NightlyInput`, `classifyEntry` returning `{ results, fails }` in the fixed order (`tool-versions-changed`, `unexpected-attestation`, `attestation-failed`, `replay-mismatch`, `not-checked`, `new-advisory`, then `verified` or `not-resurrected`), `fails` only for `replay-mismatch`, `attestation-failed`, `unexpected-attestation`; a not-resurrected entry never gets `attestation-failed`, `replay-mismatch`, `tool-versions-changed` or `not-checked`; a stub flag. A pure `nightlyOrder` helper (ascending code point).
     - Example tests in `tests/pipeline/unit/nightlyClassify.test.ts`.
     - _Requirements: 16.3, 16.4, 16.5, 16.7, 16.8, 16.11, 16.12, 16.13, 16.16, 16.18, 16.22, 16.23_

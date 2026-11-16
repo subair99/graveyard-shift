@@ -1,4 +1,4 @@
-// Requirements: 11.14, 11.16, 11.17, 13.2, 13.3, 13.4, 13.5, 13.9, 14.1
+// Requirements: 2.6, 11.14, 11.16, 11.17, 13.2, 13.3, 13.4, 13.5, 13.9, 14.1, 14.14, 15.11
 import { describe, expect, it } from "vitest";
 import { fallbackReport } from "../../../src/proof/core/report";
 import type { ReportInput } from "../../../src/proof/core/report";
@@ -11,7 +11,11 @@ import { PREDICATE_TYPE } from "../../../src/pipeline/common/constants";
 import { collectStep, prepareStep } from "../../../scripts/ci/lib/attestSteps";
 import type { AttestDeps } from "../../../scripts/ci/lib/attestSteps";
 import { runChecksSummary } from "../../../scripts/ci/lib/checksSteps";
-import { buildEntryStep, gateStep } from "../../../scripts/ci/lib/publishSteps";
+import { buildEntryStep, failedRulesOf, gateStep } from "../../../scripts/ci/lib/publishSteps";
+import { buildEligibilityRecord } from "../../../src/pipeline/gravedigger/core/record";
+import type { BuildRecordInput } from "../../../src/pipeline/gravedigger/core/record";
+import { renderPrBody } from "../../../src/pipeline/undertaker/core/prText";
+import { INFLIGHT_CERT, OSV_UNAVAILABLE_CERT } from "../helpers/gravediggerCerts";
 import type { PublishStepDeps } from "../../../scripts/ci/lib/publishSteps";
 import { sha256Hex } from "../../../scripts/ci/lib/stepSupport";
 import type { FileOps, StepIo } from "../../../scripts/ci/lib/stepSupport";
@@ -289,5 +293,69 @@ describe("publish build-entry", () => {
     const d = publishDeps({ GS_PACKAGE: "ip", GS_KIND: "resurrection", GS_VERDICT: "alive", GS_MEDIUM_MODE: "local" }, files);
     expect(await buildEntryStep(d)).toBe(1);
     expect([...files.store.keys()].some((k) => k.startsWith("graveyard/"))).toBe(false);
+  });
+});
+
+// ---- failed rules of a not-resurrected entry (Finding 2) ----
+
+describe("failedRulesOf", () => {
+  const AT = "2026-11-16T10:00:00Z";
+  const recordInput = (over: Partial<BuildRecordInput>): BuildRecordInput => ({
+    name: "ip",
+    version: "2.0.1",
+    cert: OSV_UNAVAILABLE_CERT,
+    expectedIntegrity: "sha512-AAAA",
+    computedIntegrity: "sha512-AAAA",
+    pkg: { license: "MIT" },
+    lineCount: 10,
+    packumentUrl: "https://registry.npmjs.org/ip",
+    tarballUrl: "https://registry.npmjs.org/ip/-/ip-2.0.1.tgz",
+    fetchedAt: AT,
+    ...over,
+  });
+  const prBody = (rules: ReturnType<typeof failedRulesOf>) =>
+    renderPrBody({
+      kind: "not-resurrected",
+      package: "ip",
+      version: "2.0.1",
+      failedRules: rules,
+      runUrl: "https://github.com/x/y/actions/runs/1",
+      stub: false,
+      identity: { pathValues: [], userName: undefined },
+      platform: "posix",
+    });
+
+  it("gives every provenance entry of the rule fact, from the certificate for status", () => {
+    const record = buildEligibilityRecord(
+      recordInput({ name: "inflight", version: "1.0.6", cert: INFLIGHT_CERT, pkg: { license: "ISC", dependencies: { once: "1" } } }),
+    );
+    const rules = failedRulesOf(record);
+    expect(rules.map((r) => r.rule)).toEqual(["dependencies", "status", "open-vulnerability"]);
+    const status = rules.find((r) => r.rule === "status")!;
+    expect(status.sources).toEqual(record.facts.find((f) => f.key === "rule.status")!.provenance);
+    expect(status.sources).toHaveLength(7);
+    expect(status.sources.some((s) => s.fetchedAt === AT)).toBe(false);
+    expect(rules.find((r) => r.rule === "dependencies")!.sources).toEqual([
+      { sourceUrl: "https://registry.npmjs.org/ip/-/ip-2.0.1.tgz", fetchedAt: AT },
+    ]);
+  });
+
+  it("OSV unavailable: the rule is shown unverified with no source recorded, never the packument", () => {
+    const rules = failedRulesOf(buildEligibilityRecord(recordInput({})));
+    expect(rules).toEqual([
+      { rule: "open-vulnerability", observed: null, missingField: "openVulnerabilities", sources: [] },
+    ]);
+    const body = prBody(rules);
+    expect(body).toContain(
+      "- open-vulnerability: unverified, field openVulnerabilities could not be read (source: none recorded)",
+    );
+    expect(body).not.toContain("open-vulnerability: observed 0");
+  });
+
+  it("integrity mismatch: tarball rules have no source recorded instead of a stand-in", () => {
+    const rules = failedRulesOf(buildEligibilityRecord(recordInput({ computedIntegrity: "sha512-BBBB" })));
+    const license = rules.find((r) => r.rule === "license")!;
+    expect(license).toEqual({ rule: "license", observed: null, missingField: "package.json", sources: [] });
+    expect(prBody(rules)).toContain("- license: unverified, field package.json could not be read (source: none recorded)");
   });
 });

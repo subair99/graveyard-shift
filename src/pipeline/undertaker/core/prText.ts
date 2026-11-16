@@ -34,11 +34,18 @@ export type PrReport = Pick<
   "seed" | "toolVersions" | "casesPerFunction" | "deltas" | "divergences" | "harnessErrors"
 >;
 
+export interface PrSource {
+  sourceUrl: string;
+  fetchedAt: string;
+}
+
 export interface PrFailedRule {
   rule: string;
   observed: string | number | boolean | null;
-  sourceUrl: string;
-  fetchedAt: string;
+  /** Set when the rule could not be judged because a field could not be read (R2.6). */
+  missingField?: string;
+  /** Every provenance entry of the rule's fact, in record order; empty when the record has no fact. */
+  sources: readonly PrSource[];
 }
 
 interface PrCommon {
@@ -168,9 +175,15 @@ function notResurrectedLines(i: NotResurrectedPrInput): string[] {
     lines.push(`- none listed${i.reason === undefined ? "" : ` (reason: ${i.reason})`}`);
   } else {
     for (const f of i.failedRules) {
-      lines.push(
-        `- ${f.rule}: observed ${plain(f.observed)} (source: ${f.sourceUrl}, fetched ${f.fetchedAt})`,
-      );
+      const what =
+        f.missingField === undefined
+          ? `observed ${plain(f.observed)}`
+          : `unverified, field ${f.missingField} could not be read`;
+      const sources =
+        f.sources.length === 0
+          ? "source: none recorded"
+          : f.sources.map((s) => `source: ${s.sourceUrl}, fetched ${s.fetchedAt}`).join("; ");
+      lines.push(`- ${f.rule}: ${what} (${sources})`);
     }
   }
   lines.push("", `Workflow run: ${i.runUrl}`, "", NOT_RESURRECTED_SENTENCE, "");

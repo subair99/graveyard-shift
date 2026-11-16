@@ -1,4 +1,4 @@
-// Requirements: 16.3, 16.4, 16.5, 16.7, 16.8, 16.11, 16.12, 16.13, 16.16, 16.18, 16.22, 16.23
+// Requirements: 16.3, 16.4, 16.5, 16.7, 16.8, 16.9, 16.11, 16.12, 16.13, 16.16, 16.18, 16.22, 16.23
 import { describe, expect, it } from "vitest";
 import {
   classifyEntry,
@@ -73,6 +73,27 @@ describe("classifyEntry, resurrection", () => {
   it("alive: failed, short, or not-applicable attestations give attestation-failed", () => {
     for (const attestations of [["ok", "ok", "failed"], ["ok", "ok"], [], "not-applicable"] as const) {
       expect(classifyEntry(input({ attestations })).results).toEqual(["attestation-failed"]);
+    }
+  });
+
+  it("alive: exactly three results are required; four, two or zero give attestation-failed (R16.9)", () => {
+    // Counterexample of Property 28 in CI (seed 1719806211, path "206:0:0:0:8:8:8").
+    const fourResults = classifyEntry({
+      kind: "resurrection",
+      stub: false,
+      verdict: "alive",
+      committedTools: null,
+      runningTools: { node: "26.0.0", fastCheck: "4.1.0", reportSchema: 1 },
+      replay: { status: "identical" },
+      bundlesPresent: false,
+      attestations: ["ok", "ok", "ok", "ok"],
+      newAdvisoryIds: [],
+    });
+    expect(fourResults.results).toEqual(["tool-versions-changed", "attestation-failed"]);
+    expect(fourResults.fails).toBe(true);
+
+    for (const attestations of [["ok", "ok"], []] as const) {
+      expect(classifyEntry(input({ attestations }))).toEqual({ results: ["attestation-failed"], fails: true });
     }
   });
 

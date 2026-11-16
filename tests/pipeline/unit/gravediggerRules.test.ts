@@ -5,6 +5,7 @@ import {
   INFLIGHT_CERT,
   IP_CERT,
   LODASH_SET_CERT,
+  OSV_UNAVAILABLE_CERT,
   withCert,
 } from "../helpers/gravediggerCerts";
 
@@ -87,6 +88,17 @@ describe("evaluateRules", () => {
     const cert = withCert(IP_CERT, { status: undefined, statusError: "npm unavailable" });
     const rule = evaluateRules({ pkg: goodPkg, lineCount: 1, cert })[4]!;
     expect(rule).toMatchObject({ holds: false, reason: "unverified", missingField: "status" });
+  });
+
+  it("marks open-vulnerability unverified when OSV was unavailable, never failed with observed 0", () => {
+    const rule = evaluateRules({ pkg: goodPkg, lineCount: 1, cert: OSV_UNAVAILABLE_CERT })[6]!;
+    expect(rule).toEqual({
+      rule: "open-vulnerability",
+      holds: false,
+      observed: null,
+      reason: "unverified",
+      missingField: "openVulnerabilities",
+    });
   });
 
   it("fails causes and open-vulnerability when the lists are empty", () => {
