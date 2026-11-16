@@ -19,8 +19,8 @@
  */
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { gunzip } from "node:zlib";
-import { Parser } from "tar";
+import { gunzip, gzipSync } from "node:zlib";
+import { Header, Parser } from "tar";
 import type { ReadEntry } from "tar";
 import type { Result } from "../../types";
 
@@ -326,4 +326,43 @@ export async function extractTarball(
     out.push({ path: file.rel, bytes: new Uint8Array(data) });
   }
   return { ok: true, value: out };
+}
+
+export interface PackEntry {
+  /** POSIX path relative to the package root (no leading `package/`). */
+  path: string;
+  bytes: Uint8Array;
+}
+
+/**
+ * Builds a reproducible `.tgz` (added for the resurrection pipeline, task 8.15): entries under `package/`,
+ * sorted by code point, mode 0644, mtime 0, uid and gid 0, no user or group name, fixed gzip header.
+ * The same entries always give the same bytes. A path that needs a pax header (longer than the ustar
+ * name and prefix fields) is an error, so no extended header is ever written.
+ */
+export function packTarball(entries: readonly PackEntry[]): Result<Uint8Array, { kind: "path-too-long"; entry: string }> {
+  const sorted = [...entries].sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
+  const blocks: Buffer[] = [];
+  for (const entry of sorted) {
+    const header = new Header({
+      path: `package/${entry.path}`,
+      mode: 0o644,
+      uid: 0,
+      gid: 0,
+      size: entry.bytes.length,
+      mtime: new Date(0),
+      type: "File",
+      uname: "",
+      gname: "",
+    });
+    const block = Buffer.alloc(512);
+    header.encode(block, 0);
+    if (header.needPax) return { ok: false, error: { kind: "path-too-long", entry: redactEntryName(entry.path) } };
+    blocks.push(block, Buffer.from(entry.bytes), Buffer.alloc((512 - (entry.bytes.length % 512)) % 512));
+  }
+  blocks.push(Buffer.alloc(1024));
+  const gz = gzipSync(Buffer.concat(blocks), { level: 9 });
+  gz[4] = gz[5] = gz[6] = gz[7] = 0; // gzip mtime
+  gz[9] = 3; // OS: Unix, whatever platform zlib was built for
+  return { ok: true, value: new Uint8Array(gz) };
 }

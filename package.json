@@ -10,10 +10,11 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "vitest --run",
-    "lint": "eslint src tests",
+    "lint": "eslint src tests scripts",
     "fixtures:record": "tsx --env-file=.env scripts/recordFixtures.ts",
     "fixtures:record-tarball": "tsx scripts/recordTarball.ts",
     "measure:ip": "tsx scripts/measureIp.ts",
+    "resurrect": "tsx scripts/resurrect.ts",
     "proof:run": "tsx src/proof/cli.ts",
     "trace": "tsx scripts/trace.ts"
   },
@@ -39,6 +40,7 @@
     "fast-check": "^4.10.2",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
-    "vitest": "^5.1.0"
+    "vitest": "^5.1.0",
+    "yaml": "^2.9.1"
   }
 }

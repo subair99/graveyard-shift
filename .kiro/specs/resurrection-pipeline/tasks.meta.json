@@ -1,5 +1,10 @@
 {
-  "pbtResults": {},
+  "pbtResults": {
+    "3.2 Write property test for the Eligibility_Record round trip": {
+      "status": "passed",
+      "lastRunTimestamp": 1794816611389
+    }
+  },
   "executionHistory": {
     "1.1 Add the `pipeline` vitest project and its budget entry": [
       {
@@ -85,6 +90,506 @@
         "executionId": "267c6c07-7291-4064-857a-4fe8660af1cc",
         "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
         "timestamp": 1794814846167
+      }
+    ],
+    "2.1 Create `src/pipeline/common/` and extend the determinism lint scope": [
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794814983452
+      },
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794815353227
+      }
+    ],
+    "2.3 Write the source-scan test": [
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794815359362
+      },
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794816516233
+      }
+    ],
+    "3.1 Implement the pure core: rules, line counter, record, serialization": [
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794815359605
+      },
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794816516632
+      }
+    ],
+    "4.1 Implement the pure validator and limits": [
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794815359856
+      },
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794816516825
+      }
+    ],
+    "5.1 Implement the pure gate": [
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794815360041
+      },
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794816517081
+      }
+    ],
+    "6.1 Implement the Deltas_File and Harness_File schemas and parsers": [
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794815360222
+      },
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794816517564
+      }
+    ],
+    "2. Step (b): common module, lint scope and source scans": [
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794816516357
+      }
+    ],
+    "3.2 Write property test for the Eligibility_Record round trip": [
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794816525040
+      },
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794816802476
+      }
+    ],
+    "3.5 Implement the Gravedigger shell": [
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794816525244
+      },
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794816802796
+      }
+    ],
+    "4.2 Write property test for allowlisted paths": [
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794816525404
+      },
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794816803206
+      }
+    ],
+    "4.4 Implement the entry readers and the git plumbing integration test": [
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794816525575
+      },
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794816803404
+      }
+    ],
+    "6.4 Implement the compiler, the preset menu and the lodash.set preset": [
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794816525860
+      },
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794816803724
+      }
+    ],
+    "3. Gravedigger": [
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794816802904
+      }
+    ],
+    "4. Intake_Validator": [
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794816803508
+      }
+    ],
+    "5.2 Write property test for the version rule": [
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794816808028
+      },
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794816905545
+      }
+    ],
+    "5.3 Write property test for the name rule": [
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794816808716
+      },
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794816906108
+      }
+    ],
+    "6.2 Write property test for the Deltas_File round trip": [
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794816809398
+      },
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794816904257
+      }
+    ],
+    "6.3 Write property test for the Harness_File round trip": [
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794816809934
+      },
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794816904924
+      }
+    ],
+    "6.5 Write property test for deterministic compilation": [
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794816810561
+      },
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794816906910
+      }
+    ],
+    "5. Necromancy gate": [
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794816906223
+      }
+    ],
+    "6.8 Create the Stub_Fixture and its tests": [
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794816907332
+      },
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794817046235
+      }
+    ],
+    "6.9 Write the R5.7 integration test (real sandbox)": [
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794817046756
+      },
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794817162212
+      }
+    ],
+    "6. Deltas_File, Harness_File, compiler, lodash.set preset and Stub_Fixture": [
+      {
+        "executionId": "c439c47f-e1a5-49eb-84ba-3885c88d480f",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794817162341
+      }
+    ],
+    "7.1 Implement the Ledger": [
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794818186056
+      },
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794818554929
+      }
+    ],
+    "7.4 Implement argument parsing, usage and the stub copy plan": [
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794818186255
+      },
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794818555225
+      }
+    ],
+    "8.1 Implement the entry layout module": [
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794818186429
+      },
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794818555404
+      }
+    ],
+    "7.6 Implement the Medium launcher (fixed prompt and process start)": [
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794818186811
+      },
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794818555847
+      }
+    ],
+    "8.8 Implement dispatch input validation and exit-code mapping": [
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794818187358
+      },
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794818556517
+      }
+    ],
+    "7.2 Write property test for the Ledger round trip": [
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794818562967
+      },
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794818761293
+      }
+    ],
+    "8.3 Implement the Resurrection_Predicate": [
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794818563238
+      },
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794818762143
+      }
+    ],
+    "8.5 Implement the attest decision and the publish gate": [
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794818563465
+      },
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794818761608
+      }
+    ],
+    "7.8 Implement the Push_Script": [
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794818563808
+      },
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794818761804
+      }
+    ],
+    "8.4 Write property test for the predicate round trip and mode check": [
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794818771089
+      },
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794820249122
+      }
+    ],
+    "8.6 Write property test for the attest decision": [
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794818771371
+      },
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794820249541
+      }
+    ],
+    "8.7 Write property test for the publish gate": [
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794818771537
+      },
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794820249969
+      }
+    ],
+    "8.11 Implement the verification commands and the pull request text": [
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794818771820
+      },
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794820252797
+      }
+    ],
+    "7.10 Implement the Local_Runner orchestration and wire the npm script": [
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794818772102
+      },
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794820251228
+      }
+    ],
+    "7. Local_Runner, Ledger, Medium launcher and Push_Script": [
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794820251565
+      }
+    ],
+    "8.14 Implement the `gh` wrapper and the publish shell": [
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794820259145
+      },
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794820626212
+      }
+    ],
+    "8.15 Write the CI step entries for `intake`": [
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794820259354
+      },
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794820626456
+      }
+    ],
+    "8.16 Write the CI step entry for `prove`": [
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794820259618
+      },
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794820626735
+      }
+    ],
+    "8.17 Write the CI step entries for `checks`, `attest` and `publish`": [
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794820630765
+      },
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794821257126
+      }
+    ],
+    "8.18 Write `resurrect.yml`, add `workflow_dispatch` to `ci.yml`, and the workflow lint": [
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794821261513
+      },
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794821472925
+      }
+    ],
+    "8. Undertaker: entry layout, gates, CI step code and `resurrect.yml`": [
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794821473176
+      }
+    ],
+    "9. Checkpoint: end of step (b), full suite run by the user": [
+      {
+        "executionId": "39e7b170-2eeb-4a46-8985-06055cb58ea9",
+        "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
+        "timestamp": 1794821479611
       }
     ]
   }

@@ -1,0 +1,334 @@
+# Resurrection pipeline (task 8.18 of the resurrection-pipeline spec; design D2 to D4 and "Workflow YAML").
+#
+# - Jobs exchange data only through artifacts and validated job outputs.
+# - Every dispatch input reaches a step through an `env:` variable, never inside a `run:` string.
+# - Only `intake` runs the Coroner and Gravedigger; only `prove` runs package code (inside the sandbox);
+#   only `attest` holds id-token and attestations write; only `publish` holds contents and pull-requests write.
+# - The predicate type is printed by `attest.ts prepare`; this file never contains it.
+# - Node is pinned to 26.13.1 (PINNED_NODE_VERSION); a `node --version` step fails the job on a difference.
+
+name: resurrect
+
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: "npm package name (unscoped)"
+        required: true
+        type: string
+      version:
+        description: "exact version"
+        required: true
+        type: string
+      branch:
+        description: "resurrect/<package>; empty = eligibility-only"
+        required: false
+        type: string
+        default: ""
+      medium_mode:
+        description: "declared label, not verified by CI"
+        required: false
+        type: choice
+        options: [local, stub]
+        default: local
+
+permissions: {}
+
+concurrency:
+  group: resurrect-${{ inputs.package }}
+  cancel-in-progress: false
+
+jobs:
+  intake:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    env:
+      GS_REF: ${{ github.ref }}
+      GS_PACKAGE: ${{ inputs.package }}
+      GS_VERSION: ${{ inputs.version }}
+      GS_BRANCH: ${{ inputs.branch }}
+      GS_MEDIUM_MODE: ${{ inputs.medium_mode }}
+    outputs:
+      package: ${{ steps.validate.outputs.package }}
+      version: ${{ steps.validate.outputs.version }}
+      medium_mode: ${{ steps.validate.outputs.medium_mode }}
+      has_branch: ${{ steps.validate.outputs.has_branch }}
+      eligible: ${{ steps.coroner.outputs.eligible }}
+      kind: ${{ steps.plan.outputs.kind }}
+      branch_commit: ${{ steps.branch.outputs.branch_commit }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26.13.1
+      - name: Check Node version
+        run: '[ "$(node --version)" = "v26.13.1" ] || { echo "unexpected Node version: $(node --version)"; exit 1; }'
+      - run: npm ci
+      - id: validate
+        name: Validate inputs
+        run: npx tsx scripts/ci/intake.ts validate-inputs
+      - id: coroner
+        name: Coroner and Gravedigger
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: npx tsx scripts/ci/intake.ts coroner
+      - id: plan
+        name: Plan
+        run: npx tsx scripts/ci/intake.ts plan
+      - id: branch
+        name: Resolve the Resurrection_Branch commit
+        if: steps.plan.outputs.kind == 'resurrection'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: npx tsx scripts/ci/intake.ts resolve-branch
+      - name: Fetch and validate the branch
+        if: steps.plan.outputs.kind == 'resurrection'
+        env:
+          GS_BRANCH_COMMIT: ${{ steps.branch.outputs.branch_commit }}
+        run: npx tsx scripts/ci/intake.ts fetch-and-validate
+      - name: Pack the resurrection
+        if: steps.plan.outputs.kind == 'resurrection'
+        run: npx tsx scripts/ci/intake.ts pack
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: intake-data
+          path: |
+            certificate.json
+            eligibility.json
+            original.tgz
+            resurrection.tgz
+            deltas.json
+            harness.json
+          if-no-files-found: error
+          retention-days: 7
+
+  checks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    env:
+      PROOF_BUDGET_MODE: warn
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26.13.1
+      - name: Check Node version
+        run: '[ "$(node --version)" = "v26.13.1" ] || { echo "unexpected Node version: $(node --version)"; exit 1; }'
+      - run: npm ci
+      - id: typecheck
+        run: npm run typecheck
+        continue-on-error: true
+      - id: lint
+        run: npm run lint
+        continue-on-error: true
+      - id: test
+        run: npm test
+        continue-on-error: true
+      - name: Summarize and gate
+        env:
+          GS_CHECK_TYPECHECK: ${{ steps.typecheck.outcome }}
+          GS_CHECK_LINT: ${{ steps.lint.outcome }}
+          GS_CHECK_TEST: ${{ steps.test.outcome }}
+          GS_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: npx tsx scripts/ci/checks-summary.ts
+      - if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: checks-results
+          path: checks-results.json
+          if-no-files-found: warn
+          retention-days: 7
+
+  prove:
+    needs: intake
+    if: needs.intake.outputs.kind == 'resurrection'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    outputs:
+      verdict: ${{ steps.prove.outputs.verdict }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26.13.1
+      - name: Check Node version
+        run: '[ "$(node --version)" = "v26.13.1" ] || { echo "unexpected Node version: $(node --version)"; exit 1; }'
+      - run: npm ci
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: intake-data
+          path: .
+      - id: prove
+        name: Proof of Life
+        run: npx tsx scripts/ci/prove.ts
+      - if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: prove-data
+          path: proof-report.json
+          if-no-files-found: error
+          retention-days: 7
+
+  attest:
+    needs: [intake, checks, prove]
+    if: needs.prove.outputs.verdict == 'alive'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      id-token: write
+      attestations: write
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26.13.1
+      - name: Check Node version
+        run: '[ "$(node --version)" = "v26.13.1" ] || { echo "unexpected Node version: $(node --version)"; exit 1; }'
+      - run: npm ci --ignore-scripts
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: intake-data
+          path: .
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: prove-data
+          path: .
+      - id: prepare
+        name: Recompute hashes and write the predicate
+        env:
+          GS_JOB_CHECKS: ${{ needs.checks.result }}
+          GS_JOB_PROVE: ${{ needs.prove.result }}
+          GS_MEDIUM_MODE: ${{ needs.intake.outputs.medium_mode }}
+          GS_BRANCH_COMMIT: ${{ needs.intake.outputs.branch_commit }}
+        run: npx tsx scripts/ci/attest.ts prepare
+      - id: attest_tarball
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: ${{ steps.prepare.outputs.subject_tarball }}
+          predicate-type: ${{ steps.prepare.outputs.predicate_type }}
+          predicate-path: attest/predicate.json
+      - id: attest_report
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: ${{ steps.prepare.outputs.subject_report }}
+          predicate-type: ${{ steps.prepare.outputs.predicate_type }}
+          predicate-path: attest/predicate.json
+      - id: attest_certificate
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: ${{ steps.prepare.outputs.subject_certificate }}
+          predicate-type: ${{ steps.prepare.outputs.predicate_type }}
+          predicate-path: attest/predicate.json
+      - name: Collect the bundles
+        env:
+          GS_BUNDLE_TARBALL: ${{ steps.attest_tarball.outputs.bundle-path }}
+          GS_BUNDLE_REPORT: ${{ steps.attest_report.outputs.bundle-path }}
+          GS_BUNDLE_CERTIFICATE: ${{ steps.attest_certificate.outputs.bundle-path }}
+        run: npx tsx scripts/ci/attest.ts collect
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: attest-predicate
+          path: attest/predicate.json
+          if-no-files-found: error
+          retention-days: 7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: attest-bundles
+          path: attest-bundles/
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    needs: [intake, checks, prove, attest]
+    if: ${{ !cancelled() && needs.intake.result == 'success' && needs.checks.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26.13.1
+      - name: Check Node version
+        run: '[ "$(node --version)" = "v26.13.1" ] || { echo "unexpected Node version: $(node --version)"; exit 1; }'
+      - run: npm ci --ignore-scripts
+      - name: Download intake-data
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: intake-data
+          path: work
+          merge-multiple: true
+      - name: Download prove-data
+        if: needs.prove.result == 'success'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: prove-data
+          path: work
+          merge-multiple: true
+      - name: Download checks-results
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: checks-results
+          path: work
+          merge-multiple: true
+      - name: Download attest-predicate
+        if: needs.attest.result == 'success'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: attest-predicate
+          path: attest
+      - name: Download attest-bundles
+        if: needs.attest.result == 'success'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: attest-bundles
+          path: attest-bundles
+      - id: gate
+        name: Publish gate
+        env:
+          GS_JOB_INTAKE: ${{ needs.intake.result }}
+          GS_JOB_CHECKS: ${{ needs.checks.result }}
+          GS_JOB_PROVE: ${{ needs.prove.result }}
+          GS_JOB_ATTEST: ${{ needs.attest.result }}
+          GS_KIND: ${{ needs.intake.outputs.kind }}
+          GS_VERDICT: ${{ needs.prove.outputs.verdict }}
+        run: npx tsx scripts/ci/publish.ts gate
+      - name: Build the entry
+        if: steps.gate.outputs.publish == 'true'
+        env:
+          GS_PACKAGE: ${{ needs.intake.outputs.package }}
+          GS_KIND: ${{ needs.intake.outputs.kind }}
+          GS_VERDICT: ${{ needs.prove.outputs.verdict }}
+          GS_MEDIUM_MODE: ${{ needs.intake.outputs.medium_mode }}
+        run: npx tsx scripts/ci/publish.ts build-entry
+      - name: Push and open the pull request
+        if: steps.gate.outputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GS_PACKAGE: ${{ needs.intake.outputs.package }}
+          GS_KIND: ${{ needs.intake.outputs.kind }}
+          GS_VERDICT: ${{ needs.prove.outputs.verdict }}
+          GS_MEDIUM_MODE: ${{ needs.intake.outputs.medium_mode }}
+          GS_BRANCH_COMMIT: ${{ needs.intake.outputs.branch_commit }}
+          GS_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: npx tsx scripts/ci/publish.ts push-pr

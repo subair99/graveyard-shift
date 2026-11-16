@@ -68,8 +68,8 @@ Conventions for every task:
     - If the result is ambiguous, stop and ask the user.
     - _Requirements: 3.5, 3.6, 3.7, 3.8, 5.12, 5.13, 19.3, 19.4, 20.7_
 
-- [ ] 2. Step (b): common module, lint scope and source scans
-  - [ ] 2.1 Create `src/pipeline/common/` and extend the determinism lint scope
+- [x] 2. Step (b): common module, lint scope and source scans
+  - [x] 2.1 Create `src/pipeline/common/` and extend the determinism lint scope
     - `constants.ts` (`PREDICATE_TYPE`, `REPO`, `SIGNER_WORKFLOW`, `PINNED_NODE_VERSION` = `26.13.1`, `GH_MIN_VERSION`, `CREDIT_CEILING`, `INTAKE_LIMITS`, `ALLOWED_MEDIUM_PATHS`), `packageNames.ts` (wraps `src/engine/parse/packageName.ts`, rejects scoped names with the stated reason), `branchNames.ts` (`resurrectBranchName`, `publishBranchName` returning a `Result`, D2), `canonical.ts` (key-order helper, `redactText` wrapping `findIdentity`/`redactIdentity` plus the absolute-path scan), `result.ts` (re-export of the engine `Result`), `shell/system.ts` (the single entry for the real clock, the secure random seed and `process.env`).
     - Add `src/pipeline/**/core/**/*.ts` to `deterministicFiles` in `eslint.config.mjs`.
     - Tests in `tests/pipeline/unit/`: `constants.test.ts` (values), `packageNames.test.ts`, `branchNames.test.ts` (pattern, D2 collision-free examples), `redact.test.ts` (identity, credential shapes `ghp_`, `github_pat_`, `Bearer `, `Authorization`, absolute paths), `determinismLint.test.ts` (a `Date.now` or `Math.random` in a pipeline `core/` file is reported).
@@ -79,17 +79,17 @@ Conventions for every task:
     - **Property 25: Publish branch name**
     - **Validates: Requirements 8.3, 14.7, 15.1**
 
-  - [ ] 2.3 Write the source-scan test
+  - [x] 2.3 Write the source-scan test
     - `tests/pipeline/unit/sourceScan.test.ts` over `src/pipeline/` and `scripts/`: no LLM client import (R1.5); no `shell: true`, no `exec(` with a string (R6.12); no `console.` outside the documented entries; the string `graveyard-shift.dev` appears in no file under `src/`, `scripts/`, `tests/`, `README.md`, `docs/` (except `docs/kiro-journal.md`) or `.github/workflows/` (except `spike-attest.yml`), and is not scanned in `.kiro/specs/` or `spikes/`; `PREDICATE_TYPE` is defined in exactly one module. The `ci.yml` check is added in task 8.19.
     - _Requirements: 1.5, 6.12, 13.8, 17.2_
 
-- [ ] 3. Gravedigger
-  - [ ] 3.1 Implement the pure core: rules, line counter, record, serialization
+- [x] 3. Gravedigger
+  - [x] 3.1 Implement the pure core: rules, line counter, record, serialization
     - `src/pipeline/gravedigger/core/rules.ts` (seven rules in fixed order, `evaluateRules`, `unverified` with `missingField`, `retired-with-successor` fails rule (e) and records the Successor), `countLines` (text file = no NUL and strict UTF-8; never `dist.unpackedSize`), `eligibility.ts` (`EligibilityRecordSchema`, `RuleResultSchema`, key-order table, canonical JSON, `deserialize` that names the invalid field and returns no partial record), `record.ts` (`buildEligibilityRecord`, `integrity-mismatch` record with both strings, facts with Source_URL and Fetch_Date, no absolute path).
     - Unit tests per module in `tests/pipeline/unit/` including the three demo packages as examples (lodash.set, ip, inflight with its successor).
     - _Requirements: 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 2.10_
 
-  - [ ] 3.2 Write property test for the Eligibility_Record round trip
+  - [x] 3.2 Write property test for the Eligibility_Record round trip
     - **Property 1: Eligibility record round trip**
     - **Validates: Requirements 2.9, 2.10**
     - File: `tests/pipeline/property/p01-eligibility-roundtrip.test.ts`.
@@ -102,7 +102,7 @@ Conventions for every task:
     - **Property 3: Line count comes from the bytes**
     - **Validates: Requirements 2.4**
 
-  - [ ] 3.5 Implement the Gravedigger shell
+  - [x] 3.5 Implement the Gravedigger shell
     - `src/pipeline/gravedigger/shell/gravedigger.ts`: `runGravedigger(cert, { fetch, clock })` fetches the packument and the tarball (registry host checked, redirects refused as in `recordTarball`), computes the sha512 SRI, compares with `dist.integrity`, reads `package.json` through the proof tarball extractor, reads the clock once for every Fetch_Date, returns `{ record, tarball | null }`.
     - Unit tests in `tests/pipeline/unit/gravedigger.test.ts` with a fake fetch and synthetic tarballs built by the existing helpers in `tests/proof/helpers/` (match, mismatch writes no tarball, inflight successor, absent field gives `unverified`).
     - _Requirements: 2.1, 2.2, 2.7, 2.8, 2.11_
@@ -111,13 +111,13 @@ Conventions for every task:
     - **Property 4: Gravedigger is deterministic and rejects a wrong digest**
     - **Validates: Requirements 2.2, 2.11**
 
-- [ ] 4. Intake_Validator
-  - [ ] 4.1 Implement the pure validator and limits
+- [x] 4. Intake_Validator
+  - [x] 4.1 Implement the pure validator and limits
     - `src/pipeline/intake/core/types.ts`, `limits.ts`, `validator.ts`: `validateIntake(entries)` with the check order and violation codes of the design (`bad-path`, `outside-allowlist`, `link`, `case-collision`, limits, `missing-required`, `bad-extension`, `bad-encoding`), all violations listed sorted by path then code, values at the limit accepted and one above rejected.
     - Example tests in `tests/pipeline/unit/intakeValidator.test.ts` (each code, limits at and above, `LICENSE`, strict UTF-8).
     - _Requirements: 9.5, 9.6, 9.7, 9.8, 9.9, 9.12_
 
-  - [ ] 4.2 Write property test for allowlisted paths
+  - [x] 4.2 Write property test for allowlisted paths
     - **Property 13: Intake accepts only allowlisted paths**
     - **Validates: Requirements 9.5, 9.6, 9.11, 8.1**
     - File: `tests/pipeline/property/p13-intake-paths.test.ts` (traversal, mixed case, backslashes, drive prefixes, NUL, `.git`/`.github`/`.kiro`, link types).
@@ -126,22 +126,22 @@ Conventions for every task:
     - **Property 14: Intake limits and content rules**
     - **Validates: Requirements 9.7, 9.8, 9.9**
 
-  - [ ] 4.4 Implement the entry readers and the git plumbing integration test
+  - [x] 4.4 Implement the entry readers and the git plumbing integration test
     - `src/pipeline/intake/shell/gitEntries.ts` (resolve the branch once, fetch, verify the tip equals the resolved SHA, merge base with `main`, `git diff --raw -z --no-renames`, `cat-file --batch-check` and `--batch`, mode mapping `100644/100755` file, `120000` symlink, `160000` submodule, other; never a checkout) and `fsEntries.ts` (`lstat` reading for the Local_Runner and the Push_Script).
     - Integration test `tests/pipeline/integration/gitEntries.integration.test.ts` against a throwaway local git repository in a temp dir with a symlink (skipped where the platform cannot create one, as `treeHash.test.ts` does), a submodule entry, a case collision, a moved branch tip ("branch changed during intake"), and a branch that carries all of `main` (a changed path outside the allowlist is a violation).
     - _Requirements: 9.3, 9.4, 9.5, 9.6, 9.12_
 
-- [ ] 5. Necromancy gate
-  - [ ] 5.1 Implement the pure gate
+- [x] 5. Necromancy gate
+  - [x] 5.1 Implement the pure gate
     - `src/pipeline/necromancy/core/gate.ts` and `authors.ts`: `checkNecromancy` with checks `license`, `license-file` (root `LICENSE`/`LICENCE`, any extension, case-insensitive, identical bytes), `author-credits` (author plus contributors, string or object form normalized), `version` (`semver.gt`, same major, no prerelease), `name` (`@graveyard-shift/<name>`), `forbidden-fields` (no added `dependencies`, no `preinstall`/`install`/`postinstall`/`prepare`, no `bin`, `type` not `module`). All checks run and all failures are listed.
     - Example tests in `tests/pipeline/unit/necromancy.test.ts`. If `semver` is not yet a direct dependency, add it and note it for `PREEXISTING.md` (task 14.3).
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.9_
 
-  - [ ] 5.2 Write property test for the version rule
+  - [x] 5.2 Write property test for the version rule
     - **Property 15: Necromancy version rule**
     - **Validates: Requirements 10.4, 10.9**
 
-  - [ ] 5.3 Write property test for the name rule
+  - [x] 5.3 Write property test for the name rule
     - **Property 16: Necromancy name rule**
     - **Validates: Requirements 10.5, 10.9**
 
@@ -149,28 +149,28 @@ Conventions for every task:
     - **Property 17: Necromancy license, credits and forbidden fields**
     - **Validates: Requirements 10.1, 10.2, 10.3, 10.6**
 
-- [ ] 6. Deltas_File, Harness_File, compiler, lodash.set preset and Stub_Fixture
-  - [ ] 6.1 Implement the Deltas_File and Harness_File schemas and parsers
+- [x] 6. Deltas_File, Harness_File, compiler, lodash.set preset and Stub_Fixture
+  - [x] 6.1 Implement the Deltas_File and Harness_File schemas and parsers
     - `src/pipeline/harness/core/deltas.ts` (`DeltaSchema` with kinds `prototype-unchanged` and `returns-expected`, `DeltaId`, `AdvisoryId`, bounded `JsonValue`, `*_KEY_ORDER`, `parseDeltasFile`, `canonicalDeltasJson`) and `harnessFile.ts` (`HarnessFileSchema`, `parseHarnessFile`, `canonicalHarnessJson`). Strict schemas; parse errors name the failing path.
     - Example tests in `tests/pipeline/unit/deltasFile.test.ts` and `harnessFile.test.ts`.
     - _Requirements: 4.1, 4.2, 4.8, 4.10, 5.1, 5.2, 5.10_
 
-  - [ ] 6.2 Write property test for the Deltas_File round trip
+  - [x] 6.2 Write property test for the Deltas_File round trip
     - **Property 6: Deltas_File round trip**
     - **Validates: Requirements 4.9, 4.10**
 
-  - [ ] 6.3 Write property test for the Harness_File round trip
+  - [x] 6.3 Write property test for the Harness_File round trip
     - **Property 8: Harness_File round trip**
     - **Validates: Requirements 5.9, 5.10**
 
-  - [ ] 6.4 Implement the compiler, the preset menu and the lodash.set preset
+  - [x] 6.4 Implement the compiler, the preset menu and the lodash.set preset
     - Read `src/proof` first (V14): how a sandbox-side property module receives per-delta data, whether `runCli` surfaces a `loadHarness` failure usably, whether `fallbackReport` can be built outside the orchestrator. Record the answer in the Journal. If the engine offers no data channel, generate one property-module file per delta from a template in the work directory (data, not Medium code).
     - `src/pipeline/harness/core/presets/index.ts` and `lodashSet.ts` (reuses `ordinaryArgs`, `ordinaryExplicitCases`, `dangerousArgs`, `deltaExplicitCases`, `pathHasDangerousSegment`, `POLLUTION_MODULE_PATH` from `src/proof/harnesses/lodash.set/config.ts`), and `compiler.ts`: `compileHarness` returns a `Result` and never throws; forbidden keys (`excluded`, `radius`, `caseCount`, `seed`, `perCallTimeoutMs`, `stubs`, `accept`, `args`, `setupModule`, `propertyModule`, `generator`, `predicate`, code strings) give an error naming the key, with "belongs to CI" for CI-owned keys; unknown preset names are errors; advisory must be on the certificate or its aliases; function must be in a selected preset; `returns-expected` cases need `source`; deltas ordered by `id`; no radius field in `CompiledHarness`.
     - The `returns-expected` lowering is built in task 12.2; until then the compiler validates that kind and returns the error code `returns-expected-not-implemented` (covered by a test, removed in 12.2).
     - Example tests in `tests/pipeline/unit/compiler.test.ts`.
     - _Requirements: 4.3, 4.5, 4.6, 4.7, 4.11, 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.11_
 
-  - [ ] 6.5 Write property test for deterministic compilation
+  - [x] 6.5 Write property test for deterministic compilation
     - **Property 10: Compilation is deterministic**
     - **Validates: Requirements 5.5**
 
@@ -182,23 +182,23 @@ Conventions for every task:
     - **Property 9: Forbidden harness content is rejected**
     - **Validates: Requirements 5.1, 5.2, 5.3, 5.4, 5.11**
 
-  - [ ] 6.8 Create the Stub_Fixture and its tests
+  - [x] 6.8 Create the Stub_Fixture and its tests
     - Create `tests/pipeline/fixtures/stub/lodash.set/` with exactly three entries: `resurrection/` (a separate copy of `tests/proof/fixtures/lodash.set-alive`; `package.json` name `@graveyard-shift/lodash.set`, version `4.3.3`; license text and author credits unchanged from lodash.set@4.3.2), `deltas.json` (one `prototype-unchanged` delta, function `default`, advisory `GHSA-p6mc-m468-83gw`) and `harness.json` (the lodash-set preset). Both files in canonical JSON. Do not edit anything under `tests/proof/fixtures/lodash.set-alive`.
     - Check that the line-ending rules of `.gitattributes` keep the fixture bytes stable.
     - Test `tests/pipeline/unit/stubFixture.test.ts`: the directory holds exactly the three entries; `resurrection/package.json` plus its license pass `checkNecromancy` against the recorded lodash.set@4.3.2 `package.json` and license; `validateIntake` accepts the directory mapped to the Medium_Output paths with no path change; `deltas.json` and `harness.json` parse and compile against the lodash.set certificate fixture.
     - _Requirements: 4.11, 23.18, 23.19, 23.20, 23.21_
 
-  - [ ] 6.9 Write the R5.7 integration test (real sandbox)
+  - [x] 6.9 Write the R5.7 integration test (real sandbox)
     - `tests/pipeline/integration/lodashHarness.integration.test.ts`: compile the Stub_Fixture files and run the Proof_Engine with the real Sandbox_Executor against `tests/proof/fixtures/lodash.set-alive` (verdict `alive`) and `tests/proof/fixtures/lodash.set-broken` (verdict `restless`). One example each.
     - _Requirements: 5.7_
 
-- [ ] 7. Local_Runner, Ledger, Medium launcher and Push_Script
-  - [ ] 7.1 Implement the Ledger
+- [x] 7. Local_Runner, Ledger, Medium launcher and Push_Script
+  - [x] 7.1 Implement the Ledger
     - `src/pipeline/local/core/ledger.ts`: `LedgerEntrySchema` (discriminated on `mode`: `local` with `creditBefore`, `creditAfter`, `exitCode`, `kiroCliVersion`, optional `cliUsage`; `stub` with `fixture` as a `RelativePath`), `LedgerSchema`, `LEDGER_KEY_ORDER`, canonical JSON, `buildLocalEntry` (copies reading strings verbatim, `not provided` when empty, never parses a number), `buildStubEntry`, `appendEntry` (earlier entries unchanged). `src/pipeline/local/shell/atomicWrite.ts` (temp file in the same directory, then rename).
     - Example tests in `tests/pipeline/unit/ledger.test.ts` (malformed file names the failing path, no absolute path, atomic write leaves the old file on failure).
     - _Requirements: 7.3, 7.4, 7.5, 7.7, 7.8, 7.9, 7.10, 23.4_
 
-  - [ ] 7.2 Write property test for the Ledger round trip
+  - [x] 7.2 Write property test for the Ledger round trip
     - **Property 11: Ledger round trip**
     - **Validates: Requirements 7.7**
 
@@ -206,7 +206,7 @@ Conventions for every task:
     - **Property 12: Ledger append keeps history and stores readings verbatim**
     - **Validates: Requirements 7.3, 7.4, 7.5, 7.8, 23.4**
 
-  - [ ] 7.4 Implement argument parsing, usage and the stub copy plan
+  - [x] 7.4 Implement argument parsing, usage and the stub copy plan
     - `src/pipeline/local/core/cliArgs.ts` (`parseResurrectArgs`: exactly one supported package, optional `--stub <dir>` relative, under `tests/pipeline/fixtures/` or `tests/proof/fixtures/`, no `..`, no absolute path; usage error maps to exit code 64), `usage.ts`, `stubPlan.ts` (the fixture directory must hold exactly `resurrection/`, `deltas.json`, `harness.json`; any other entry is a usage error before anything is copied; plain recursive copy plan with no rename and no filter).
     - Example tests in `tests/pipeline/unit/cliArgs.test.ts` and `stubPlan.test.ts` (Windows and POSIX path strings through injected path functions, R21.10).
     - _Requirements: 6.1, 6.2, 23.2, 23.3, 23.17_
@@ -215,7 +215,7 @@ Conventions for every task:
     - **Property 32: Command-line arguments**
     - **Validates: Requirements 6.1, 6.2, 23.3**
 
-  - [ ] 7.6 Implement the Medium launcher (fixed prompt and process start)
+  - [x] 7.6 Implement the Medium launcher (fixed prompt and process start)
     - `src/pipeline/medium/core/prompt.ts` (fixed text, built only from the package name), `kiroArgs.ts` (`["chat","--v3","--no-interactive","--agent","medium",<prompt>]`), `src/pipeline/medium/shell/kiroRunner.ts` (spawn without a shell, environment without `GITHUB_TOKEN`, no env value printed or logged; missing `kiro-cli` or a "usage limit" outcome names the cause and points to the account setup note of `spikes/kiro-agent/README.md`).
     - Example tests in `tests/pipeline/unit/kiroRunner.test.ts` with a fake spawn.
     - _Requirements: 6.6, 6.7, 6.12, 6.13_
@@ -224,7 +224,7 @@ Conventions for every task:
     - **Property 33: Medium process environment**
     - **Validates: Requirements 6.6, 6.7**
 
-  - [ ] 7.8 Implement the Push_Script
+  - [x] 7.8 Implement the Push_Script
     - `src/pipeline/local/core/pushPlan.ts` (`planPush`: commit paths are a subset of `resurrection/**`, `deltas.json`, `harness.json`; dispatch argv with `package`, `version`, `branch`, `medium_mode`), `shell/gitPlumbing.ts` and `shell/push.ts`: validate again, `git config user.email` is the only git command before the confirmation (printed to the terminal only, never to a file, the Ledger, a log or an artifact), `git fetch origin main`, `git ls-remote --heads origin resurrect/<pkg>` (existing branch: print its name and `git push origin --delete resurrect/<pkg>`, never run it, never force), commit built with a temporary index on `origin/main` (`read-tree`, `hash-object -w`, `update-index --cacheinfo`, `write-tree`, `commit-tree`), `git push origin <commit>:refs/heads/resurrect/<pkg>`, then `gh workflow run resurrect.yml --repo subair99/graveyard-shift --ref main -f package=... -f version=... -f branch=... -f medium_mode=...`; print the command and the workflow runs URL. The eligibility-only dispatch is the same command without `-f branch=` and with `medium_mode=local`. Add the thin entry `scripts/push-resurrection.ts`.
     - Example tests in `tests/pipeline/unit/push.test.ts` with fake git and gh (confirmation first, no email means no further git command, branch exists, argv elements, `ledger.json` never included, failure names the command).
     - _Requirements: 6.10, 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 8.8, 8.9, 8.11, 8.12, 23.6_
@@ -233,14 +233,14 @@ Conventions for every task:
     - **Property 31: Push plan carries only the three paths**
     - **Validates: Requirements 6.11, 8.2, 8.4, 8.7, 8.11, 23.6**
 
-  - [ ] 7.10 Implement the Local_Runner orchestration and wire the npm script
+  - [x] 7.10 Implement the Local_Runner orchestration and wire the npm script
     - `src/pipeline/local/shell/resurrect.ts` (`runResurrect(args, deps)`, steps 1 to 10 of the design: parse, read the ledger, refuse existing `resurrection/`, `deltas.json` or `harness.json` at the root, Coroner then Gravedigger, ineligible stop with the no-branch dispatch command, ip gate through `docs/measurements/ip-2.0.1.json` and `deriveIpDeltas`, write `.graveyard-work/certificate.json` (`GRAVEYARD_CERTIFICATE_PATH`), credit statement and readings (not for stub), one Medium start or the stub copy, atomic ledger write even when the Medium failed, validator on the three paths, one `push` call, reminder that the user commits `ledger.json`). Thin entry `scripts/resurrect.ts`; add `"resurrect": "tsx scripts/resurrect.ts"` to `package.json`.
     - Add to `.gitignore` (anchored): `/.graveyard-work/`, `/resurrection/`, `/deltas.json`, `/harness.json`.
     - Unit tests in `tests/pipeline/unit/resurrect.test.ts` with fakes: ineligible stop, ip gate, single Medium start, violation path writes the ledger and does not push, ledger-before-push order, stub run asks no reading and prints "A stub run uses no credit", stub ledger entry, reminder text, missing `kiro-cli`, malformed ledger stops first, Windows and WSL path injection.
     - _Requirements: 6.3, 6.4, 6.5, 6.6, 6.8, 6.9, 6.10, 6.11, 6.13, 6.14, 6.15, 7.1, 7.2, 7.6, 7.9, 7.11, 21.10, 23.1, 23.2, 23.4, 23.5, 23.17_
 
-- [ ] 8. Undertaker: entry layout, gates, CI step code and `resurrect.yml`
-  - [ ] 8.1 Implement the entry layout module
+- [x] 8. Undertaker: entry layout, gates, CI step code and `resurrect.yml`
+  - [x] 8.1 Implement the entry layout module
     - `src/pipeline/undertaker/core/layout.ts`: `ENTRY_FILES`, `bundleName`, `EntryKind`, `deriveEntryKind` (a file list with `proof-report.json` is `resurrection`; otherwise `eligibility.json` with `eligible: false` gives `not-resurrected`; anything else is `malformed-entry`), `planEntryFiles` (sorted; six base files, three bundles only for `alive`, `stub-run.json` only for a stub; two files for not-resurrected), the stub marker builder `{ schemaVersion: 1, mode: "stub", label: "stub run" }`.
     - Example tests in `tests/pipeline/unit/layout.test.ts`.
     - _Requirements: 14.2, 14.3, 14.4, 14.12, 14.13, 14.15, 23.11_
@@ -249,29 +249,29 @@ Conventions for every task:
     - **Property 24: Entry file plan and kind derivation**
     - **Validates: Requirements 14.2, 14.3, 14.4, 14.13, 14.15, 23.11**
 
-  - [ ] 8.3 Implement the Resurrection_Predicate
+  - [x] 8.3 Implement the Resurrection_Predicate
     - `src/pipeline/undertaker/core/predicate.ts`: `ResurrectionPredicateSchema` (strict; `verdict` literal `alive`; `medium.mode` exactly `local` or `stub`), `PREDICATE_KEY_ORDER`, canonical JSON, parse and print, `buildPredicate` using `PREDICATE_TYPE` from common.
     - Example tests in `tests/pipeline/unit/predicate.test.ts` (error names the field for a non-`alive` verdict and for an unknown mode).
     - _Requirements: 13.1, 13.6, 13.7, 13.11, 23.9, 23.10_
 
-  - [ ] 8.4 Write property test for the predicate round trip and mode check
+  - [x] 8.4 Write property test for the predicate round trip and mode check
     - **Property 21: Resurrection_Predicate round trip and mode check**
     - **Validates: Requirements 13.6, 13.7, 23.9, 23.10**
 
-  - [ ] 8.5 Implement the attest decision and the publish gate
+  - [x] 8.5 Implement the attest decision and the publish gate
     - `src/pipeline/undertaker/core/gates.ts`: `attestDecision` and `publishGate` exactly as in the design (`JobResult` = `success | failure | cancelled | skipped`).
     - Example tests in `tests/pipeline/unit/gates.test.ts`: the full finite table of job results, verdicts and kinds for both gates (the verdict gate is never cut, J10).
     - _Requirements: 1.4, 11.2, 11.16, 11.17, 13.1, 13.2, 13.3, 13.10, 14.1, 15.1_
 
-  - [ ] 8.6 Write property test for the attest decision
+  - [x] 8.6 Write property test for the attest decision
     - **Property 22: Attest decision**
     - **Validates: Requirements 1.4, 11.16, 11.17, 13.1, 13.2, 13.3**
 
-  - [ ] 8.7 Write property test for the publish gate
+  - [x] 8.7 Write property test for the publish gate
     - **Property 23: Publish gate**
     - **Validates: Requirements 11.2, 11.16, 11.17, 13.10, 14.1, 15.1**
 
-  - [ ] 8.8 Implement dispatch input validation and exit-code mapping
+  - [x] 8.8 Implement dispatch input validation and exit-code mapping
     - `src/pipeline/undertaker/core/dispatchInputs.ts` (`validateDispatchInputs`: ref `refs/heads/main`, supported package, exact semver, branch empty or `resurrect/<package>`, mode `local` or `stub`) and `proveExit.ts` (`mapExitCode`: 0 `alive`, 1 `restless`, 2 `inconclusive`, anything else `inconclusive` with the harness error `harness-config-error`), plus `planIntake({ eligible, branch })` (ineligible gives `not-resurrected` and reads no branch; eligible with no branch is the error "a Resurrection_Branch is required"; eligible with a branch gives `resurrection`).
     - Example tests in `tests/pipeline/unit/dispatchInputs.test.ts`, `proveExit.test.ts`, `planIntake.test.ts`.
     - _Requirements: 9.1, 9.2, 9.14, 11.2, 11.15, 12.4, 23.7_
@@ -284,7 +284,7 @@ Conventions for every task:
     - **Property 19: Exit codes never produce `alive` by accident**
     - **Validates: Requirements 12.4**
 
-  - [ ] 8.11 Implement the verification commands and the pull request text
+  - [x] 8.11 Implement the verification commands and the pull request text
     - `src/pipeline/undertaker/core/verifyCommands.ts` (one builder: `gh attestation verify <name> --repo subair99/graveyard-shift --predicate-type <PREDICATE_TYPE> --signer-workflow <SIGNER_WORKFLOW> --format json`; also used by the nightly in task 13.7 and by the README text) and `prText.ts` (`renderPrTitle`, `renderPrBody`: all fields of the design, the D3 sentence about the Existing_CI, the A12 sentence, the "not attested" sentence for `restless` and `inconclusive`, "stub run" in the title and as the first body line for a stub, the Not_Resurrected_Entry body with failed rules and Source_URL and Fetch_Date). Every rendered text passes `redactText`. No template contains a time or credit number.
     - Example tests in `tests/pipeline/unit/verifyCommands.test.ts` (string construction only, no network) and `prText.test.ts` (alive, restless, inconclusive, not-resurrected, stub).
     - _Requirements: 13.12, 14.5, 14.9, 14.14, 15.2, 15.3, 15.4, 15.5, 15.9, 15.10, 15.11, 15.12, 17.1, 17.5, 18.1, 18.5, 18.6, 23.12_
@@ -297,28 +297,28 @@ Conventions for every task:
     - **Property 27: Verification command construction**
     - **Validates: Requirements 17.1, 17.5, 18.1, 18.6**
 
-  - [ ] 8.14 Implement the `gh` wrapper and the publish shell
+  - [x] 8.14 Implement the `gh` wrapper and the publish shell
     - `src/pipeline/undertaker/shell/ghCli.ts` (argv builders and JSON parsing for `gh`, no shell) and `publish.ts` (entry writer using `planEntryFiles` and `deriveEntryKind`, replaces `graveyard/<package>/` completely with bytes copied unchanged, recomputes the sha256 of the three subjects against `attest/predicate.json` for `alive`, D2 collision check with `git ls-remote --heads origin "publish/<slug>-run<run_id>-*"` that fails with the branch name and the delete command, bot identity `github-actions[bot]` / `41898282+github-actions[bot]@users.noreply.github.com`, `gh auth setup-git`, commit only `graveyard/<package>/`, push without force, `gh pr create --base main --head <branch> --title <t> --body-file pr-body.md`, never merge, never auto-merge, lists open `publish/<slug>-*` pull requests in the job summary, prints the setting name "Allow GitHub Actions to create and approve pull requests" when `gh pr create` fails).
     - Example tests in `tests/pipeline/unit/publish.test.ts` with fake fs, git and gh (digest mismatch fails before any push, collision message, replaced entry, stub marker only for stub, no bundle for `restless`).
     - _Requirements: 13.9, 13.10, 14.1, 14.3, 14.4, 14.7, 14.13, 15.1, 15.6, 15.7, 15.8, 23.11_
 
-  - [ ] 8.15 Write the CI step entries for `intake`
+  - [x] 8.15 Write the CI step entries for `intake`
     - `scripts/ci/intake.ts` with sub-commands `validate-inputs` (also compares `process.version` with `v${PINNED_NODE_VERSION}`), `coroner` (Coroner then Gravedigger with `GITHUB_TOKEN`, writes `certificate.json`, `eligibility.json`, `original.tgz`), `plan`, `resolve-branch` (the only step with a token near the branch; reads no content), `fetch-and-validate` (no token; `gitEntries`, `validateIntake`, `checkNecromancy`, violations and failed checks to the job summary, exit 1), and the packing step (validated files to `work/medium/`, `resurrection.tgz` with entries under `package/`, sorted, mtime 0, uid and gid 0, plus `deltas.json` and `harness.json` copied).
     - Packing: `tech.md` says only `src/proof/shell/tarball/tarballExtractor.ts` imports `tar`. Add a `packTarball` function in that directory rather than importing `tar` in `scripts/`. If that needs a change of the proof engine beyond one added export, stop and ask the user.
     - Inputs reach scripts only as environment variables; output goes through the redaction used by the other entries. Keep each entry thin and test the called functions; add `tests/pipeline/unit/ciIntakeEntry.test.ts` with injected deps.
     - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.10, 10.8, 11.1, 11.2, 11.3, 11.12, 11.15, 12.6_
 
-  - [ ] 8.16 Write the CI step entry for `prove`
+  - [x] 8.16 Write the CI step entry for `prove`
     - `scripts/ci/prove.ts`: choose the Run_Seed once with the secure source in `common/shell/system.ts`, call `runCli` with `--original original.tgz --integrity <from eligibility.json> --version --name --resurrection resurrection.tgz --harness pipeline --seed <seed> --cases 100 --out proof-report.json` and a `loadHarness` that calls `compileHarness`; **no `--radius` option, no radius variable**, nothing from the dispatch inputs, the environment or the Medium_Output (R12.12); map the exit code with `mapExitCode`; on a compile error or a missing report write `fallbackReport(...)` with `harness-config-error` and the messages; write the `verdict` output. Verify V13 first (`casesRequested` equals the `--cases` value; `functionsTested` is accepted by `--radius`) and record it in the Journal.
     - Tests in `tests/pipeline/unit/proveEntry.test.ts`: the argument list never contains `--radius` (example test), seed and case count come only from the script, fallback report on compile failure.
     - _Requirements: 5.4, 5.11, 12.1, 12.2, 12.3, 12.4, 12.5, 12.12_
 
-  - [ ] 8.17 Write the CI step entries for `checks`, `attest` and `publish`
+  - [x] 8.17 Write the CI step entries for `checks`, `attest` and `publish`
     - `scripts/ci/checks-summary.ts` (reads the three step outcomes from environment variables, writes each result and the run URL to the summary, writes `checks-results.json`, exits 1 if any outcome is not `success`), `scripts/ci/attest.ts` (`prepare`: parse the report with `ProofReportSchema`, recompute the Tree_Hash of `resurrection.tgz` and the Integrity_Hash of `original.tgz`, call `attestDecision`, compute the sha256 of the three subjects, write `attest/predicate.json` and print `predicate_type` (from `PREDICATE_TYPE`) and the subject paths as step outputs; `collect`: copy the three `bundle-path` outputs to `attest-bundles/<subject>.sigstore.json`), `scripts/ci/publish.ts` (`gate` calls `publishGate`; `build-entry`; `push-pr`).
     - Tests in `tests/pipeline/unit/ciEntries.test.ts` with injected deps (hash mismatch ends without signing, a non-`alive` report ends without signing, checks failure exits 1, gate output).
     - _Requirements: 11.14, 11.16, 11.17, 13.2, 13.3, 13.4, 13.5, 13.9, 14.1_
 
-  - [ ] 8.18 Write `resurrect.yml`, add `workflow_dispatch` to `ci.yml`, and the workflow lint
+  - [x] 8.18 Write `resurrect.yml`, add `workflow_dispatch` to `ci.yml`, and the workflow lint
     - `.github/workflows/resurrect.yml`: jobs `intake`, `checks`, `prove`, `attest`, `publish` with the permissions, `needs` and `if` text of design D4 and "Workflow YAML"; `permissions: {}` at workflow level; concurrency group per package with `cancel-in-progress: false`; `timeout-minutes` on every job; every third-party action pinned to the SHAs listed in the design (checkout `3d3c42e5...`, setup-node `949feb24...`, upload-artifact `cf430e03...`, download-artifact `9000827c...`, attest `1e69f48a...`), `node-version: 26.13.1`, a `node --version` check step, `persist-credentials: false` on every checkout, `npm ci --ignore-scripts` in `attest` and `publish`, three `actions/attest` steps (tarball, report, certificate) with the predicate type taken from the `prepare` output (the YAML never contains the type string), `PROOF_BUDGET_MODE: warn` in `checks`, every user input assigned to an `env:` variable and never written inside a `run:` string.
     - `.github/workflows/ci.yml`: add `workflow_dispatch:` to `on:` (nothing else changes).
     - Add a YAML parser dependency if the repository has none (record it for `PREEXISTING.md`, task 14.3).
@@ -329,7 +329,7 @@ Conventions for every task:
     - **Property 20: Node pin lint**
     - **Validates: Requirements 12.6, 12.8**
 
-- [ ] 9. Checkpoint: end of step (b), full suite run by the user
+- [-] 9. Checkpoint: end of step (b), full suite run by the user
   - Agent: run `npm run typecheck` and `npm run lint` and fix findings. Do not run `npm test`.
   - Ready for you to run: `npm test` (M11). Paste the output. Add the observed span of the `pipeline` project to `docs/kiro-journal.md` only from that pasted output.
   - Ensure all tests pass, ask the user if questions arise.
@@ -408,12 +408,12 @@ Conventions for every task:
     - _Requirements: 5.6, 5.8, 5.12_
 
   - [ ] 12.2 Implement the `returns-expected` lowering
-    - `src/pipeline/harness/sandbox/returnsExpected.cjs` and the `returns-expected` branch of `compiler.ts` (an equality predicate on the listed inputs, explicit cases from the listed inputs, per-delta data through the channel found in task 6.4, V14). Remove the `returns-expected-not-implemented` error and its test. The `ip` measurement rule: every `returns-expected` input must be listed as `true` in the measurement.
+    - `src/pipeline/harness/sandbox/returnsExpected.cjs` and the `returns-expected` branch of `compiler.ts` (an equality predicate on the listed inputs, explicit cases from the listed inputs, per-delta data through the channel found in task 6.4, V14). Remove the `returns-expected-not-implemented` error and its test. Every case of one delta must have the same expected value; the compiler rejects a delta whose cases differ with the error code `delta-expected-differs`, naming the delta and saying to split it (unit test). The `ip` measurement rule: every `returns-expected` input must be listed as `true` in the measurement.
     - Example tests in `tests/pipeline/unit/compilerReturnsExpected.test.ts`.
     - _Requirements: 4.4, 4.6, 4.7, 4.12, 3.6_
 
   - [ ] 12.3 Add the ip Deltas_File and Harness_File examples and their compile tests
-    - Example files under `tests/pipeline/fixtures/ip/` (a Deltas_File with one `returns-expected` delta for `isPublic` per measured-`true` address, expected `false`, advisory `GHSA-2p57-rm9w-gvfp`, source the advisory URL with `checkedOn` 2026-11-15; a Harness_File selecting the `ip-address` preset for every export). These are test data, not Medium output.
+    - Example files under `tests/pipeline/fixtures/ip/` (a Deltas_File with one `returns-expected` delta for `isPublic` with one case per measured-`true` address (the five addresses when all five are `true`), expected `false`, advisory `GHSA-2p57-rm9w-gvfp`, source the advisory URL with `checkedOn` 2026-11-15; a Harness_File selecting the `ip-address` preset for every export). These are test data, not Medium output.
     - Tests: compile examples; no delta for `isPrivate`, `isLoopback` or any other function; an input not in the measured-`true` set is a compile error (the compile half of Property 5).
     - _Requirements: 4.12, 4.13, 3.5, 3.6, 3.7_
 
@@ -498,7 +498,7 @@ Conventions for every task:
     - _Requirements: 12.9, 17.2, 17.3, 17.4, 20.7_
 
   - [ ] 14.3 Update `PREEXISTING.md`, `.gitignore` and `.env.example`
-    - `PREEXISTING.md`: `actions/attest`, `actions/checkout`, `actions/setup-node`, `actions/upload-artifact`, `actions/download-artifact`, the GitHub CLI, Sigstore as used by GitHub Artifact Attestations, Kiro CLI (user-side), the YAML parser and `semver` if added, each with its license and source URL.
+    - `PREEXISTING.md`: `actions/attest`, `actions/checkout`, `actions/setup-node`, `actions/upload-artifact`, `actions/download-artifact`, the GitHub CLI, Sigstore as used by GitHub Artifact Attestations, Kiro CLI (user-side), the YAML parser and `semver` (MIT, a direct dependency, `^7.8.6`; list it if not already listed), each with its license and source URL.
     - Confirm the four `.gitignore` lines of task 7.10 are present; confirm `.env.example` has no new variable.
     - _Requirements: 22.2, 22.3, 22.4_
 

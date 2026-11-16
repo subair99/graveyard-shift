@@ -281,7 +281,7 @@ interface NecromancyResult { ok: boolean; checks: { id: NecromancyCheckId; ok: b
 function checkNecromancy(input: NecromancyInput): NecromancyResult;   // pure (R10.9)
 ```
 
-Checks (R10.1 to R10.6): `license` equal to the Original's; `license-file` present with identical bytes when the Original has one (a root file named `LICENSE`, `LICENCE`, with or without an extension, case-insensitive); `author-credits`: every author of the Original (`author` plus `contributors`, string or object form, normalized to lowercase trimmed name, email, url) appears in the Resurrection; `version`: `semver.gt(res, orig)`, same major, no prerelease (a patch or minor increase); `name` equals `@graveyard-shift/<original name>`; `forbidden-fields`: no `dependencies` key that the Original lacks, no `scripts` entry named `preinstall`, `install`, `postinstall` or `prepare`, no `bin`, `type` not `module`. All checks run and all failures are listed. API-surface checks stay in the Proof_Engine (R10.7). `intake` runs the gate after the validator and before packing; a failure ends the job (R10.8).
+Checks (R10.1 to R10.6): `license` equal to the Original's; `license-file` present with identical bytes when the Original has one (a root file named `LICENSE`, `LICENCE`, with or without an extension, case-insensitive); `author-credits`: every author of the Original (`author` plus `contributors`, string or object form, normalized to lowercase trimmed name, email, url) appears in the Resurrection; `version`: `semver.gt(res, orig)`, same major, no prerelease (a patch or minor increase); `name` equals `@graveyard-shift/<original name>`; `forbidden-fields`: no new dependency name (a name in the Resurrection's `dependencies` that the Original lacks; `dependencies: {}` passes), no `scripts` entry named `preinstall`, `install`, `postinstall` or `prepare`, no `bin`, `type` not `module`. All checks run and all failures are listed. API-surface checks stay in the Proof_Engine (R10.7). `intake` runs the gate after the validator and before packing; a failure ends the job (R10.8).
 
 ### Harness: Deltas_File, Harness_File, presets and compiler
 
@@ -300,7 +300,7 @@ interface CompiledHarness { config: HarnessConfig; presetsUsed: string[] }   // 
 - **Preset menu** (`presets/index.ts`): `lodash-set` (functions: `default`) reuses `ordinaryArgs`, `ordinaryExplicitCases` from `src/proof/harnesses/lodash.set/config.ts`. `ip-address` (functions: one entry per exported function of ip@2.0.1, see "ip coverage") uses the form table of `spikes/candidates/IP-SKETCH.md` with explicit cases for the five Advisory_Addresses, and `setupModule: ipSetup.cjs` for both sides (R5.8). Each preset declares `functions`, an options schema (strict zod), and `build(options)` returning a `FunctionHarness`. The Harness_File selects a preset per function and may give only declared options (R5.1).
 - **Forbidden content** (R5.2 to R5.4, R4.8): both files are parsed with strict schemas. A key from the list `functions`-level `excluded`, `radius`, `caseCount`, `seed`, `perCallTimeoutMs`, `stubs`, `accept`, `args`, `setupModule`, `propertyModule`, `generator`, `predicate`, any value that is a function or code string, or an unknown preset gives a `CompileError` with the key or preset name and, for the CI-owned keys, the words "belongs to CI" (A11). The compiled `HarnessConfig` takes `seed`, `caseCount` (100), and timeouts from the CI caller (`prove.ts`), never from the files.
 - **Delta rules** (R4.2 to R4.7): kind in `{prototype-unchanged, returns-expected}`; `advisory` in `certificate.openVulnerabilityIds` or in an alias list of `certificate.vitalSigns.openVulnerabilities` (CompileError names the delta id and the identifier); `function` in the `functions` list of a preset the Harness_File selects (this is the compile-time form of "exported by the Original"; the Proof_Engine's own check that a delta's function is tested, `orchestrator.ts` "names function ... which is not tested", is the run-time form); each `returns-expected` case carries `source: { url, fetchedAt }`; the `ip` measurement rule: every `returns-expected` input must be listed as `true` in `measurement` (A10, R3.6, R3.7).
-- **Compilation** (R4.3, R4.4): `prototype-unchanged` becomes a `DeclaredDelta` that reuses `pathHasDangerousSegment`, `dangerousArgs`, `deltaExplicitCases` and `POLLUTION_MODULE_PATH` with the delta's `id` and function. `returns-expected` becomes a `DeclaredDelta` with `predicate` an equality test on the listed inputs (deep equality on the argument arrays), `explicitCases` the listed inputs, and `propertyModule` = `sandbox/returnsExpected.cjs`, which reads the expected value from the harness data the compiler passes in the delta's explicit-case metadata and checks that the Resurrection returned it. **To verify (agent, at task time):** how a sandbox-side property module receives per-delta data (the `lodash.set` module needs none). If the engine offers no channel, the compiler generates one property module file per delta from a template in the work directory (data, not Medium code) and passes its absolute path.
+- **Compilation** (R4.3, R4.4): `prototype-unchanged` becomes a `DeclaredDelta` that reuses `pathHasDangerousSegment`, `dangerousArgs`, `deltaExplicitCases` and `POLLUTION_MODULE_PATH` with the delta's `id` and function. `returns-expected` becomes a `DeclaredDelta` with `predicate` an equality test on the listed inputs (deep equality on the argument arrays), `explicitCases` the listed inputs, and `propertyModule` = `sandbox/returnsExpected.cjs`, which reads the expected value from the harness data the compiler passes in the delta's explicit-case metadata and checks that the Resurrection returned it. Decided (V14, read from the code): the engine offers no data channel (`ctx` carries `functionName`, `kind`, `prototypeDelta` and `result`, no arguments), so the compiler generates one property module file per delta from a template in the work directory (data, not Medium code) and passes its absolute path, with the expected value embedded. Because the module sees only `result`, every case of one `returns-expected` delta must have the same expected value. The compiler rejects a delta whose cases differ, with an error that names the delta and says to split it (error code `delta-expected-differs`). For ip this gives one delta for `isPublic` with the five addresses and the expected value `false`.
 - The compiler is a pure function of its inputs. `ordered` helpers sort deltas by `id` code point so that two compilations give equal results (R5.5).
 
 ### ip measurement and delta derivation
@@ -422,10 +422,10 @@ Each entry is thin: it builds deps (real fetch, clock, random seed), calls a tes
 - `intake.ts validate-inputs`: `validateDispatchInputs({ ref, package, version, branch, mediumMode })` (R9.1, R9.2, R23.7): ref equals `refs/heads/main`, package supported, version exact semver (`semver.valid` and equal to its input), branch empty or exactly `resurrect/<package>`, mode in `{local, stub}`. It also compares `process.version` with `v${PINNED_NODE_VERSION}`.
 - `intake.ts coroner`: Coroner for `<package>@<version>` with `GITHUB_TOKEN`, then Gravedigger. Writes `certificate.json`, `eligibility.json`, `original.tgz` (if the digest matched). Output `eligible`.
 - `intake.ts plan`: decision table `planIntake({ eligible, branch })`: eligible false gives `kind=not-resurrected` and reads no branch (R11.2); eligible true with no branch fails with the message "a Resurrection_Branch is required" (R11.15, A14); eligible true with a branch gives `kind=resurrection`.
-- `intake.ts fetch-branch`: resolve once, fetch, verify the tip, read entries (above). Output `branch_commit`.
-- `intake.ts validate`: `validateIntake`, then `checkNecromancy` with the Original tarball's `package.json` and license text; on any failure write the violations and failed checks to the job summary and exit 1 (R9.10, R10.8).
+- `intake.ts resolve-branch`: resolve the branch tip once; reads no content. Output `branch_commit`.
+- `intake.ts fetch-and-validate`: fetch, verify the tip against `GS_BRANCH_COMMIT`, read entries (above), then `validateIntake`, then `checkNecromancy` with the Original tarball's `package.json` and license text; on any failure write the violations and failed checks to the job summary and exit 1 (R9.10, R10.8).
 - `intake.ts pack`: write the validated files to `work/medium/`, build `resurrection.tgz` with the repository's `tar` dependency (entries under `package/`, sorted by path, mtime 0, uid and gid 0), and copy `deltas.json` and `harness.json`. Packing is data processing; no Medium code runs.
-- `prove.ts`: choose `Run_Seed` once with `crypto.randomBytes(4).readInt32LE()` in `common/shell/system.ts` (R12.2). Call `runCli` with `--original original.tgz --integrity <from eligibility.json> --version --name --resurrection resurrection.tgz --harness pipeline --seed <seed> --cases 100 --out proof-report.json` (no `--radius` option: the proof engine default is every exported function of the Original, R12.12; the script has no radius variable, reads none from the dispatch inputs, the environment or the Medium_Output, and a test fails if the argument list contains `--radius`; see "ip coverage") and a `loadHarness` that calls `compileHarness` (so the CLI is used, R12.1). The seed and case count come only from this script (R12.3, A11). Map the exit code with `mapExitCode(code)`: 0 `alive`, 1 `restless`, 2 `inconclusive`, anything else `inconclusive` with the harness error `harness-config-error` (R12.4). When `compileHarness` fails or no valid report file exists, write `fallbackReport(...)` with `harness-config-error` and the compile messages (R5.11). Upload the report, the tarball and the eligibility record (R12.5). Output `verdict`.
+- `prove.ts`: choose `Run_Seed` once with `randomInt(0, 2**31)` from `node:crypto` (`secureRandomSeed`) in `common/shell/system.ts` (R12.2). Call `runCli` with `--original original.tgz --integrity <from eligibility.json> --version --name --resurrection resurrection.tgz --harness pipeline --seed <seed> --cases 100 --out proof-report.json` (no `--radius` option: the proof engine default is every exported function of the Original, R12.12; the script has no radius variable, reads none from the dispatch inputs, the environment or the Medium_Output, and a test fails if the argument list contains `--radius`; see "ip coverage") and a `loadHarness` that is a closure over the config compiled by `compileHarness` (`runCli` passes it only the spec string, so the closure carries the compiled config; the CLI is used, R12.1). The seed and case count come only from this script (R12.3, A11). Map the exit code with `mapExitCode(code)`: 0 `alive`, 1 `restless`, 2 `inconclusive`, anything else `inconclusive` with the harness error `harness-config-error` (R12.4). Exit code 2 with no report file is handled as a compile or load failure. When `compileHarness` fails or no valid report file exists, `prove.ts` itself writes `fallbackReport(...)` with `harness-config-error` and the compile messages (R5.11). `fallbackReport` is imported from `src/proof/core/report` and `canonicalReportJson` from `src/proof/serialize/canonicalReport`; neither is exported from `src/proof/index.ts`. Upload the report as the `prove-data` artifact whatever the verdict is; the tarball and the eligibility record are already in the `intake-data` artifact (R12.5). Output `verdict`.
 - `checks-summary.ts`: reads the `outcome` of the three check steps from environment variables, writes each result and the run URL to the summary, writes `checks-results.json`, exits 1 if any outcome is not `success` (R11.14, R11.16).
 - `attest.ts prepare`: described under Attestation. `attest.ts collect`: copies the three `bundle-path` outputs to `attest-bundles/<subject>.sigstore.json`.
 - `publish.ts gate`, `publish.ts build-entry`, `publish.ts push-pr`: described under Publishing.
@@ -461,7 +461,7 @@ function attestDecision(i: { checks: JobResult; prove: JobResult; verdict: Verdi
 function publishGate(i: { intake: JobResult; checks: JobResult; prove: JobResult; attest: JobResult; kind: EntryKind | null; verdict: Verdict | null }): "publish" | "skip";
 ```
 
-`publishGate` returns `publish` only when `intake` and `checks` succeeded and either `kind` is `not-resurrected`, or `kind` is `resurrection`, `prove` succeeded, and (`verdict` is not `alive` or `attest` succeeded). `JobResult` is `success | failure | cancelled | skipped`.
+`publishGate` returns `publish` only when `intake` and `checks` succeeded and either `kind` is `not-resurrected`, or `kind` is `resurrection`, `prove` succeeded, `verdict` is not null, and (`verdict` is not `alive` or `attest` succeeded). It fails closed: a resurrection with a null verdict skips. `JobResult` is `success | failure | cancelled | skipped`.
 
 ### Entry layout and kinds
 
@@ -615,6 +615,11 @@ jobs:
     timeout-minutes: 15
     permissions: { contents: read }
     outputs:
+      package: ${{ steps.validate.outputs.package }}
+      version: ${{ steps.validate.outputs.version }}
+      medium_mode: ${{ steps.validate.outputs.medium_mode }}
+      has_branch: ${{ steps.validate.outputs.has_branch }}
+      eligible: ${{ steps.coroner.outputs.eligible }}
       kind: ${{ steps.plan.outputs.kind }}
       branch_commit: ${{ steps.branch.outputs.branch_commit }}
     steps:
@@ -635,10 +640,25 @@ jobs:
         if: steps.plan.outputs.kind == 'resurrection'
         env: { GH_TOKEN: "${{ github.token }}", IN_PACKAGE: "${{ inputs.package }}" }
         run: npx tsx scripts/ci/intake.ts resolve-branch   # the only step with a token near the branch; reads no content
-      - if: steps.plan.outputs.kind == 'resurrection'
-        run: npx tsx scripts/ci/intake.ts fetch-and-validate   # no token; validator, necromancy gate, pack
+      - name: Fetch and validate the branch
+        if: steps.plan.outputs.kind == 'resurrection'
+        env: { GS_BRANCH_COMMIT: "${{ steps.branch.outputs.branch_commit }}" }
+        run: npx tsx scripts/ci/intake.ts fetch-and-validate   # no token; validator, necromancy gate
+      - name: Pack the resurrection
+        if: steps.plan.outputs.kind == 'resurrection'
+        run: npx tsx scripts/ci/intake.ts pack
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with: { name: intake-data, path: work/out/, if-no-files-found: error, retention-days: 7 }
+        with:
+          name: intake-data
+          path: |
+            certificate.json
+            eligibility.json
+            original.tgz
+            resurrection.tgz
+            deltas.json
+            harness.json
+          if-no-files-found: error
+          retention-days: 7
 
   checks:
     runs-on: ubuntu-24.04
@@ -655,7 +675,7 @@ jobs:
       - { id: lint, run: npm run lint, continue-on-error: true }
       - { id: test, run: npm test, continue-on-error: true }
       - name: Summarize and gate
-        env: { TYPECHECK: "${{ steps.typecheck.outcome }}", LINT: "${{ steps.lint.outcome }}", TEST: "${{ steps.test.outcome }}", RUN_URL: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" }
+        env: { GS_CHECK_TYPECHECK: "${{ steps.typecheck.outcome }}", GS_CHECK_LINT: "${{ steps.lint.outcome }}", GS_CHECK_TEST: "${{ steps.test.outcome }}", GS_RUN_URL: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" }
         run: npx tsx scripts/ci/checks-summary.ts
       - if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -689,7 +709,7 @@ jobs:
         with: { subject-path: "${{ steps.prepare.outputs.subject_tarball }}", predicate-type: "${{ steps.prepare.outputs.predicate_type }}", predicate-path: attest/predicate.json }
       # two more steps: attest_report (proof-report.json) and attest_certificate (certificate.json)
       - run: npx tsx scripts/ci/attest.ts collect
-      # upload-artifact attest-bundles
+      # upload-artifact attest-predicate (attest/predicate.json) and attest-bundles (attest-bundles/)
 
   publish:
     needs: [intake, checks, prove, attest]
@@ -698,13 +718,13 @@ jobs:
     timeout-minutes: 15
     permissions: { contents: write, pull-requests: write }
     steps:
-      # checkout main (persist-credentials: false), setup-node 26.13.1, npm ci --ignore-scripts, download all artifacts
+      # checkout main (persist-credentials: false), setup-node 26.13.1, npm ci --ignore-scripts, download intake-data, checks-results, and (when the job succeeded) prove-data, attest-predicate, attest-bundles
       - id: gate
-        env: { R_INTAKE: "${{ needs.intake.result }}", R_CHECKS: "${{ needs.checks.result }}", R_PROVE: "${{ needs.prove.result }}", R_ATTEST: "${{ needs.attest.result }}", KIND: "${{ needs.intake.outputs.kind }}", VERDICT: "${{ needs.prove.outputs.verdict }}" }
-        run: npx tsx scripts/ci/publish.ts gate
-      - if: steps.gate.outputs.go == 'true'
+        env: { GS_JOB_INTAKE: "${{ needs.intake.result }}", GS_JOB_CHECKS: "${{ needs.checks.result }}", GS_JOB_PROVE: "${{ needs.prove.result }}", GS_JOB_ATTEST: "${{ needs.attest.result }}", GS_KIND: "${{ needs.intake.outputs.kind }}", GS_VERDICT: "${{ needs.prove.outputs.verdict }}" }
+        run: npx tsx scripts/ci/publish.ts gate        # output `publish` = 'true' | 'false'
+      - if: steps.gate.outputs.publish == 'true'
         run: npx tsx scripts/ci/publish.ts build-entry
-      - if: steps.gate.outputs.go == 'true'
+      - if: steps.gate.outputs.publish == 'true'
         env: { GH_TOKEN: "${{ github.token }}" }
         run: npx tsx scripts/ci/publish.ts push-pr
 ```
@@ -892,7 +912,7 @@ Reflection results: the prework found one property per pure function or family o
 
 ### Property 23: Publish gate
 
-*For any* combination of the four job results, the entry kind and the verdict, `publishGate` returns `publish` if and only if `intake` and `checks` succeeded and either the kind is `not-resurrected`, or the kind is `resurrection`, `prove` succeeded, and the verdict is not `alive` or `attest` succeeded. A failed `checks` never yields `publish`, and a failed `attest` for an `alive` verdict never yields `publish`.
+*For any* combination of the four job results, the entry kind and the verdict, `publishGate` returns `publish` if and only if `intake` and `checks` succeeded and either the kind is `not-resurrected`, or the kind is `resurrection`, `prove` succeeded, the verdict is not null, and the verdict is not `alive` or `attest` succeeded. A failed `checks` never yields `publish`, and a failed `attest` for an `alive` verdict never yields `publish`.
 
 **Validates: Requirements 11.2, 11.16, 11.17, 13.10, 14.1, 15.1**
 

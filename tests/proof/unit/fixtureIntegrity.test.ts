@@ -9,7 +9,7 @@ import type { ExtractedFile } from "../../../src/proof/shell/tarball/tarballExtr
 import { extractTarball } from "../../../src/proof/shell/tarball/tarballExtractor";
 import { computeDirectoryTreeHash } from "../../../src/proof/shell/treeHash";
 
-// Requirements: 14.1, 14.2, 14.3, 14.4, 14.5
+// Requirements: 14.1, 14.2, 14.3, 14.4, 14.5; resurrection-pipeline 3.9
 // Validates: Requirements 14.1, 14.2, 14.3
 
 const ROOT = process.cwd();
@@ -31,6 +31,10 @@ const ORIGINAL_TREE_HASH =
 // Recorded when the test was written, from the committed files; update with `npx tsx scripts/printFixtureHashes.ts` whenever a fixture file changes on purpose.
 // Keys are paths relative to tests/proof/fixtures.
 const PINS: Readonly<Record<string, string>> = {
+  "ip/ip-2.0.1.meta.json":
+    "sha512-czJ+3YxqX1tmcO7a9Kpd71QCKIUfcP4LUScv5SF345njXT8kyWj0Aw9T9Ezsxd3gUrCCPHL2wb8wkC4KNTQAkg==",
+  "ip/ip-2.0.1.tgz":
+    "sha512-lJUL9imLTNi1ZfXT+DU6rBBdbiKGBuay9B6xGSPVjUeQwaH1RIGqef8RZkUtHioLmSNpPR5M4HVKJGm1j8FWVQ==",
   "lodash.set-alive/LICENSE":
     "sha512-t/YCqTo2Om0BuHE/C+C/HnDEMbbFc+Iw7HdZ5m3+Ixv6eAFUYHuaWfDgMyL3zt9X0qvXoIPA8u8qq8i8IVvbMg==",
   "lodash.set-alive/README.md":
@@ -141,6 +145,32 @@ describe("fixture integrity: lodash.set@4.3.2 tarball and metadata", () => {
     const identity = identityValuesFromEnv(process.env, platform);
     const finding = findIdentity(text, identity, platform);
     expect(finding.found, finding.found ? describeIdentityFinding(finding) : "no identity value").toBe(false);
+  });
+});
+
+describe("fixture integrity: ip@2.0.1 tarball and metadata", () => {
+  const ipMeta = readJson(join(FIXTURES, "ip", "ip-2.0.1.meta.json"));
+  const ipBytes = readFixture("ip/ip-2.0.1.tgz");
+  const ipPackumentFile = String(isRecord(ipMeta["packument"]) ? ipMeta["packument"]["file"] : "");
+
+  it("verifies the committed tarball bytes against the metadata integrity (sha512 SRI)", () => {
+    expect(typeof ipMeta["integrity"]).toBe("string");
+    expect(verifyIntegrity(ipBytes, String(ipMeta["integrity"])).ok).toBe(true);
+  });
+
+  it("matches the recorded packument: integrity, tarball URL, name, version, license", () => {
+    const fixture = readJson(join(ROOT, "tests", "engine", "fixtures", "ip", ipPackumentFile));
+    const body: unknown = JSON.parse(String(fixture["body"]));
+    if (!isRecord(body) || !isRecord(body["versions"])) throw new Error("packument has no versions");
+    const entry = body["versions"]["2.0.1"];
+    if (!isRecord(entry) || !isRecord(entry["dist"])) throw new Error("packument has no 2.0.1 dist");
+    expect(ipMeta["integrity"]).toBe(entry["dist"]["integrity"]);
+    expect(ipMeta["tarballUrl"]).toBe(entry["dist"]["tarball"]);
+    expect(ipMeta["name"]).toBe("ip");
+    expect(ipMeta["version"]).toBe("2.0.1");
+    expect(ipMeta["license"]).toBe("MIT");
+    const packument = ipMeta["packument"];
+    expect(isRecord(packument) ? packument["integrity"] : undefined).toBe(entry["dist"]["integrity"]);
   });
 });
 

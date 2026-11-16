@@ -8,6 +8,8 @@ export const deterministicFiles = [
   "src/proof/core/**/*.ts",
   "src/proof/serialize/**/*.ts",
   "src/proof/child/codec/**/*.ts",
+  // Pure pipeline directories (common/shell/system.ts is outside: not under core/).
+  "src/pipeline/**/core/**/*.ts",
 ];
 
 export const deterministicRules = {

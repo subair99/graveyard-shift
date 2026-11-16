@@ -10,3 +10,7 @@ coverage/
 *.tsbuildinfo
 next-env.d.ts
 # .kiro/ must stay committed — never add it here
+/.graveyard-work/
+/resurrection/
+/deltas.json
+/harness.json
