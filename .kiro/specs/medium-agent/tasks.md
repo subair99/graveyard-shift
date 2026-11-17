@@ -247,14 +247,14 @@ Conventions for every task:
     - File: `tests/medium/unit/requirementsHeader.test.ts`: every test file under `tests/medium/` starts with a `// Requirements:` line whose bare list names existing medium-agent criteria and whose `; resurrection-pipeline` group names existing criteria of that spec; files under `tests/medium/integration/` are named `*.integration.test.ts`.
     - _Requirements: 12.2, 12.3_
 
-- [-] 14. Checkpoint: full suite and trace, run by the user
+- [x] 14. Checkpoint: full suite and trace, run by the user
   - Agent: run `npm run typecheck` and `npm run lint` and fix findings. Do not run `npm test`.
   - Ready for you to run: `npm test`, then `npm run trace`. Paste both outputs. The agent then adds a `docs/traceability-gaps.json` entry for each medium-agent criterion the trace reports as unclassified, and asks the user to run `npm run trace` again until it exits with code 0. Journal spans of `pipeline` and `pipeline-integration` come only from the pasted `npm test` output.
   - Ensure all tests pass, ask the user if questions arise.
   - _Requirements: 12.4, 12.6, 12.7_
 
-- [ ] 15. Manual tasks in the WSL clone (Kiro CLI)
-  - [ ] 15.1 Manual task (yours): login check with the Medium_Environment keys (before any real run)
+- [x] 15. Manual tasks in the WSL clone (Kiro CLI)
+  - [x] 15.1 Manual task (yours): login check with the Medium_Environment keys (before any real run)
     - Credit-free in intent; whether `kiro-cli whoami` spends credits is not documented, so the readings are recorded. In WSL:
       `cd ~/graveyard-shift && git pull origin main`
       Note your credit meter reading, then run
@@ -263,7 +263,7 @@ Conventions for every task:
     - Paste back: the output, the exit code and both readings. Record them in `docs/kiro-journal.md` (dated, with the command). The check passes only if the output shows a logged-in account. If it fails, stop: a key is added to `MEDIUM_ENV_KEYS` only on the basis of this record (or the 11.7 record), by a later agent change that names the record.
     - _Requirements: 11.8, 12.5_
 
-  - [ ] 15.2 Manual task (yours): agent validation and enforcement run (spends credits)
+  - [x] 15.2 Manual task (yours): agent validation and enforcement run (spends credits)
     - Start only after 15.1 passed and this spec's changes are on `main`. In WSL:
       `cd ~/graveyard-shift && git pull origin main`
       `kiro-cli agent validate --path .kiro/agents/medium.json; echo "exit=$?"`
@@ -273,7 +273,7 @@ Conventions for every task:
     - Paste back and record in `docs/kiro-journal.md` (dated, with the commands): the validate output and exit code, the `agent list` output, both meter readings, and every item of Requirement 3.10 (Guard_Log lines; permission deny, guard block or both per refused write; the `tool_input` key of each path; matcher semantics; whether `GUARD_LOG_FILE` reached the hook; the agent's tool list compared with 1.2 and 1.3; whether the Context_Server call ran without a refusal; the sentinel read result and whether its content appeared).
     - _Requirements: 1.8, 2.7, 3.10, 12.5, 12.7_
 
-  - [ ] 15.3 Apply the recorded results (agent, after the pasted records)
+  - [x] 15.3 Apply the recorded results (agent, after the pasted records)
     - Read the Journal records of 15.1 and 15.2. If a result contradicts the design (for example the hook matcher matched nothing, a write was allowed outside the three paths, the `mcp` match form refused the tools, the login check failed, or the sentinel content appeared), stop and ask the user before changing code. Otherwise change nothing; the deferred points of requirements.md ("Deferred to recorded runs") stay deferred.
     - The first real Medium run, which also records Requirement 11.7, is resurrection-pipeline task 16.1 (M9). It is not repeated here.
     - _Requirements: 3.10, 11.1, 11.7, 11.8_

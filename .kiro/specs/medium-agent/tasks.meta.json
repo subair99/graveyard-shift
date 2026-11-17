@@ -564,6 +564,49 @@
         "executionId": "31a33e9a-6ca4-4c68-b20d-3016a5006ed1",
         "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
         "timestamp": 1794918916385
+      },
+      {
+        "executionId": "94c2cfc1-e28a-4ed6-88e0-23883f7566c7",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794919688228
+      }
+    ],
+    "15.1 Manual task (yours): login check with the Medium_Environment keys (before any real run)": [
+      {
+        "executionId": "94c2cfc1-e28a-4ed6-88e0-23883f7566c7",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794919688750
+      },
+      {
+        "executionId": "94c2cfc1-e28a-4ed6-88e0-23883f7566c7",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794919732081
+      }
+    ],
+    "15.2 Manual task (yours): agent validation and enforcement run (spends credits)": [
+      {
+        "executionId": "384829c2-4584-410b-97d2-6cc0a05bc405",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794920385277
+      },
+      {
+        "executionId": "384829c2-4584-410b-97d2-6cc0a05bc405",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794920454410
+      }
+    ],
+    "15.3 Apply the recorded results (agent, after the pasted records)": [
+      {
+        "executionId": "384829c2-4584-410b-97d2-6cc0a05bc405",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794920454856
+      }
+    ],
+    "15. Manual tasks in the WSL clone (Kiro CLI)": [
+      {
+        "executionId": "384829c2-4584-410b-97d2-6cc0a05bc405",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794920455086
       }
     ]
   }
