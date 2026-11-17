@@ -28,6 +28,16 @@
       "version": "4.3.2",
       "date": "2026-11-16T19:05:49Z",
       "fixture": "tests/pipeline/fixtures/stub/lodash.set"
+    },
+    {
+      "mode": "local",
+      "package": "lodash.set",
+      "version": "4.3.2",
+      "date": "2026-11-17T13:24:37Z",
+      "creditBefore": "not provided",
+      "creditAfter": "not provided",
+      "exitCode": 0,
+      "kiroCliVersion": "kiro-cli 3.3.0"
     }
   ]
 }
