@@ -1,4 +1,4 @@
-// Requirements: 6.3, 6.4, 6.5, 6.6, 6.8, 6.9, 6.10, 6.11, 6.13, 6.14, 6.15, 7.1, 7.2, 7.6, 7.9, 7.11, 21.10, 23.1, 23.2, 23.4, 23.5, 23.17
+// Requirements: 6.3, 6.4, 6.5, 6.6, 6.8, 6.9, 6.10, 6.11, 6.13, 6.14, 6.15, 7.1, 7.2, 7.6, 7.9, 7.11, 21.10, 23.1, 23.2, 23.4, 23.5, 23.17; medium-agent 9.1, 9.2, 9.6, 9.8, 9.9, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7, 10.8
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -45,6 +45,12 @@ interface Options {
   repoRoot?: string;
   pushCode?: number;
   ledgerWriteFails?: boolean;
+  /** git status outputs in call order; the last one repeats. Default: always clean. */
+  gitStatuses?: Array<{ ok: true; value: string } | { ok: false; error: string }>;
+  /** Called when the fake Medium runs; plants the files the Medium would write. */
+  onKiroRun?: (files: Map<string, string>) => void;
+  /** The second prompt rejects (an interrupt). */
+  rejectSecondAsk?: boolean;
 }
 
 function setup(opts: Options = {}) {
@@ -58,6 +64,7 @@ function setup(opts: Options = {}) {
   const kiroRuns: string[] = [];
   const pushes: PushInput[] = [];
   const answers = [...(opts.answers ?? ["10 credits", "12 credits"])];
+  let statusCalls = 0;
   const cert = opts.cert ?? LODASH_SET_CERT;
   const fs: ResurrectFs = {
     exists: async (rel) => files.has(rel) || [...files.keys()].some((k) => k.startsWith(`${rel}/`)),
@@ -77,6 +84,13 @@ function setup(opts: Options = {}) {
       log.push("copy");
       copies.push([...items]);
     },
+    readOptional: async (rel) => {
+      const text = files.get(rel);
+      return text === undefined ? null : new TextEncoder().encode(text);
+    },
+    removeTree: async () => undefined,
+    writeBytes: async () => undefined,
+    truncate: async () => undefined,
   };
   const deps: ResurrectDeps = {
     repoRoot: opts.repoRoot ?? "/home/u/graveyard-shift",
@@ -101,14 +115,25 @@ function setup(opts: Options = {}) {
           tarballUrl: "https://registry.npmjs.org/x/-/x.tgz",
           fetchedAt: "2026-11-16T10:00:00Z",
         }),
-        tarball: null,
+        tarball: new Uint8Array([1]),
       };
     },
+    gitStatus: async () => {
+      log.push("git status");
+      const list = opts.gitStatuses ?? [{ ok: true, value: "" }];
+      const i = Math.min(statusCalls, list.length - 1);
+      statusCalls += 1;
+      return list[i] as { ok: true; value: string } | { ok: false; error: string };
+    },
+    extract: async () => ({ ok: true, value: [{ path: "package.json", bytes: new TextEncoder().encode("{}") }] }),
+    identity: { pathValues: [], userName: undefined },
+    platform: "posix",
     kiro: (env) => {
       kiroEnvs.push(env);
       return {
         run: async (name) => {
           log.push("kiro");
+          opts.onKiroRun?.(files);
           kiroRuns.push(name);
           return opts.outcome ?? { kind: "exited", exitCode: 0, usageLimit: false };
         },
@@ -118,6 +143,7 @@ function setup(opts: Options = {}) {
     prompt: {
       ask: async (q) => {
         asked.push(q);
+        if (opts.rejectSecondAsk === true && asked.length === 2) throw new Error("interrupted");
         return answers.shift() ?? "";
       },
     },
@@ -220,7 +246,17 @@ describe("Local_Runner", () => {
     expect(s.kiroRuns).toEqual(["lodash.set"]);
     expect(s.asked).toHaveLength(2);
     expect(s.out.join("\n")).toContain("documented rule that this command does not enforce");
-    expect(s.log).toEqual(["coroner", "gravedigger", "write " + CERTIFICATE_FILE, "kiro", "atomic ledger.json", "validate", "push"]);
+    expect(s.log).toEqual([
+      "coroner",
+      "gravedigger",
+      "write " + CERTIFICATE_FILE,
+      "git status",
+      "kiro",
+      "atomic ledger.json",
+      "git status",
+      "validate",
+      "push",
+    ]);
     const entry = ledgerOf(s.files).entries[0];
     expect(entry).toMatchObject({
       mode: "local",
@@ -314,6 +350,135 @@ describe("Local_Runner", () => {
   it("returns the exit code of push", async () => {
     const s = setup({ pushCode: 1 });
     expect((await runResurrect(["lodash.set"], s.deps)).exitCode).toBe(1);
+  });
+});
+
+describe("Local_Runner Medium step and checks after the run (medium-agent)", () => {
+  const GUARD_LOG = ".graveyard-work/guard.log";
+  const ALLOW_LINE = "2026-11-16T10:00:00Z ALLOW fs_write resurrection/package.json";
+  const DENY_LINE = "2026-11-16T10:00:01Z DENY fs_write src/evil\u0001.ts";
+  const run = (s: ReturnType<typeof setup>) => runResurrect(["lodash.set"], s.deps);
+
+  it("prints the Credit_Ceiling once, asks before the spawn and passes both paths to kiro", async () => {
+    const s = setup();
+    await run(s);
+    expect(s.out.filter((l) => l.includes("Credit_Ceiling"))).toHaveLength(1);
+    expect(s.kiroEnvs).toHaveLength(1);
+    expect(s.kiroEnvs[0]?.["GUARD_LOG_FILE"]).toBe(`/home/u/graveyard-shift/${GUARD_LOG}`);
+    expect(s.kiroEnvs[0]?.[CERTIFICATE_ENV_VAR]).toBe("/home/u/graveyard-shift/.graveyard-work/certificate.json");
+    expect(Object.keys(ledgerOf(s.files).entries[0] ?? {})).not.toContain("cliUsage");
+  });
+
+  it("failed-to-start: no second reading, no ledger entry, no push, cause printed, non-zero exit", async () => {
+    const s = setup({ outcome: { kind: "failed-to-start", message: "EACCES boom" } });
+    const r = await run(s);
+    expect(r.exitCode).not.toBe(0);
+    expect(s.asked).toHaveLength(1);
+    expect(s.files.has("ledger.json")).toBe(false);
+    expect(s.pushes).toEqual([]);
+    expect(s.err.join("\n")).toContain("EACCES boom");
+  });
+
+  it("a rejected second reading is an interrupt: exit 130, no ledger entry, no push, Journal note", async () => {
+    const s = setup({ rejectSecondAsk: true });
+    const r = await run(s);
+    expect(r.exitCode).toBe(130);
+    expect(s.kiroRuns).toHaveLength(1);
+    expect(s.files.has("ledger.json")).toBe(false);
+    expect(s.pushes).toEqual([]);
+    expect(s.err.join("\n")).toContain("kiro-journal.md by hand");
+  });
+
+  it("a dirty tree before the run starts nothing and asks nothing; ledger.json alone adds the commit message", async () => {
+    const s = setup({ gitStatuses: [{ ok: true, value: " M ledger.json\0" }] });
+    const r = await run(s);
+    expect(r.exitCode).not.toBe(0);
+    expect(s.err.join("\n")).toContain("commit ledger.json first");
+    expect(s.kiroRuns).toEqual([]);
+    expect(s.asked).toEqual([]);
+    expect(s.files.has("ledger.json")).toBe(false);
+  });
+
+  it("a failed git status read before the run starts nothing", async () => {
+    const s = setup({ gitStatuses: [{ ok: false, error: "x" }] });
+    expect((await run(s)).exitCode).not.toBe(0);
+    expect(s.kiroRuns).toEqual([]);
+    expect(s.asked).toEqual([]);
+    expect(s.files.has("ledger.json")).toBe(false);
+  });
+
+  it("10.3: a DENY line stops before the push, prints the line escaped, keeps the ledger entry", async () => {
+    const s = setup({ files: { [GUARD_LOG]: `${ALLOW_LINE}\n${DENY_LINE}\n` } });
+    const r = await run(s);
+    expect(r.exitCode).not.toBe(0);
+    expect(s.pushes).toEqual([]);
+    expect(ledgerOf(s.files).entries).toHaveLength(1);
+    expect(s.err.join("\n")).toContain("src/evil\\u0001.ts");
+    // 10.3 comes before the git status read of 10.5 and the intake check of 10.8.
+    expect(s.log.filter((l) => l === "git status")).toHaveLength(1);
+    expect(s.log).not.toContain("validate");
+  });
+
+  it("10.4: outputs present and an empty or missing Guard_Log stop before the push", async () => {
+    for (const files of [{ "deltas.json": "{}" }, { "deltas.json": "{}", [GUARD_LOG]: "" }]) {
+      // The leftover check of step 3 runs first, so the output appears only after the Medium ran.
+      const s = setup({ onKiroRun: (f) => Object.entries(files).forEach(([k, v]) => f.set(k, v)) });
+      const r = await run(s);
+      expect(r.exitCode).not.toBe(0);
+      expect(s.err.join("\n")).toContain("Write_Guard left no record");
+      expect(s.pushes).toEqual([]);
+      expect(ledgerOf(s.files).entries).toHaveLength(1);
+      expect(s.log).not.toContain("validate");
+    }
+  });
+
+  it("10.5: a changed path outside the outputs stops before the push; the read after the run failing also stops", async () => {
+    const dirty = setup({
+      files: { [GUARD_LOG]: `${ALLOW_LINE}\n` },
+      gitStatuses: [{ ok: true, value: "" }, { ok: true, value: " M src/a\nb.ts\0?? deltas.json\0" }],
+    });
+    expect((await run(dirty)).exitCode).not.toBe(0);
+    expect(dirty.pushes).toEqual([]);
+    expect(dirty.err.join("\n")).toContain("src/a\\u000ab.ts");
+    expect(dirty.log).not.toContain("validate");
+
+    const broken = setup({ gitStatuses: [{ ok: true, value: "" }, { ok: false, error: "x" }] });
+    expect((await run(broken)).exitCode).not.toBe(0);
+    expect(broken.pushes).toEqual([]);
+    expect(ledgerOf(broken.files).entries).toHaveLength(1);
+  });
+
+  it("10.7 runs first: a non-zero exit stops before any Guard_Log read or git status", async () => {
+    const s = setup({ outcome: { kind: "exited", exitCode: 3, usageLimit: false }, files: { [GUARD_LOG]: `${DENY_LINE}\n` } });
+    await run(s);
+    expect(s.log.filter((l) => l === "git status")).toHaveLength(1);
+    expect(s.err.join("\n")).not.toContain("Write_Guard blocked");
+  });
+
+  it("10.8: a deltas.json that fails to parse stops before the push, in a local run and a stub run", async () => {
+    const local = setup({
+      onKiroRun: (f) => {
+        f.set("deltas.json", "{ nope");
+        f.set(GUARD_LOG, `${ALLOW_LINE}\n`);
+      },
+    });
+    expect((await run(local)).exitCode).not.toBe(0);
+    expect(local.pushes).toEqual([]);
+    expect(local.err.join("\n")).toContain("deltas.json:");
+
+    // The stub copy is a fake, so plant a bad harness.json when the ledger is written (after the copy).
+    const stub = setup();
+    const writeAtomic = stub.deps.fs.writeAtomic;
+    const planted = { ...stub.deps, fs: { ...stub.deps.fs, writeAtomic: async (rel: string, text: string) => {
+      stub.files.set("harness.json", "[]");
+      return writeAtomic(rel, text);
+    } } };
+    stub.deps = planted;
+    const r = await runResurrect(["lodash.set", "--stub", FIXTURE_REL], stub.deps);
+    expect(r.exitCode).not.toBe(0);
+    expect(stub.pushes).toEqual([]);
+    expect(stub.err.join("\n")).toContain("harness.json:");
+    expect(stub.log).not.toContain("git status");
   });
 });
 

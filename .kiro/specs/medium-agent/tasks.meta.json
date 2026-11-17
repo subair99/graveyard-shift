@@ -233,6 +233,252 @@
         "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
         "timestamp": 1794900041140
       }
+    ],
+    "5. Checkpoint: path-rules move and Write_Guard": [
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794900597816
+      },
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794900684043
+      }
+    ],
+    "6.1 Implement `src/pipeline/medium/agent/contextServer.mjs` and `contextServer.d.mts`": [
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794900684519
+      },
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794901063483
+      }
+    ],
+    "6.2 Check the server constants against the TypeScript sources": [
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794901064094
+      },
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794901126724
+      }
+    ],
+    "6.3 Write the Context_Server integration test": [
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794901127170
+      },
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794902387575
+      }
+    ],
+    "6. Context_Server (design Component 4)": [
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794902387776
+      }
+    ],
+    "7.1 Create `.kiro/agents/medium.json`": [
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794902388020
+      },
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794902615166
+      }
+    ],
+    "7.2 Write the agent definition test": [
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794902615485
+      },
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794902731622
+      }
+    ],
+    "7.3 Write the Agent_Prompt test": [
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794902731432
+      },
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794909220485
+      }
+    ],
+    "8.1 Change `kiroArgs.ts` and `kiroRunner.ts`, and update their existing tests": [
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794909219964
+      },
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794909320299
+      }
+    ],
+    "7. Agent_Definition and Agent_Prompt (design Components 1 and 6)": [
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794909220596
+      }
+    ],
+    "8.2 Write property test for the Task_Prompt and argument list": [
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794909319780
+      },
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794909714377
+      }
+    ],
+    "8.3 Write property test for the Medium_Environment": [
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794909714058
+      },
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794909842434
+      }
+    ],
+    "8. Kiro argument list and Medium_Environment (resurrection-pipeline Property 33 as amended)": [
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794909842616
+      }
+    ],
+    "9.1 Add the new deps and the pre-run steps": [
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794909842939
+      },
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794910056809
+      }
+    ],
+    "9. Local_Runner before the Medium starts (`src/pipeline/local/shell/resurrect.ts`)": [
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794910056936
+      }
+    ],
+    "10.1 Implement the Medium step, the Ledger entry, the interrupt and the post-run checks": [
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794910057079
+      },
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794910313868
+      }
+    ],
+    "10.2 Write the Local_Runner Medium unit test": [
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794910314327
+      },
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794910496290
+      }
+    ],
+    "10.3 Write property test for the context scan": [
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794910496808
+      },
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794910617983
+      }
+    ],
+    "10.4 Write property test for the run sequence": [
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794910617611
+      },
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794910737658
+      }
+    ],
+    "10.5 Write the secrets integration test": [
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794910737190
+      },
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794916634561
+      }
+    ],
+    "10. Local_Runner Medium step and checks after the run": [
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794916635076
+      }
+    ],
+    "11.1 Write `tests/medium/unit/sourceScan.test.ts`": [
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794916636116
+      },
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794916985294
+      }
+    ],
+    "11. Source scans for the Medium side": [
+      {
+        "executionId": "74589962-3716-45d2-9f6d-9cc6acb26e60",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794916985497
+      }
     ]
   }
 }

@@ -7,7 +7,6 @@ import { buildMediumPrompt } from "../../../src/pipeline/medium/core/prompt";
 import {
   createKiroRunner,
   describeKiroFailure,
-  scrubMediumEnv,
   type SpawnFn,
   type SpawnOptions,
 } from "../../../src/pipeline/medium/shell/kiroRunner";
@@ -34,21 +33,24 @@ class FakeChild extends EventEmitter {
   stderr = new EventEmitter();
 }
 
+const CWD = "/repo";
+const ADDED = { GRAVEYARD_CERTIFICATE_PATH: "/repo/.graveyard-work/certificate.json", GUARD_LOG_FILE: "/repo/.graveyard-work/guard.log" };
+
 function harness(script: (child: FakeChild) => void, env: Record<string, string | undefined>) {
   const { spawn, calls } = fakeSpawn(script);
   const out: string[] = [];
   const err: string[] = [];
-  const runner = createKiroRunner({ spawn, env, out: (t) => out.push(t), err: (t) => err.push(t) });
+  const runner = createKiroRunner({ spawn, env, cwd: CWD, added: ADDED, out: (t) => out.push(t), err: (t) => err.push(t) });
   return { runner, calls, out, err };
 }
 
 describe("Medium launcher", () => {
   it("builds the fixed argument list from the package name only", () => {
     const args = buildKiroArgs("ip");
-    expect(args.slice(0, 5)).toEqual(["chat", "--v3", "--no-interactive", "--agent", "medium"]);
-    expect(args).toHaveLength(6);
-    expect(args[5]).toBe(buildMediumPrompt("ip"));
-    expect(args[5]).toContain("ip");
+    expect(args.slice(0, 6)).toEqual(["chat", "--v3", "--no-interactive", "--require-mcp-startup", "--agent", "medium"]);
+    expect(args).toHaveLength(7);
+    expect(args[6]).toBe(buildMediumPrompt("ip"));
+    expect(args[6]).toContain("ip");
   });
 
   it("rejects an invalid package name for the prompt", () => {
@@ -56,15 +58,24 @@ describe("Medium launcher", () => {
     expect(() => buildMediumPrompt("a b; rm -rf")).toThrow();
   });
 
-  it("scrubs GITHUB_TOKEN in any letter case and keeps other variables", () => {
-    const env = scrubMediumEnv({ GITHUB_TOKEN: "t1", github_token: "t2", PATH: "/bin", GONE: undefined });
-    expect(env).toEqual({ PATH: "/bin" });
+  it("keeps only Medium_Env_Keys", async () => {
+    const { runner, calls, err } = harness((c) => c.emit("close", 0, null), {
+      GITHUB_TOKEN: "secret-value",
+      github_token: "t2",
+      PATH: "/bin",
+      HOME: "/home/u",
+      OTHER: "other-value",
+      GONE: undefined,
+    });
+    await runner.run("ip");
+    expect(calls[0]?.options.env).toEqual({ PATH: "/bin", HOME: "/home/u", ...ADDED });
+    expect(err[0]).toBe("Medium environment keys: GRAVEYARD_CERTIFICATE_PATH, GUARD_LOG_FILE, HOME, PATH\n");
+    expect(err.join("")).not.toMatch(/secret-value|other-value|\/bin/);
   });
 
-  it("spawns kiro-cli once without a shell and without GITHUB_TOKEN", async () => {
+  it("spawns kiro-cli once without a shell, with the added paths and the working directory", async () => {
     const { runner, calls } = harness((c) => c.emit("close", 0, null), {
       GITHUB_TOKEN: "secret-value",
-      GRAVEYARD_CERTIFICATE_PATH: "/x/certificate.json",
     });
     const outcome = await runner.run("ip");
     expect(outcome).toEqual({ kind: "exited", exitCode: 0, usageLimit: false });
@@ -72,7 +83,10 @@ describe("Medium launcher", () => {
     expect(calls[0]?.command).toBe("kiro-cli");
     expect(calls[0]?.args).toEqual(buildKiroArgs("ip"));
     expect(calls[0]?.options.shell).toBe(false);
-    expect(calls[0]?.options.env).toEqual({ GRAVEYARD_CERTIFICATE_PATH: "/x/certificate.json" });
+    expect(calls[0]?.options.cwd).toBe(CWD);
+    expect(calls[0]?.options.env).toEqual(ADDED);
+    expect(calls[0]?.options.env["GRAVEYARD_CERTIFICATE_PATH"]).toBe(ADDED.GRAVEYARD_CERTIFICATE_PATH);
+    expect(calls[0]?.options.env["GUARD_LOG_FILE"]).toBe(ADDED.GUARD_LOG_FILE);
   });
 
   it("forwards child output and prints no environment value", async () => {
@@ -87,7 +101,7 @@ describe("Medium launcher", () => {
     const outcome = await runner.run("ip");
     expect(outcome).toEqual({ kind: "exited", exitCode: 3, usageLimit: false });
     expect(out).toEqual(["hello"]);
-    expect(err).toEqual(["warn"]);
+    expect(err.slice(1)).toEqual(["warn"]);
     expect([...out, ...err].join("")).not.toMatch(/secret-value|other-value/);
   });
 
@@ -131,6 +145,8 @@ describe("Medium launcher", () => {
         throw new Error("boom");
       },
       env: {},
+      cwd: CWD,
+      added: ADDED,
       out: () => {},
       err: () => {},
     });

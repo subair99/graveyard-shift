@@ -3,6 +3,7 @@
 // `createResurrectDeps` is the production wiring, used only by `scripts/resurrect.ts`.
 import { execFile } from "node:child_process";
 import { constants as fsConstants, promises as fsp } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { createInterface, type Interface } from "node:readline";
 import { runAutopsy } from "../../../engine";
@@ -10,7 +11,31 @@ import { createMemoryCache } from "../../../engine/cache/cache";
 import { systemClock } from "../../../engine/clock";
 import { canonicalJson } from "../../../engine/serialize/canonicalJson";
 import { formatTimestamp } from "../../../engine/sources/http";
-import type { AutopsyRun, Clock, DeathCertificate } from "../../../engine/types";
+import type { AutopsyRun, Clock, DeathCertificate, Result } from "../../../engine/types";
+import { identityValuesFromEnv } from "../../../proof/core/identity";
+import {
+  DEFAULT_EXTRACT_LIMITS,
+  extractTarball,
+  type ExtractedFile,
+  type ExtractError,
+} from "../../../proof/shell/tarball/tarballExtractor";
+import type { IdentityValues, Platform } from "../../common/canonical";
+import { serializeEligibilityRecord } from "../../gravedigger/core/eligibility";
+import { CI_OWNED_KEYS } from "../../harness/core/compiler";
+import { DeltaSchema } from "../../harness/core/deltas";
+import { PRESETS } from "../../harness/core/presets";
+import { buildPresetMenu, deltaKindsOf, printPresetMenu } from "../../medium/core/presetMenu";
+import { summarizeGuardLog } from "../../medium/core/guardLog";
+import { parseDeltasFile } from "../../harness/core/deltas";
+import { parseHarnessFile } from "../../harness/core/harnessFile";
+import { dirtyTreeLines, GIT_STATUS_ARGV, parsePorcelainZ, unexpectedChangedPaths } from "../core/porcelain";
+import {
+  contextScanFindings,
+  GUARD_LOG_FILE_REL,
+  MEDIUM_CONTEXT_DIR,
+  measurementFilePath,
+  planMediumContext,
+} from "../core/mediumContext";
 import { ALLOWED_MEDIUM_PATHS, CREDIT_CEILING } from "../../common/constants";
 import { isSupportedPackageName } from "../../common/packageNames";
 import { runGravedigger, type GravediggerResult } from "../../gravedigger/shell/gravedigger";
@@ -19,7 +44,13 @@ import { safePathForLog } from "../../intake/core/safePath";
 import { validateIntake } from "../../intake/core/validator";
 import type { IntakeEntry } from "../../intake/core/types";
 import { readFsEntries } from "../../intake/shell/fsEntries";
-import { createKiroRunner, defaultSpawn, describeKiroFailure, type KiroRunner } from "../../medium/shell/kiroRunner";
+import {
+  createKiroRunner,
+  defaultSpawn,
+  describeKiroFailure,
+  type KiroOutcome,
+  type KiroRunner,
+} from "../../medium/shell/kiroRunner";
 import { parseResurrectArgs, type PathFns } from "../core/cliArgs";
 import {
   appendEntry,
@@ -45,6 +76,9 @@ export const CERTIFICATE_DIR = ".graveyard-work";
 export const CERTIFICATE_FILE = ".graveyard-work/certificate.json";
 export const CERTIFICATE_ENV_VAR = "GRAVEYARD_CERTIFICATE_PATH";
 export const IP_MEASUREMENT_FILE = "docs/measurements/ip-2.0.1.json";
+export const GUARD_LOG_ENV_VAR = "GUARD_LOG_FILE";
+/** Exit code of an interrupted run (128 + SIGINT). */
+export const INTERRUPT_EXIT_CODE = 130;
 export const STUB_NO_CREDIT_TEXT = "A stub run uses no credit.";
 
 /** File operations, all relative to the repository root unless noted. */
@@ -61,6 +95,14 @@ export interface ResurrectFs {
   listDir(dir: string): Promise<StubListEntry[]>;
   /** Plain copy of each item, in order (directories are listed before their children). */
   copy(items: readonly StubCopyItem[]): Promise<void>;
+  /** The file bytes, or null when the file does not exist; other read errors throw. */
+  readOptional(rel: string): Promise<Uint8Array | null>;
+  /** Removes a directory tree. Nothing there is fine; a symbolic link at `rel` throws. */
+  removeTree(rel: string): Promise<void>;
+  /** Writes bytes, creating parent directories. */
+  writeBytes(rel: string, bytes: Uint8Array): Promise<void>;
+  /** Creates the file empty, or empties it to 0 bytes (parent directories are created). */
+  truncate(rel: string): Promise<void>;
 }
 
 export interface ResurrectDeps {
@@ -70,13 +112,19 @@ export interface ResurrectDeps {
   readonly fs: ResurrectFs;
   readonly coroner: (name: string) => Promise<AutopsyRun>;
   readonly gravedigger: (cert: DeathCertificate) => Promise<GravediggerResult>;
-  /** Builds the runner; `env` already holds `GRAVEYARD_CERTIFICATE_PATH`. The runner removes `GITHUB_TOKEN`. */
+  /** Builds the runner; `env` already holds `GRAVEYARD_CERTIFICATE_PATH`. The runner keeps only the Medium_Env_Keys. */
   readonly kiro: (env: Record<string, string | undefined>) => KiroRunner;
   /** The kiro-cli version text, or null when it cannot be read. */
   readonly kiroVersion: () => Promise<string | null>;
   readonly prompt: { ask(question: string): Promise<string> };
   readonly readEntries: (root: string) => Promise<IntakeEntry[]>;
   readonly push: (input: PushInput) => Promise<number>;
+  /** Stdout of `git status --porcelain -z --untracked-files=all` at the repository root, or the failure. */
+  readonly gitStatus: () => Promise<Result<string, string>>;
+  /** Extracts the Original tarball in memory terms (no file is kept). */
+  readonly extract: (tarball: Uint8Array) => Promise<Result<ExtractedFile[], ExtractError>>;
+  readonly identity: IdentityValues;
+  readonly platform: Platform;
   readonly clock: Clock;
   readonly env: Readonly<Record<string, string | undefined>>;
   readonly out: (line: string) => void;
@@ -186,20 +234,28 @@ async function run(argv: readonly string[], deps: ResurrectDeps): Promise<Resurr
 
   // 6. Certificate for the Medium's read-only tool; gitignored and never pushed (R6.11).
   await deps.fs.mkdir(CERTIFICATE_DIR);
-  await deps.fs.writeText(CERTIFICATE_FILE, `${canonicalJson(cert)}\n`);
+  const certificateText = `${canonicalJson(cert)}\n`;
+  await deps.fs.writeText(CERTIFICATE_FILE, certificateText);
   const certificatePath = deps.path.join(deps.repoRoot, ...CERTIFICATE_FILE.split("/"));
 
   // 7. Medium, or the stub copy.
   let entry: LedgerEntry;
-  let mediumFailed = false;
-  let failureNote: string | null = null;
+  let exitedOutcome: Extract<KiroOutcome, { kind: "exited" }> | null = null;
   if (args.stubDir === undefined) {
+    const prepared = await prepareMedium(deps, args.package, version, cert, dug, certificateText);
+    if (prepared !== null) return fail(prepared);
     deps.out(
       `Credit_Ceiling: ${CREDIT_CEILING} credits. This is a documented rule that this command does not enforce.`,
     );
     const kiroVersion = (await deps.kiroVersion()) ?? NOT_PROVIDED;
-    const creditBefore = await deps.prompt.ask("Credit meter reading before (press Enter to skip): ");
-    const runner = deps.kiro({ ...deps.env, [CERTIFICATE_ENV_VAR]: certificatePath });
+    let creditBefore: string;
+    try {
+      creditBefore = await deps.prompt.ask("Credit meter reading before (press Enter to skip): ");
+    } catch {
+      return fail("Interrupted before the Medium started. Nothing was written and nothing was pushed.", INTERRUPT_EXIT_CODE);
+    }
+    const guardLogPath = deps.path.join(deps.repoRoot, ...GUARD_LOG_FILE_REL.split("/"));
+    const runner = deps.kiro({ ...deps.env, [CERTIFICATE_ENV_VAR]: certificatePath, [GUARD_LOG_ENV_VAR]: guardLogPath });
     const outcome = await runner.run(args.package);
     if (outcome.kind !== "exited") {
       return fail(
@@ -207,7 +263,15 @@ async function run(argv: readonly string[], deps: ResurrectDeps): Promise<Resurr
           `kiro-cli could not be started${outcome.kind === "failed-to-start" ? `: ${outcome.message}` : ""}. No ledger entry was written.`,
       );
     }
-    const creditAfter = await deps.prompt.ask("Credit meter reading after (press Enter to skip): ");
+    exitedOutcome = outcome;
+    let creditAfter: string;
+    try {
+      creditAfter = await deps.prompt.ask("Credit meter reading after (press Enter to skip): ");
+    } catch {
+      deps.err("Interrupted at the second meter reading. No ledger entry was written and nothing was pushed.");
+      deps.err("Record the meter readings of this run in docs/kiro-journal.md by hand.");
+      return { exitCode: INTERRUPT_EXIT_CODE };
+    }
     entry = buildLocalEntry({
       package: args.package,
       version,
@@ -217,10 +281,6 @@ async function run(argv: readonly string[], deps: ResurrectDeps): Promise<Resurr
       exitCode: outcome.exitCode,
       kiroCliVersion: kiroVersion,
     });
-    mediumFailed = outcome.exitCode !== 0;
-    failureNote = describeKiroFailure(outcome);
-    if (mediumFailed) deps.err(`The Medium exited with code ${outcome.exitCode}.`);
-    if (failureNote !== null) deps.err(failureNote);
   } else {
     await deps.fs.copy(stubItems);
     deps.out(STUB_NO_CREDIT_TEXT);
@@ -240,15 +300,14 @@ async function run(argv: readonly string[], deps: ResurrectDeps): Promise<Resurr
   }
   deps.out(`Wrote an entry to ${LEDGER_FILE_NAME}.`);
   for (const line of LEDGER_REMINDER) deps.out(line);
-  if (mediumFailed) return { exitCode: 1 };
 
-  // 9. Intake_Validator on the three paths; nothing is deleted (R6.8).
-  const validated = validateIntake(await deps.readEntries(deps.repoRoot));
-  if (!validated.ok) {
-    deps.err("The Medium output fails the intake check; nothing was pushed and nothing was deleted:");
-    for (const v of validated.violations) deps.err(`  ${safePathForLog(v.path)}: ${v.code}: ${v.message}`);
-    return { exitCode: 1 };
+  // 9. Checks after the run, in the order 10.7, 10.3, 10.4, 10.5, 10.8; the first failure ends the run,
+  // the Ledger entry stays and no file is deleted (medium-agent R10.10).
+  if (exitedOutcome !== null) {
+    const failed = await checksAfterMedium(deps, exitedOutcome);
+    if (failed) return { exitCode: 1 };
   }
+  if (!(await intakeAndParseCheck(deps))) return { exitCode: 1 };
 
   // 10. One push call (R6.10).
   const exitCode = await deps.push({
@@ -258,6 +317,167 @@ async function run(argv: readonly string[], deps: ResurrectDeps): Promise<Resurr
     root: deps.repoRoot,
   });
   return { exitCode };
+}
+
+/** Checks 10.7, 10.3, 10.4 and 10.5 of a run without --stub. Returns true when one failed (already printed). */
+async function checksAfterMedium(
+  deps: ResurrectDeps,
+  outcome: Extract<KiroOutcome, { kind: "exited" }>,
+): Promise<boolean> {
+  // 10.7: exit code or usage-limit text.
+  const failureNote = describeKiroFailure(outcome);
+  if (outcome.exitCode !== 0) deps.err(`The Medium exited with code ${outcome.exitCode}.`);
+  if (failureNote !== null) deps.err(failureNote);
+  if (outcome.exitCode !== 0 || failureNote !== null) return true;
+
+  // 10.3 and 10.4 read the Guard_Log; a missing file counts as zero lines.
+  let logText = "";
+  try {
+    const bytes = await deps.fs.readOptional(GUARD_LOG_FILE_REL);
+    if (bytes !== null) logText = new TextDecoder().decode(bytes);
+  } catch {
+    deps.err(`${GUARD_LOG_FILE_REL} could not be read. Nothing was pushed and nothing was deleted.`);
+    return true;
+  }
+  const summary = summarizeGuardLog(logText);
+  if (summary.denyLines.length > 0) {
+    deps.err("The Write_Guard blocked writes during the run; nothing was pushed and nothing was deleted:");
+    for (const line of summary.denyLines) deps.err(`  ${safePathForLog(line)}`);
+    return true;
+  }
+  if (summary.lineCount === 0) {
+    for (const rel of OUTPUT_PATHS) {
+      if (await deps.fs.exists(rel)) {
+        deps.err(
+          "The Write_Guard left no record in the Guard_Log, but the Medium produced output. " +
+            "Nothing was pushed and nothing was deleted.",
+        );
+        return true;
+      }
+    }
+  }
+
+  // 10.5 (with 10.6): paths changed outside the three outputs and ledger.json.
+  const status = await deps.gitStatus().catch(() => null);
+  const changed = status !== null && status.ok ? parsePorcelainZ(status.value) : null;
+  if (changed === null || !changed.ok) {
+    deps.err("Could not read git status after the run. Nothing was pushed and nothing was deleted.");
+    return true;
+  }
+  const unexpected = unexpectedChangedPaths(changed.value);
+  if (unexpected.length > 0) {
+    deps.err("The Medium changed paths outside its three outputs; nothing was pushed and nothing was deleted:");
+    for (const p of unexpected) deps.err(`  ${safePathForLog(p)}`);
+    return true;
+  }
+  return false;
+}
+
+/** Check 10.8, both modes: parse deltas.json and harness.json when present, then the Intake_Validator. True when it passes. */
+async function intakeAndParseCheck(deps: ResurrectDeps): Promise<boolean> {
+  const problems: string[] = [];
+  const parsers = [
+    ["deltas.json", parseDeltasFile],
+    ["harness.json", parseHarnessFile],
+  ] as const;
+  for (const [file, parse] of parsers) {
+    const text = await deps.fs.readText(file);
+    if (text === null) continue;
+    const parsed = parse(text);
+    if (!parsed.ok) for (const issue of parsed.error.issues) problems.push(`${file}: ${safePathForLog(issue)}`);
+  }
+  const validated = validateIntake(await deps.readEntries(deps.repoRoot));
+  if (!validated.ok) {
+    for (const v of validated.violations) problems.push(`${safePathForLog(v.path)}: ${v.code}: ${v.message}`);
+  }
+  if (problems.length === 0) return true;
+  deps.err("The Medium output fails the intake check; nothing was pushed and nothing was deleted:");
+  for (const p of problems) deps.err(`  ${p}`);
+  return false;
+}
+
+/**
+ * Step 7 before the Medium (run without --stub): clean tree, Medium_Context plan, scan, write, Guard_Log
+ * (medium-agent R4.5, R4.6, R5.1 to R5.7, R10.1, R10.2, R10.6). Returns the failure text, or null when
+ * the Medium may start. No text of a scan match is ever returned.
+ */
+async function prepareMedium(
+  deps: ResurrectDeps,
+  name: string,
+  version: string,
+  cert: DeathCertificate,
+  dug: GravediggerResult,
+  certificateText: string,
+): Promise<string | null> {
+  // Clean tree (R10.1, R10.2, R10.6): a read failure fails closed.
+  const status = await deps.gitStatus().catch(() => null);
+  if (status === null || !status.ok) return "Could not read git status. Nothing was started.";
+  const changed = parsePorcelainZ(status.value);
+  if (!changed.ok) return "Could not read git status. Nothing was started.";
+  if (changed.value.length > 0) {
+    return [
+      "The working tree is not clean. Commit or remove these changes first; nothing was started:",
+      ...dirtyTreeLines(changed.value).map((l) => `  ${l}`),
+    ].join("\n");
+  }
+
+  // Plan (R5.1 to R5.3, R5.6).
+  if (dug.tarball === null) return "No tarball is available for the Original files. Nothing was started.";
+  let extracted: Awaited<ReturnType<ResurrectDeps["extract"]>>;
+  try {
+    extracted = await deps.extract(dug.tarball);
+  } catch {
+    return "The Original tarball could not be read. Nothing was started.";
+  }
+  if (!extracted.ok) {
+    const e = extracted.error;
+    const reason = "reason" in e ? e.reason : e.limit;
+    return `The Original tarball could not be extracted: ${e.kind}: ${reason}. Nothing was started.`;
+  }
+  const measurementRel = measurementFilePath(name, version);
+  let measurementBytes: Uint8Array | null;
+  try {
+    measurementBytes = await deps.fs.readOptional(measurementRel);
+  } catch {
+    return `${safePathForLog(measurementRel)} could not be read. Nothing was started.`;
+  }
+  const menuText = printPresetMenu(buildPresetMenu(PRESETS, deltaKindsOf(DeltaSchema), CI_OWNED_KEYS));
+  const files = planMediumContext({
+    certificateText,
+    eligibilityText: serializeEligibilityRecord(dug.record),
+    menuText,
+    measurementBytes,
+    original: extracted.value,
+  });
+
+  // Scan before anything is written (R5.5); names files, never the matched text.
+  const findings = contextScanFindings(files, deps.identity, deps.platform);
+  if (findings.length > 0) {
+    return [
+      "The Medium_Context scan found text that must not reach the Medium; nothing was started. Affected files:",
+      ...findings.map((rel) => `  ${safePathForLog(rel)}`),
+    ].join("\n");
+  }
+
+  // Write (R5.1, R5.6).
+  let current = MEDIUM_CONTEXT_DIR;
+  try {
+    await deps.fs.removeTree(MEDIUM_CONTEXT_DIR);
+    for (const f of files) {
+      current = `${MEDIUM_CONTEXT_DIR}/${f.rel}`;
+      await deps.fs.writeBytes(current, f.bytes);
+    }
+  } catch {
+    return `${safePathForLog(current)} could not be written or removed. Nothing was started.`;
+  }
+
+  // Guard_Log (R4.5, R4.6).
+  try {
+    await deps.fs.truncate(GUARD_LOG_FILE_REL);
+  } catch {
+    return `${GUARD_LOG_FILE_REL} could not be created or emptied. Nothing was started.`;
+  }
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -317,6 +537,33 @@ function nodeFs(root: string): ResurrectFs {
         else await fsp.copyFile(item.from, item.to, fsConstants.COPYFILE_EXCL);
       }
     },
+    async readOptional(rel) {
+      try {
+        return new Uint8Array(await fsp.readFile(full(rel)));
+      } catch (e) {
+        if ((e as { code?: string }).code === "ENOENT") return null;
+        throw e;
+      }
+    },
+    async removeTree(rel) {
+      let stat;
+      try {
+        stat = await fsp.lstat(full(rel));
+      } catch (e) {
+        if ((e as { code?: string }).code === "ENOENT") return;
+        throw e;
+      }
+      if (stat.isSymbolicLink()) throw new Error("refusing to remove a symbolic link");
+      await fsp.rm(full(rel), { recursive: true, force: true });
+    },
+    async writeBytes(rel, bytes) {
+      await fsp.mkdir(path.dirname(full(rel)), { recursive: true });
+      await fsp.writeFile(full(rel), bytes);
+    },
+    async truncate(rel) {
+      await fsp.mkdir(path.dirname(full(rel)), { recursive: true });
+      await fsp.writeFile(full(rel), "");
+    },
   };
 }
 
@@ -336,9 +583,25 @@ export function createResurrectDeps(repoRoot: string, env: Readonly<Record<strin
   const ask = (question: string): Promise<string> => {
     rl ??= createInterface({ input: process.stdin, output: process.stdout });
     const reader = rl;
-    return new Promise((resolve) => reader.question(question, resolve));
+    // A SIGINT or close of the reader while a question is pending rejects it: the runner treats that as an
+    // interrupt (medium-agent R9.9). These are readline events; no process SIGINT handler is installed.
+    return new Promise((resolve, reject) => {
+      const onStop = (): void => {
+        reader.off("SIGINT", onStop);
+        reader.off("close", onStop);
+        reject(new Error("interrupted"));
+      };
+      reader.once("SIGINT", onStop);
+      reader.once("close", onStop);
+      reader.question(question, (answer) => {
+        reader.off("SIGINT", onStop);
+        reader.off("close", onStop);
+        resolve(answer);
+      });
+    });
   };
   const token = env["GITHUB_TOKEN"];
+  const platform: Platform = process.platform === "win32" ? "win32" : "posix";
   const deps: ResurrectDeps = {
     repoRoot,
     path,
@@ -354,6 +617,12 @@ export function createResurrectDeps(repoRoot: string, env: Readonly<Record<strin
       createKiroRunner({
         spawn: defaultSpawn,
         env: kiroEnv,
+        cwd: repoRoot,
+        added: {
+          GRAVEYARD_CERTIFICATE_PATH:
+            kiroEnv[CERTIFICATE_ENV_VAR] ?? path.join(repoRoot, ...CERTIFICATE_FILE.split("/")),
+          GUARD_LOG_FILE: kiroEnv[GUARD_LOG_ENV_VAR] ?? path.join(repoRoot, ...GUARD_LOG_FILE_REL.split("/")),
+        },
         out: (text) => void process.stdout.write(text),
         err: (text) => void process.stderr.write(text),
       }),
@@ -372,6 +641,20 @@ export function createResurrectDeps(repoRoot: string, env: Readonly<Record<strin
           err,
         }),
       ),
+    gitStatus: async () => {
+      const r = await nodeCommandRunner.run("git", ["-C", repoRoot, ...GIT_STATUS_ARGV]);
+      return r.code === 0 ? { ok: true, value: r.stdout } : { ok: false, error: "git status failed" };
+    },
+    extract: async (tarball) => {
+      const dir = await fsp.mkdtemp(path.join(tmpdir(), "gs-medium-"));
+      try {
+        return await extractTarball(tarball, dir, DEFAULT_EXTRACT_LIMITS);
+      } finally {
+        await fsp.rm(dir, { recursive: true, force: true });
+      }
+    },
+    identity: identityValuesFromEnv(env, platform),
+    platform,
     clock: systemClock,
     env,
     out,

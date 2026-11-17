@@ -1382,3 +1382,9 @@ Diagnosis (agent-run, plain `node` on the extracted Original lib/ip.js; the tabl
 ## 2026-11-16: Credit meter reading (user-run)
 - User-read meter, 2026-11-16 20:28 WAT: bonus kiroween-20-26, 1837.99 of 4000 credits used, 46 days left.
 - Derived, not read: 2162.01 credits left (4000 - 1837.99). The window since the 1,055.73 reading (entry "Spike 8 and credits") includes IDE work, so it is not a per-run cost.
+## 2026-11-17: Medium-agent checkpoint 5 (user-run and CI)
+- User-run facts. `npx vitest run --project pipeline --project pipeline-integration`: 86 files passed, 843 tests passed, 7 skipped.
+- Spans, checked against targets (user-pasted run): pipeline 14.5 s (target 90 s), pipeline-integration 18.6 s (target 120 s).
+- CI run 44038672434: test-linux, test-windows and test-no-identity all green. `writeGuard.integration.test.ts` ran 83 tests with 0 skipped on test-linux (the symlink and POSIX cases ran) and 2 skipped on test-windows (CI run 44038672434).
+- The existing intake, entry-reader and push-plan tests passed with unchanged expected values (Requirement 3.12; user-run output above).
+- Agent-run: none. This entry is documentation only.

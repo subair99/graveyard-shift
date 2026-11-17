@@ -6,5 +6,5 @@ export const KIRO_COMMAND = "kiro-cli";
 export const MEDIUM_AGENT = "medium";
 
 export function buildKiroArgs(packageName: string): string[] {
-  return ["chat", "--v3", "--no-interactive", "--agent", MEDIUM_AGENT, buildMediumPrompt(packageName)];
+  return ["chat", "--v3", "--no-interactive", "--require-mcp-startup", "--agent", MEDIUM_AGENT, buildMediumPrompt(packageName)];
 }

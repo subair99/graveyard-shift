@@ -252,7 +252,7 @@ export declare function formatLogLine(d: GuardDecision, at: Date): string;
 1. `abs = path.resolve(workRoot, raw)` (normalizes `.`, `..` and `//`).
 2. If `lstat(abs)` finds an entry (file, directory, or link, dangling or not), the resolved form is `realpath(abs)`; a dangling link makes `realpath` throw: exit 2, reason `dangling or unreadable symbolic link in path`.
 3. Otherwise walk up to the nearest ancestor that `lstat` finds, take its `realpath` (a dangling ancestor link exits 2) and append the missing segments.
-4. `rel = path.relative(workRoot, resolved)`. Empty, starting with `..`, or absolute: no Root_Relative_Form, exit 2, reason `outside the work root`. Otherwise `rel` with `/` separators.
+4. `rel = path.relative(workRoot, resolved)`. Empty, equal to `..` or starting with `../` (only these are outside the work root; a name such as `..x` is judged by the path rules), or absolute: no Root_Relative_Form, exit 2, reason `outside the work root`. Otherwise `rel` with `/` separators.
 
 Both the Work_Root and the target use `fs.realpathSync` (JavaScript form, not `.native`), so both sides have the same form and a path keeps its letter case as written; `Resurrection/a.js` is denied by the case-sensitive allowlist. Read against the spike case file, every case keeps its `expect` value (checked by reading, not by running).
 

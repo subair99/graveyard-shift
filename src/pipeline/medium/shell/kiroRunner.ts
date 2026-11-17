@@ -1,10 +1,11 @@
 // Starts the Medium (`kiro-cli chat --v3 --no-interactive --agent medium "<prompt>"`) once.
 // Spawned with an argument list and no shell (R6.12), with an environment without
-// GITHUB_TOKEN (R6.7). No environment value is printed or logged: only the child's own
-// output is forwarded.
+// only the Medium_Env_Keys (R6.7, medium-agent R11.1). Only environment key names are printed;
+// the child's own output is forwarded.
 
 import { spawn as nodeSpawn } from "node:child_process";
 import { KIRO_COMMAND, buildKiroArgs } from "../core/kiroArgs";
+import { buildMediumEnv } from "../core/mediumEnv";
 
 export const SETUP_NOTE_PATH = "spikes/kiro-agent/README.md";
 export const SETUP_NOTE_SECTION = "Setup note: log in with the right account";
@@ -22,6 +23,7 @@ export interface SpawnedProcess {
 
 export interface SpawnOptions {
   env: Record<string, string>;
+  cwd: string;
   shell: false;
   stdio: ["ignore", "pipe", "pipe"];
 }
@@ -39,8 +41,12 @@ export interface KiroRunner {
 
 export interface KiroRunnerDeps {
   spawn: SpawnFn;
-  /** The caller's environment; GITHUB_TOKEN is removed before the child starts. */
+  /** The caller's environment; only the Medium_Env_Keys reach the child. */
   env: Readonly<Record<string, string | undefined>>;
+  /** Repository root, the working directory of the child. */
+  cwd: string;
+  /** Absolute paths added to the child's environment. */
+  added: { GRAVEYARD_CERTIFICATE_PATH: string; GUARD_LOG_FILE: string };
   /** Receives the child's standard output text. */
   out: (text: string) => void;
   /** Receives the child's standard error text. */
@@ -50,22 +56,12 @@ export interface KiroRunnerDeps {
 const USAGE_LIMIT_PATTERN = /usage[\s_-]*limit|UsageLimitReached/i;
 const SCAN_TAIL_CHARS = 64;
 
-/** Copy of `env` without GITHUB_TOKEN (any letter case) and without undefined values. */
-export function scrubMediumEnv(env: Readonly<Record<string, string | undefined>>): Record<string, string> {
-  const result: Record<string, string> = {};
-  for (const [key, value] of Object.entries(env)) {
-    if (value === undefined) continue;
-    if (key.toUpperCase() === "GITHUB_TOKEN") continue;
-    result[key] = value;
-  }
-  return result;
-}
-
 export function createKiroRunner(deps: KiroRunnerDeps): KiroRunner {
   return {
     run(packageName: string): Promise<KiroOutcome> {
       const args = buildKiroArgs(packageName);
-      const env = scrubMediumEnv(deps.env);
+      const env = buildMediumEnv(deps.env, deps.added);
+      deps.err(`Medium environment keys: ${Object.keys(env).sort().join(", ")}\n`);
       return new Promise<KiroOutcome>((resolve) => {
         let settled = false;
         let usageLimit = false;
@@ -87,7 +83,7 @@ export function createKiroRunner(deps: KiroRunnerDeps): KiroRunner {
 
         let child: SpawnedProcess;
         try {
-          child = deps.spawn(KIRO_COMMAND, args, { env, shell: false, stdio: ["ignore", "pipe", "pipe"] });
+          child = deps.spawn(KIRO_COMMAND, args, { env, cwd: deps.cwd, shell: false, stdio: ["ignore", "pipe", "pipe"] });
         } catch (error) {
           settle(startFailure(error));
           return;

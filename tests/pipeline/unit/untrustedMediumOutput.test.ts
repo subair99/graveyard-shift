@@ -164,6 +164,10 @@ describe("Local_Runner", () => {
       writeAtomic: async (rel, text) => void files.set(rel, text),
       listDir: async () => [],
       copy: async () => undefined,
+      readOptional: async () => null,
+      removeTree: async () => undefined,
+      writeBytes: async () => undefined,
+      truncate: async () => undefined,
     };
     const deps: ResurrectDeps = {
       repoRoot: "/home/u/graveyard-shift",
@@ -183,8 +187,12 @@ describe("Local_Runner", () => {
           tarballUrl: "https://registry.npmjs.org/x/-/x.tgz",
           fetchedAt: "2026-11-16T10:00:00Z",
         }),
-        tarball: null,
+        tarball: new Uint8Array([1]),
       }),
+      gitStatus: async () => ({ ok: true, value: "" }),
+      extract: async () => ({ ok: true, value: [] }),
+      identity: { pathValues: [], userName: undefined },
+      platform: "posix",
       kiro: () => ({
         run: async (name) => {
           kiroRuns.push(name);

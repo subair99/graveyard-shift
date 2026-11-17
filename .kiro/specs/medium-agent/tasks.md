@@ -115,24 +115,24 @@ Conventions for every task:
     - File: `tests/medium/integration/guardLog.integration.test.ts`, child process with `GUARD_LOG_FILE` in a temporary directory: an allowed write, a blocked write, a non-Write_Tool call, invalid JSON, a missing `tool_name`, a path of more than 200 code units, a path with a control character, an existing log that is only appended to, and an unwritable Guard_Log (missing parent, a directory) with unchanged exit code and standard error.
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.7_
 
-- [ ] 5. Checkpoint: path-rules move and Write_Guard
+- [x] 5. Checkpoint: path-rules move and Write_Guard
   - Agent: run `npm run typecheck` and `npm run lint` and fix findings.
   - Ready for you to run: `npx vitest run --project pipeline --project pipeline-integration`. Paste the output. Existing intake, entry-reader and push-plan tests must pass with unchanged expected values (Requirement 3.12). Ensure all tests pass, ask the user if questions arise.
   - _Requirements: 3.12, 12.6_
 
-- [ ] 6. Context_Server (design Component 4)
-  - [ ] 6.1 Implement `src/pipeline/medium/agent/contextServer.mjs` and `contextServer.d.mts`
+- [x] 6. Context_Server (design Component 4)
+  - [x] 6.1 Implement `src/pipeline/medium/agent/contextServer.mjs` and `contextServer.d.mts`
     - Imports only `node:fs`, `node:path`, `node:url`; no write, rename, delete, network or child-process call; no `process.env`.
     - `--context <dir>` only, relative paths resolved against the repository root from `import.meta.url`; start failures exit 1 with a reason on standard error and nothing on standard output.
     - Newline-delimited JSON-RPC 2.0 from `spikes/kiro-agent/mcp-stub/server.mjs`: `initialize` (protocol negotiation as the stub), `ping`, `tools/list`, `tools/call`, no reply to notifications; errors `-32700` (id `null`), `-32600`, `-32601`, `-32602` `Invalid params`, `-32603`; continue after an error; exit on a line over 1,048,576 bytes.
     - The six tools with `additionalProperties: false` schemas; `MAX_FILE_BYTES = 1048576` checked with `fstatSync` before reading; strict UTF-8 for `read_original_file`; containment by `realpath` inside `original/` with the fixed text `path not found or not allowed`; exported pure `buildAdvisories(certificateText, measurementText | null)` as in the design.
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 11.3_
 
-  - [ ] 6.2 Check the server constants against the TypeScript sources
+  - [x] 6.2 Check the server constants against the TypeScript sources
     - Extend `tests/medium/unit/pathRules.test.ts`: the server's `MAX_FILE_BYTES` equals `INTAKE_LIMITS.maxFileBytes`, and its six tool names equal the list of Requirement 6.2.
     - _Requirements: 6.2, 6.5_
 
-  - [ ] 6.3 Write the Context_Server integration test
+  - [x] 6.3 Write the Context_Server integration test
     - File: `tests/medium/integration/contextServer.integration.test.ts`, child process against a temporary Medium_Context, no network: tool list and each tool output; `get_advisories` with and without `measurement.json`; containment errors of 6.3 (`..`, absolute, U+0000, missing, directory, link outside `original/`, links skipped where unsupported); the size limit on each tool and the UTF-8 error; the protocol errors of 6.6 each followed by an answered valid request; the start failures of 6.7 (missing argument, not a directory); the over-long line of 6.8.
     - _Requirements: 6.1, 6.2, 6.3, 6.5, 6.6, 6.7, 6.8, 6.9_
 
@@ -151,70 +151,70 @@ Conventions for every task:
     - **Validates: Requirements 6.2**
     - File: `tests/medium/property/p14-advisories.test.ts`, in-process `buildAdvisories`.
 
-- [ ] 7. Agent_Definition and Agent_Prompt (design Components 1 and 6)
-  - [ ] 7.1 Create `.kiro/agents/medium.json`
+- [x] 7. Agent_Definition and Agent_Prompt (design Components 1 and 6)
+  - [x] 7.1 Create `.kiro/agents/medium.json`
     - The JSON of design Component 1 (server key `mediumcontext`, six `@mediumcontext/...` tools, `excludedTools`, `includeMcpJson` and `includePowers` false, the two steering `resources`, the permission rules, the PreToolUse hook `node src/pipeline/medium/agent/writeGuard.mjs` with the anchored matcher) and the inline Agent_Prompt of design Component 6. No `model`, `trust`, `allowedTools`, `toolsSettings`; no `spikes/` substring. Place nothing under `~/.kiro/`.
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 13.1, 13.4_
 
-  - [ ] 7.2 Write the agent definition test
+  - [x] 7.2 Write the agent definition test
     - File: `tests/medium/unit/agentDefinition.test.ts`: a checker over the parsed JSON that names each broken criterion or path, plus a table of single mutations of the committed file (one per criterion of 1.1 to 1.6, 2.1 to 2.5 and 3.1, a `file://` or non-string prompt, a missing or `spikes/` script path, the `spikes/` substring), each of which the checker must reject. Also checks that exactly one Agent_Definition for `medium` exists outside `spikes/`, that both steering files exist, and that the matcher matches every Write_Tool name. No `kiro-cli`.
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 13.4_
 
-  - [ ] 7.3 Write the Agent_Prompt test
+  - [x] 7.3 Write the Agent_Prompt test
     - File: `tests/medium/unit/agentPrompt.test.ts`: one list of required phrases (at least one per statement of 7.1 to 7.7), compared with whitespace runs collapsed; every `DeltaSchema` kind and every `CI_OWNED_KEYS` key named; every backtick token in the allowed set of 7.8; every Context_Server tool name (plain or `@<server>/<tool>`) in the Agent_Prompt and in `buildMediumPrompt` output is one of the six.
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 8.4_
 
-- [ ] 8. Kiro argument list and Medium_Environment (resurrection-pipeline Property 33 as amended)
-  - [ ] 8.1 Change `kiroArgs.ts` and `kiroRunner.ts`, and update their existing tests
+- [x] 8. Kiro argument list and Medium_Environment (resurrection-pipeline Property 33 as amended)
+  - [x] 8.1 Change `kiroArgs.ts` and `kiroRunner.ts`, and update their existing tests
     - `buildKiroArgs` returns the seven-element list with `--require-mcp-startup`; `prompt.ts` unchanged.
     - `kiroRunner.ts`: `KiroRunnerDeps` gains `cwd` and `added`; `run()` builds `buildMediumEnv(deps.env, deps.added)`, prints `Medium environment keys: <sorted names>` through `deps.err` (names only), and calls `deps.spawn(KIRO_COMMAND, buildKiroArgs(name), { env, cwd, shell: false, stdio })` once. Remove `scrubMediumEnv`. The usage-limit text match stays as is.
     - Update `tests/pipeline/unit/kiroRunner.test.ts` in its own file: seven elements; "keeps only Medium_Env_Keys" replaces the `GITHUB_TOKEN` scrub test; spawn receives `GRAVEYARD_CERTIFICATE_PATH`, `GUARD_LOG_FILE` and `cwd`. Run that file once.
     - _Requirements: 2.6, 8.5, 8.6, 10.7, 11.1, 11.2, 11.6; resurrection-pipeline 6.6, 6.7_
 
-  - [ ] 8.2 Write property test for the Task_Prompt and argument list
+  - [x] 8.2 Write property test for the Task_Prompt and argument list
     - **Property 8: The Task_Prompt and argument list carry only the package name**
     - **Validates: Requirements 2.6, 8.2, 8.3, 8.5**
     - File: `tests/medium/property/p08-task-prompt.test.ts`; the no-`--trust` check also runs on the argument list that `createKiroRunner` passes to a fake `spawn` (Requirement 2.6).
 
-  - [ ] 8.3 Write property test for the Medium_Environment
+  - [x] 8.3 Write property test for the Medium_Environment
     - **Property 9: The Medium_Environment is an allowlist**
     - **Validates: Requirements 11.1, 11.2, 11.6**
     - File: `tests/medium/property/p09-medium-env.test.ts`; the printed key line is read from a fake `spawn` run of `createKiroRunner`.
 
-- [ ] 9. Local_Runner before the Medium starts (`src/pipeline/local/shell/resurrect.ts`)
-  - [ ] 9.1 Add the new deps and the pre-run steps
+- [x] 9. Local_Runner before the Medium starts (`src/pipeline/local/shell/resurrect.ts`)
+  - [x] 9.1 Add the new deps and the pre-run steps
     - `ResurrectDeps` gains `gitStatus`, `extract`, `identity`, `platform`; `ResurrectFs` gains `readOptional`, `removeTree` (refuses a link), `writeBytes`, `truncate`. Wire production in `createResurrectDeps` (`nodeCommandRunner` with `GIT_STATUS_ARGV` at the repository root; `extractTarball` with `DEFAULT_EXTRACT_LIMITS`, as `extractOriginal` in `scripts/ci/intake.ts`; `identityValuesFromEnv`).
     - Step 7 for a run without `--stub`, in the order of the design flowchart: `git status` clean check (dirty paths escaped, `commit ledger.json first` when only `ledger.json`; read failure fails closed); plan the Medium_Context (no-tarball check, `extract` error with `kind` and `reason`, preset menu, Measurement_File by name and certificate version); scan the plan before writing; remove the old context and write the new one; create or empty `.graveyard-work/guard.log`. Any failure: no Medium, no reading, no Ledger entry, non-zero exit, cause named with `safePathForLog`, no matched text printed. The stub path stays unchanged.
     - Update `tests/pipeline/unit/resurrect.test.ts` for the new deps (a non-stub run needs a clean `gitStatus` fake). Run that file once.
     - _Requirements: 4.5, 4.6, 5.1, 5.2, 5.5, 5.6, 5.7, 9.7, 10.1, 10.2, 10.6, 13.6_
 
-- [ ] 10. Local_Runner Medium step and checks after the run
-  - [ ] 10.1 Implement the Medium step, the Ledger entry, the interrupt and the post-run checks
+- [x] 10. Local_Runner Medium step and checks after the run
+  - [x] 10.1 Implement the Medium step, the Ledger entry, the interrupt and the post-run checks
     - Print the Credit_Ceiling statement once, ask the first reading, call `deps.kiro` (spawn exactly once) with the absolute paths of the certificate file and the Guard_Log, then the second reading. `not-found` and `failed-to-start`: no second reading, no Ledger entry, no push, cause printed, non-zero exit. A rejected second reading (readline `SIGINT` or `close`) is an interrupt: no Ledger entry, no push, a note that the readings go into the Journal by hand, exit 130. No SIGINT handler is installed.
     - `exited`: append one `buildLocalEntry` entry (readings as typed, `not provided` for empty, no `cliUsage` key), then the checks in the order 10.7, 10.3, 10.4, 10.5 (with 10.6), 10.8, stopping at the first failure and deleting no file; when all pass, call the Push_Script once and exit with its code. The 10.8 check (intake plus `parseDeltasFile` and `parseHarnessFile`) replaces today's step 9 and also runs for a stub run.
     - Extend `tests/pipeline/unit/resurrect.test.ts` for the changed step order. Run that file once.
     - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.8, 9.9, 10.3, 10.4, 10.5, 10.6, 10.7, 10.8, 10.9, 10.10; resurrection-pipeline 6.8, 6.9, 6.10, 7.1, 7.2, 7.6_
 
-  - [ ] 10.2 Write the Local_Runner Medium unit test
+  - [x] 10.2 Write the Local_Runner Medium unit test
     - File: `tests/medium/unit/localRunnerMedium.test.ts` with a fake `spawn` through `createKiroRunner`, fake git, fake file system, fake prompt and fake clock: Guard_Log path and emptying (4.5), Guard_Log creation failure (4.6), Medium_Context with and without a Measurement_File (5.1), no tarball, extract error and write error (5.6), no commit path under `.graveyard-work/` (5.7), an unsupported package name with zero spawns (8.3), argv array and `cwd` (8.6), each `createKiroRunner` outcome kind, the interrupt at the second reading, the stub run with no spawn and no context (9.1 to 9.10), the dirty tree with `commit ledger.json first` and the failed first read with zero spawns and no Ledger entry, each failing post-run check with zero pushes, and the passing path with one push (10.1 to 10.11).
     - _Requirements: 4.5, 4.6, 5.1, 5.6, 5.7, 8.3, 8.6, 9.5, 9.6, 9.7, 9.8, 9.9, 9.10, 10.1, 10.11_
 
-  - [ ] 10.3 Write property test for the context scan
+  - [x] 10.3 Write property test for the context scan
     - **Property 7: The context scan stops the run on generated-file findings and on identity values only**
     - **Validates: Requirements 5.5**
     - File: `tests/medium/property/p07-context-scan.test.ts`, Local_Runner with fakes.
 
-  - [ ] 10.4 Write property test for the run sequence
+  - [x] 10.4 Write property test for the run sequence
     - **Property 11: The Local_Runner makes one attempt and pushes only when every check passes**
     - **Validates: Requirements 4.6, 5.6, 9.1, 9.2, 9.3, 9.4, 9.8, 9.9, 10.1, 10.2, 10.3, 10.4, 10.6, 10.7, 10.8, 10.9, 10.10**
     - File: `tests/medium/property/p11-local-runner-checks.test.ts`, model-based with fakes.
 
-  - [ ] 10.5 Write the secrets integration test
+  - [x] 10.5 Write the secrets integration test
     - File: `tests/medium/integration/secrets.integration.test.ts`: sentinel values in `GITHUB_TOKEN`, one other variable and a `.env` file at the working directory; run the Local_Runner with fakes, the Write_Guard and the Context_Server as child processes; no sentinel in standard output, standard error, the Guard_Log, the Ledger entry or any Medium_Context file.
     - _Requirements: 11.4; resurrection-pipeline 6.7_
 
-- [ ] 11. Source scans for the Medium side
-  - [ ] 11.1 Write `tests/medium/unit/sourceScan.test.ts`
+- [x] 11. Source scans for the Medium side
+  - [x] 11.1 Write `tests/medium/unit/sourceScan.test.ts`
     - Reads every `.mjs` file of the Agent_Directory. Checks: Write_Guard imports only `node:` modules and `./pathRules.mjs` (3.7); the five files of 3.11 import the Path_Rules_File, and no file of `src/pipeline/intake/core/`, none of the five and not the Write_Guard defines its own control-character pattern, forbidden segment list or allowed-path check (3.11); the Context_Server imports no network or child-process module and calls no write, rename or delete function (6.4); only `prompt.ts` and `kiroArgs.ts` under `src/` and `scripts/` hold the `MEDIUM_PROMPT_PREFIX` text or the literal `--agent` (8.1); `process.env` use (11.3); no LLM client import in the agent files (11.5); no import of `src/pipeline/undertaker/` or `src/pipeline/gravedigger/` from the agent files or `src/pipeline/medium/`, naming file and import (13.5); only the Local_Runner receives the Gravedigger result on the Medium side (13.6); the guard and server import only Node built-ins and Agent_Directory files, and `package.json` has no new dependency for them (13.7).
     - _Requirements: 3.7, 3.11, 6.4, 8.1, 11.3, 11.5, 13.5, 13.6, 13.7_
 
