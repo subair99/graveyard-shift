@@ -56,6 +56,14 @@ Copy `.env.example` to `.env` and fill in `GITHUB_TOKEN`.
 - A stub run (and any `npm run resurrect`) leaves `resurrection/`, `deltas.json`, `harness.json` and `.graveyard-work/` in the clone root. Remove them before the next run: the Local_Runner refuses to start when they exist.
 - `ledger.json` is committed by the user.
 
+#### The Medium agent: enforcement and checks
+- The Medium runs only on the user's machine, in the WSL clone. CI never runs it.
+- The Write_Guard (`src/pipeline/medium/agent/writeGuard.mjs`, a hook of `.kiro/agents/medium.json`) is the enforcement of where the Medium may write. The model's own refusals are not enforcement.
+- Validate the agent definition: `kiro-cli agent validate --path .kiro/agents/medium.json`.
+- The enforcement test is in [docs/medium-enforcement-test.md](docs/medium-enforcement-test.md). Run it once in the WSL clone before the first real run.
+- Before the first real run, check the credential with a scrubbed environment, and read the credit meter before and after: `env -i PATH="$PATH" HOME="$HOME" USER="$USER" LANG="$LANG" TERM="$TERM" kiro-cli whoami`.
+- If a run is interrupted, the meter readings are not written for you. Record them in [docs/kiro-journal.md](docs/kiro-journal.md) by hand.
+
 ## Resurrecting a package
 Who runs what: the Medium (Kiro CLI) runs on demand on the user's machine, in the WSL clone. CI does the rest, in `.github/workflows/resurrect.yml`: it re-runs the Coroner and the Gravedigger, runs the Proof of Life (only in CI, on Node `26.13.1`, the `PINNED_NODE_VERSION` of `src/pipeline/common/constants.ts`), attests only an `alive` verdict and opens a pull request. Nothing is merged automatically. `nightly.yml` re-verifies every committed entry without an LLM and without credits.
 

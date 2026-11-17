@@ -3,7 +3,7 @@
 // Citations are the `// Requirements: ...` header lines of test files. Syntax of one line:
 //   // Requirements: 1.2, 4.3                          bare list: the spec the test belongs to
 //                                                      (tests/engine -> autopsy-engine, tests/proof -> proof-of-life-engine,
-//                                                      tests/pipeline -> resurrection-pipeline)
+//                                                      tests/pipeline -> resurrection-pipeline, tests/medium -> medium-agent)
 //   // Requirements: proof-of-life-engine 15.5, 15.9   list for the named spec
 //   // Requirements: 1.2, 4.3; proof-of-life-engine 15.5, 15.9   several groups, separated by semicolons
 // A citation credits the criterion in the named spec's table, which shows the citing file path.
@@ -49,6 +49,11 @@ const SPECS: readonly SpecConfig[] = [
     requirements: ".kiro/specs/resurrection-pipeline/requirements.md",
     testsDir: "tests/pipeline",
   },
+  {
+    name: "medium-agent",
+    requirements: ".kiro/specs/medium-agent/requirements.md",
+    testsDir: "tests/medium",
+  },
 ];
 
 const CLASSES = [
@@ -85,7 +90,7 @@ function compareText(a: string, b: string): number {
 }
 
 /** Every numbered acceptance criterion: Requirement N, criterion M becomes "N.M". */
-function parseCriteria(markdown: string): Id[] {
+export function parseCriteria(markdown: string): Id[] {
   const ids: Id[] = [];
   let inRequirements = false;
   let current: number | null = null;
@@ -116,7 +121,7 @@ function listTestFiles(dir: string): string[] {
   return out;
 }
 
-interface Citation {
+export interface Citation {
   /** The spec the citation names (or the file's own spec for a bare list). */
   spec: string;
   id: Id;
@@ -124,8 +129,13 @@ interface Citation {
 
 /** Parses the `// Requirements:` lines of one file: groups separated by ";", each `[spec-name] N.M, N.M`. */
 function parseCitations(file: string, ownSpec: string): Citation[] {
+  return parseCitationsText(readFileSync(file, "utf8"), ownSpec);
+}
+
+/** Same as parseCitations, on file text. */
+export function parseCitationsText(text: string, ownSpec: string): Citation[] {
   const out: Citation[] = [];
-  for (const line of readFileSync(file, "utf8").split(/\r?\n/)) {
+  for (const line of text.split(/\r?\n/)) {
     const match = /^\/\/ Requirements: (.*)$/.exec(line);
     if (match === null) continue;
     for (const group of (match[1] ?? "").split(";")) {
@@ -307,7 +317,7 @@ export function runTrace(ctx: TraceContext): { exitCode: number; output: string;
   lines.push(
     "One section per spec. Acceptance criteria come from the spec's `requirements.md`; citations are the `// Requirements:` header lines of the test files. Gap classes (class and evidence per gap) for every spec are read from `docs/traceability-gaps.json`. An unclassified gap or a stale classification entry in any spec makes `npm run trace` exit with 1.",
     "",
-    "Header syntax: `// Requirements: 1.2, 4.3` is a bare list and means the spec the test belongs to (`tests/engine` is autopsy-engine, `tests/proof` is proof-of-life-engine, `tests/pipeline` is resurrection-pipeline). `// Requirements: proof-of-life-engine 15.5, 15.9` cites criteria of another spec, and groups are separated by semicolons: `// Requirements: 1.2, 4.3; proof-of-life-engine 15.5, 15.9`. A citation credits the criterion in the named spec's table, which shows the citing file path. An unknown spec name or an unknown number is listed under \"Cited numbers that do not exist\" in the section of the spec the citing file belongs to.",
+    "Header syntax: `// Requirements: 1.2, 4.3` is a bare list and means the spec the test belongs to (`tests/engine` is autopsy-engine, `tests/proof` is proof-of-life-engine, `tests/pipeline` is resurrection-pipeline, `tests/medium` is medium-agent). `// Requirements: proof-of-life-engine 15.5, 15.9` cites criteria of another spec, and groups are separated by semicolons: `// Requirements: 1.2, 4.3; proof-of-life-engine 15.5, 15.9`. A citation credits the criterion in the named spec's table, which shows the citing file path. An unknown spec name or an unknown number is listed under \"Cited numbers that do not exist\" in the section of the spec the citing file belongs to.",
     "",
   );
 

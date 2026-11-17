@@ -1,4 +1,4 @@
-// Requirements: 4.5, 4.6, 5.1, 5.6, 5.7, 8.3, 8.6, 9.5, 9.6, 9.7, 9.8, 9.9, 9.10, 10.1, 10.11
+// Requirements: 4.5, 4.6, 5.1, 5.2, 5.6, 5.7, 8.3, 8.6, 9.5, 9.6, 9.7, 9.8, 9.9, 9.10, 10.1, 10.11, 12.1
 // Local_Runner steps around the Medium, with a fake spawn through createKiroRunner, fake git, fake file
 // system, fake prompt and fake clock. No kiro-cli, no network, no credit.
 import path from "node:path";
@@ -263,6 +263,30 @@ describe("Medium_Context (5.1, 5.6, 5.7)", () => {
     expect(s.context.get(`${CONTEXT_DIR}/original/lib/odd.bin`)).toEqual(ORIGINAL_BYTES);
     // The context is complete before the Medium starts.
     expect(s.log.lastIndexOf(`writeBytes ${CONTEXT_DIR}/original/lib/odd.bin`)).toBeLessThan(s.log.indexOf("spawn"));
+  });
+
+  it("5.2: the original/<path> entries have exactly the paths and bytes of the extracted files, taken from the Gravedigger tarball", async () => {
+    const tarball = new Uint8Array([9, 8, 7]);
+    const extracted = [
+      { path: "index.js", bytes: new Uint8Array([0, 1, 2, 254, 255]) },
+      { path: "lib/deep/util.js", bytes: new TextEncoder().encode("module.exports = 1;\r\n") },
+      { path: "empty.txt", bytes: new Uint8Array([]) },
+    ];
+    const seen: Uint8Array[] = [];
+    const s = setup({ tarball, onSpawn: allowedRun });
+    s.deps = {
+      ...s.deps,
+      extract: async (bytes) => {
+        seen.push(bytes);
+        return { ok: true, value: extracted };
+      },
+    };
+    await run(s);
+    expect(seen).toEqual([tarball]);
+    const prefix = `${CONTEXT_DIR}/original/`;
+    const originals = [...s.context.entries()].filter(([k]) => k.startsWith(prefix));
+    expect(originals.map(([k]) => k.slice(prefix.length))).toEqual(extracted.map((f) => f.path));
+    for (const f of extracted) expect(s.context.get(`${prefix}${f.path}`)).toEqual(f.bytes);
   });
 
   it("5.1: with a Measurement_File copies its bytes to measurement.json", async () => {

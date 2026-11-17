@@ -55,6 +55,17 @@ tests/pipeline/integration/  Pipeline tests with real sandbox children or a real
 tests/pipeline/fixtures/  Pipeline test fixtures (ip/ with deltas.json and harness.json, stub/)
 tests/pipeline/fixtures/stub/<package>/  Stub_Fixture (ip, lodash.set): committed `resurrection/`, `deltas.json` and `harness.json`, copied by a stub run. A stub run uses no credit, is labelled "stub run" and is not a Medium-produced resurrection
 src/pipeline/  Resurrection pipeline, one directory per role or concern, each with `core/` (pure) and `shell/` (I/O) where it has both: `common/` (constants such as `PREDICATE_TYPE` and `PINNED_NODE_VERSION`, branch and package names, canonical JSON, Result, `shell/system.ts`), `gravedigger/` (Gravedigger: rules and eligibility record), `harness/` (compiler of `deltas.json` and `harness.json`, `core/presets/`, `sandbox/` CommonJS modules), `intake/` (CI intake validation of a pushed resurrection branch), `local/` (Local_Runner on the user's machine: arguments, ledger, stub plan, push), `medium/` (Medium prompt and the Kiro CLI runner), `necromancy/` (author and license gate), `undertaker/` (entry layout, gates, predicate, pull request text, `verifyCommands`, publish, replay, nightly re-verification)
+.kiro/agents/medium.json  Kiro CLI agent definition of the Medium (`--agent medium`): prompt, tool allowlist, the writeGuard hook and the context server; check with `kiro-cli agent validate`
+src/pipeline/medium/agent/writeGuard.mjs  preToolUse hook of the Medium: denies writes outside the allowed paths and appends to the guard log (plain ESM, with a `.d.mts` type file)
+src/pipeline/medium/agent/contextServer.mjs  MCP stdio server that gives the Medium its read-only context (certificate, eligibility, preset menu) from the work directory, plus advisories and the Original files (plain ESM)
+src/pipeline/medium/agent/pathRules.mjs  Pure path rules shared by the guard and the Local_Runner checks (allowed write targets, rejected paths); plain ESM so the hook can load it
+src/pipeline/medium/core/mediumEnv.ts  Pure: builds the scrubbed environment of the Kiro CLI child
+src/pipeline/medium/core/presetMenu.ts  Pure: the preset menu text given to the Medium
+src/pipeline/medium/core/guardLog.ts  Pure: summarizes a guard log (line count and DENY lines); the line format is written by writeGuard.mjs
+src/pipeline/local/core/porcelain.ts  Pure: parses `git status --porcelain` output for the Local_Runner checks
+src/pipeline/local/core/mediumContext.ts  Pure: builds the context files the Local_Runner writes for the Medium
+docs/medium-enforcement-test.md  Manual Enforcement_Test_Doc: how the user checks that the Medium's guard and tool limits hold with `--agent medium`
+tests/medium/  Medium agent tests: `unit/`, `property/` (p*-*.test.ts) and `integration/` (*.integration.test.ts, real guard and server processes); run by the vitest projects `pipeline` and `pipeline-integration`
 scripts/resurrect.ts  Local_Runner entry (`npm run resurrect -- <package> [--stub <fixture-dir>]`)
 scripts/push-resurrection.ts  Pushes `resurrect/<package>` and dispatches `resurrect.yml`; never pushes `ledger.json`
 scripts/measureIp.ts, scripts/lib/measureIp.ts  ip@2.0.1 measurement (`npm run measure:ip`); writes `docs/measurements/ip-2.0.1.json`

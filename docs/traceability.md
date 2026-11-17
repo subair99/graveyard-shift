@@ -1,12 +1,12 @@
 # Traceability
 
-Generated on 2026-11-16 by `npm run trace` (system date; this is documentation, not a measured number).
+Generated on 2026-11-17 by `npm run trace` (system date; this is documentation, not a measured number).
 
 A citation shows which tests claim to cover a criterion; it does not prove coverage.
 
 One section per spec. Acceptance criteria come from the spec's `requirements.md`; citations are the `// Requirements:` header lines of the test files. Gap classes (class and evidence per gap) for every spec are read from `docs/traceability-gaps.json`. An unclassified gap or a stale classification entry in any spec makes `npm run trace` exit with 1.
 
-Header syntax: `// Requirements: 1.2, 4.3` is a bare list and means the spec the test belongs to (`tests/engine` is autopsy-engine, `tests/proof` is proof-of-life-engine, `tests/pipeline` is resurrection-pipeline). `// Requirements: proof-of-life-engine 15.5, 15.9` cites criteria of another spec, and groups are separated by semicolons: `// Requirements: 1.2, 4.3; proof-of-life-engine 15.5, 15.9`. A citation credits the criterion in the named spec's table, which shows the citing file path. An unknown spec name or an unknown number is listed under "Cited numbers that do not exist" in the section of the spec the citing file belongs to.
+Header syntax: `// Requirements: 1.2, 4.3` is a bare list and means the spec the test belongs to (`tests/engine` is autopsy-engine, `tests/proof` is proof-of-life-engine, `tests/pipeline` is resurrection-pipeline, `tests/medium` is medium-agent). `// Requirements: proof-of-life-engine 15.5, 15.9` cites criteria of another spec, and groups are separated by semicolons: `// Requirements: 1.2, 4.3; proof-of-life-engine 15.5, 15.9`. A citation credits the criterion in the named spec's table, which shows the citing file path. An unknown spec name or an unknown number is listed under "Cited numbers that do not exist" in the section of the spec the citing file belongs to.
 
 ## Spec: autopsy-engine
 
@@ -470,7 +470,7 @@ A citation shows which tests claim to cover a criterion; it does not prove cover
 | 6.4 | `tests/pipeline/unit/resurrect.test.ts` |
 | 6.5 | `tests/pipeline/unit/resurrect.test.ts` |
 | 6.6 | `tests/pipeline/unit/kiroRunner.test.ts`<br>`tests/pipeline/unit/resurrect.test.ts` |
-| 6.7 | `tests/pipeline/unit/kiroRunner.test.ts` |
+| 6.7 | `tests/medium/integration/secrets.integration.test.ts`<br>`tests/pipeline/unit/kiroRunner.test.ts` |
 | 6.8 | `tests/pipeline/unit/resurrect.test.ts` |
 | 6.9 | `tests/pipeline/unit/resurrect.test.ts` |
 | 6.10 | `tests/pipeline/unit/push.test.ts`<br>`tests/pipeline/unit/resurrect.test.ts` |
@@ -506,8 +506,8 @@ A citation shows which tests claim to cover a criterion; it does not prove cover
 | 9.2 | `tests/pipeline/unit/ciIntakeEntry.test.ts`<br>`tests/pipeline/unit/dispatchInputs.test.ts`<br>`tests/pipeline/unit/packTarball.test.ts` |
 | 9.3 | `tests/pipeline/integration/gitEntries.integration.test.ts`<br>`tests/pipeline/unit/ciIntakeEntry.test.ts`<br>`tests/pipeline/unit/fsEntries.test.ts` |
 | 9.4 | `tests/pipeline/integration/gitEntries.integration.test.ts`<br>`tests/pipeline/unit/ciIntakeEntry.test.ts` |
-| 9.5 | `tests/pipeline/integration/gitEntries.integration.test.ts`<br>`tests/pipeline/property/p13-intake-paths.test.ts`<br>`tests/pipeline/unit/fsEntries.test.ts`<br>`tests/pipeline/unit/intakeValidator.test.ts` |
-| 9.6 | `tests/pipeline/integration/gitEntries.integration.test.ts`<br>`tests/pipeline/property/p13-intake-paths.test.ts`<br>`tests/pipeline/unit/intakeValidator.test.ts` |
+| 9.5 | `tests/medium/property/p04-path-rules-oracle.test.ts`<br>`tests/pipeline/integration/gitEntries.integration.test.ts`<br>`tests/pipeline/property/p13-intake-paths.test.ts`<br>`tests/pipeline/unit/fsEntries.test.ts`<br>`tests/pipeline/unit/intakeValidator.test.ts` |
+| 9.6 | `tests/medium/property/p04-path-rules-oracle.test.ts`<br>`tests/pipeline/integration/gitEntries.integration.test.ts`<br>`tests/pipeline/property/p13-intake-paths.test.ts`<br>`tests/pipeline/unit/intakeValidator.test.ts` |
 | 9.7 | `tests/pipeline/unit/intakeValidator.test.ts` |
 | 9.8 | `tests/pipeline/unit/intakeValidator.test.ts` |
 | 9.9 | `tests/pipeline/unit/intakeValidator.test.ts` |
@@ -773,6 +773,168 @@ Gaps per class:
 - covered, header missing: 0
 - manual: 17
 - optional, skipped in first pass: 5
+
+### Classification check
+
+- Unclassified gaps: none
+- Classified criteria that do not exist in requirements.md: none
+- Stale classification entries (no longer gaps): none
+- Duplicate classification entries: none
+
+### Cited numbers that do not exist in requirements.md
+
+none
+
+## Spec: medium-agent
+
+Requirements: `.kiro/specs/medium-agent/requirements.md`. Tests: `tests/medium/**/*.test.ts`.
+
+A citation shows which tests claim to cover a criterion; it does not prove coverage.
+
+### Summary
+
+- Test files scanned: 20
+- Acceptance criteria: 110
+- Criteria cited by at least one test file: 100
+- Criteria with no citing test file (gaps): 10
+
+### Criteria and citing test files
+
+| Criterion | Test files |
+| --- | --- |
+| 1.1 | `tests/medium/unit/agentDefinition.test.ts` |
+| 1.2 | `tests/medium/unit/agentDefinition.test.ts` |
+| 1.3 | `tests/medium/unit/agentDefinition.test.ts` |
+| 1.4 | `tests/medium/unit/agentDefinition.test.ts` |
+| 1.5 | `tests/medium/unit/agentDefinition.test.ts` |
+| 1.6 | `tests/medium/unit/agentDefinition.test.ts` |
+| 1.7 | `tests/medium/unit/agentDefinition.test.ts` |
+| 1.8 | (none) |
+| 2.1 | `tests/medium/unit/agentDefinition.test.ts` |
+| 2.2 | `tests/medium/unit/agentDefinition.test.ts` |
+| 2.3 | `tests/medium/unit/agentDefinition.test.ts` |
+| 2.4 | `tests/medium/unit/agentDefinition.test.ts` |
+| 2.5 | `tests/medium/unit/agentDefinition.test.ts` |
+| 2.6 | `tests/medium/property/p08-task-prompt.test.ts` |
+| 2.7 | (none) |
+| 3.1 | `tests/medium/unit/agentDefinition.test.ts` |
+| 3.2 | `tests/medium/integration/writeGuard.integration.test.ts`<br>`tests/medium/property/p01-guard-paths.test.ts` |
+| 3.3 | `tests/medium/integration/writeGuard.integration.test.ts`<br>`tests/medium/property/p01-guard-paths.test.ts` |
+| 3.4 | `tests/medium/integration/writeGuard.integration.test.ts`<br>`tests/medium/property/p02-guard-total.test.ts` |
+| 3.5 | `tests/medium/integration/writeGuard.integration.test.ts` |
+| 3.6 | `tests/medium/integration/writeGuard.integration.test.ts`<br>`tests/medium/property/p02-guard-total.test.ts` |
+| 3.7 | `tests/medium/integration/writeGuard.integration.test.ts`<br>`tests/medium/unit/sourceScan.test.ts` |
+| 3.8 | `tests/medium/property/p01-guard-paths.test.ts` |
+| 3.9 | `tests/medium/integration/writeGuard.integration.test.ts` |
+| 3.10 | (none) |
+| 3.11 | `tests/medium/property/p04-path-rules-oracle.test.ts`<br>`tests/medium/unit/pathRules.test.ts`<br>`tests/medium/unit/sourceScan.test.ts` |
+| 3.12 | `tests/medium/property/p04-path-rules-oracle.test.ts` |
+| 4.1 | `tests/medium/integration/guardLog.integration.test.ts`<br>`tests/medium/property/p03-guard-log.test.ts` |
+| 4.2 | `tests/medium/integration/guardLog.integration.test.ts`<br>`tests/medium/property/p03-guard-log.test.ts` |
+| 4.3 | `tests/medium/integration/guardLog.integration.test.ts`<br>`tests/medium/property/p03-guard-log.test.ts` |
+| 4.4 | `tests/medium/integration/guardLog.integration.test.ts` |
+| 4.5 | `tests/medium/unit/localRunnerMedium.test.ts` |
+| 4.6 | `tests/medium/property/p11-local-runner-checks.test.ts`<br>`tests/medium/unit/localRunnerMedium.test.ts` |
+| 4.7 | `tests/medium/integration/guardLog.integration.test.ts` |
+| 5.1 | `tests/medium/unit/localRunnerMedium.test.ts` |
+| 5.2 | `tests/medium/unit/localRunnerMedium.test.ts` |
+| 5.3 | `tests/medium/unit/presetMenu.test.ts` |
+| 5.4 | `tests/medium/unit/presetMenu.test.ts` |
+| 5.5 | `tests/medium/property/p07-context-scan.test.ts` |
+| 5.6 | `tests/medium/property/p11-local-runner-checks.test.ts`<br>`tests/medium/unit/localRunnerMedium.test.ts` |
+| 5.7 | `tests/medium/unit/docs.test.ts`<br>`tests/medium/unit/localRunnerMedium.test.ts` |
+| 6.1 | `tests/medium/integration/contextServer.integration.test.ts` |
+| 6.2 | `tests/medium/integration/contextServer.integration.test.ts`<br>`tests/medium/unit/pathRules.test.ts` |
+| 6.3 | `tests/medium/integration/contextServer.integration.test.ts` |
+| 6.4 | `tests/medium/unit/sourceScan.test.ts` |
+| 6.5 | `tests/medium/integration/contextServer.integration.test.ts`<br>`tests/medium/unit/pathRules.test.ts` |
+| 6.6 | `tests/medium/integration/contextServer.integration.test.ts` |
+| 6.7 | `tests/medium/integration/contextServer.integration.test.ts` |
+| 6.8 | `tests/medium/integration/contextServer.integration.test.ts` |
+| 6.9 | `tests/medium/integration/contextServer.integration.test.ts` |
+| 7.1 | `tests/medium/unit/agentPrompt.test.ts` |
+| 7.2 | `tests/medium/unit/agentPrompt.test.ts` |
+| 7.3 | `tests/medium/unit/agentPrompt.test.ts` |
+| 7.4 | `tests/medium/unit/agentPrompt.test.ts` |
+| 7.5 | `tests/medium/unit/agentPrompt.test.ts` |
+| 7.6 | `tests/medium/unit/agentPrompt.test.ts` |
+| 7.7 | `tests/medium/unit/agentPrompt.test.ts` |
+| 7.8 | `tests/medium/unit/agentPrompt.test.ts` |
+| 8.1 | `tests/medium/unit/sourceScan.test.ts` |
+| 8.2 | `tests/medium/property/p08-task-prompt.test.ts` |
+| 8.3 | `tests/medium/property/p08-task-prompt.test.ts`<br>`tests/medium/unit/localRunnerMedium.test.ts` |
+| 8.4 | `tests/medium/unit/agentPrompt.test.ts` |
+| 8.5 | `tests/medium/property/p08-task-prompt.test.ts` |
+| 8.6 | `tests/medium/unit/localRunnerMedium.test.ts` |
+| 9.1 | `tests/medium/property/p11-local-runner-checks.test.ts`<br>`tests/pipeline/unit/resurrect.test.ts` |
+| 9.2 | `tests/medium/property/p11-local-runner-checks.test.ts`<br>`tests/pipeline/unit/resurrect.test.ts` |
+| 9.3 | `tests/medium/property/p11-local-runner-checks.test.ts` |
+| 9.4 | `tests/medium/property/p11-local-runner-checks.test.ts` |
+| 9.5 | `tests/medium/unit/localRunnerMedium.test.ts` |
+| 9.6 | `tests/medium/unit/localRunnerMedium.test.ts`<br>`tests/pipeline/unit/resurrect.test.ts` |
+| 9.7 | `tests/medium/unit/localRunnerMedium.test.ts` |
+| 9.8 | `tests/medium/property/p11-local-runner-checks.test.ts`<br>`tests/medium/unit/localRunnerMedium.test.ts`<br>`tests/pipeline/unit/resurrect.test.ts` |
+| 9.9 | `tests/medium/property/p11-local-runner-checks.test.ts`<br>`tests/medium/unit/localRunnerMedium.test.ts`<br>`tests/pipeline/unit/resurrect.test.ts` |
+| 9.10 | `tests/medium/unit/localRunnerMedium.test.ts` |
+| 10.1 | `tests/medium/property/p11-local-runner-checks.test.ts`<br>`tests/medium/unit/localRunnerMedium.test.ts` |
+| 10.2 | `tests/medium/property/p11-local-runner-checks.test.ts`<br>`tests/pipeline/unit/resurrect.test.ts` |
+| 10.3 | `tests/medium/property/p03-guard-log.test.ts`<br>`tests/medium/property/p11-local-runner-checks.test.ts`<br>`tests/pipeline/unit/resurrect.test.ts` |
+| 10.4 | `tests/medium/property/p11-local-runner-checks.test.ts`<br>`tests/pipeline/unit/resurrect.test.ts` |
+| 10.5 | `tests/pipeline/unit/resurrect.test.ts` |
+| 10.6 | `tests/medium/property/p11-local-runner-checks.test.ts`<br>`tests/pipeline/unit/resurrect.test.ts` |
+| 10.7 | `tests/medium/property/p11-local-runner-checks.test.ts`<br>`tests/pipeline/unit/resurrect.test.ts` |
+| 10.8 | `tests/medium/property/p11-local-runner-checks.test.ts`<br>`tests/pipeline/unit/resurrect.test.ts` |
+| 10.9 | `tests/medium/property/p11-local-runner-checks.test.ts` |
+| 10.10 | `tests/medium/property/p11-local-runner-checks.test.ts` |
+| 10.11 | `tests/medium/unit/localRunnerMedium.test.ts` |
+| 11.1 | `tests/medium/property/p09-medium-env.test.ts` |
+| 11.2 | `tests/medium/property/p09-medium-env.test.ts` |
+| 11.3 | `tests/medium/unit/sourceScan.test.ts` |
+| 11.4 | `tests/medium/integration/secrets.integration.test.ts` |
+| 11.5 | `tests/medium/unit/sourceScan.test.ts` |
+| 11.6 | `tests/medium/property/p09-medium-env.test.ts` |
+| 11.7 | (none) |
+| 11.8 | (none) |
+| 12.1 | `tests/medium/unit/localRunnerMedium.test.ts` |
+| 12.2 | `tests/medium/unit/requirementsHeader.test.ts` |
+| 12.3 | `tests/medium/unit/requirementsHeader.test.ts` |
+| 12.4 | (none) |
+| 12.5 | (none) |
+| 12.6 | (none) |
+| 12.7 | (none) |
+| 13.1 | `tests/medium/unit/docs.test.ts`<br>`tests/medium/unit/pathRules.test.ts` |
+| 13.2 | `tests/medium/unit/docs.test.ts` |
+| 13.3 | `tests/medium/unit/docs.test.ts` |
+| 13.4 | `tests/medium/unit/agentDefinition.test.ts` |
+| 13.5 | `tests/medium/unit/sourceScan.test.ts` |
+| 13.6 | `tests/medium/unit/sourceScan.test.ts` |
+| 13.7 | `tests/medium/unit/sourceScan.test.ts` |
+| 13.8 | (none) |
+| 13.9 | `tests/medium/unit/docs.test.ts` |
+| 13.10 | `tests/medium/unit/docs.test.ts` |
+
+### Gaps
+
+Criteria that no test file cites, with the class and evidence from `docs/traceability-gaps.json`:
+
+- 1.8: manual. Manual step of docs/medium-enforcement-test.md, run in the WSL clone: the user records in docs/kiro-journal.md the output and exit code of `kiro-cli agent validate --path .kiro/agents/medium.json` and the output of `kiro-cli agent list`. No result is recorded yet; the shape of the definition is checked offline by the agent definition test (1.7).
+- 2.7: manual. The Journal record of the enforcement test of criterion 3.10 is the only evidence of the effect of the fs_write, fs_read and mcp permission rules. No result is recorded yet. The Write_Guard tests cover the write paths whichever layer refuses a write.
+- 3.10: manual. Enforcement test of docs/medium-enforcement-test.md, run by the user against the committed agent definition without --trust-* flags: the user records in docs/kiro-journal.md the Guard_Log lines (ALLOW and DENY) and, per refused write, whether a permission deny, a Write_Guard block or both occurred. No result is recorded yet.
+- 11.7: manual. First real Medium run (resurrection-pipeline task 16.1, M9): the user records in docs/kiro-journal.md the Medium_Environment key names printed on standard error, whether kiro-cli started with the logged-in account, and whether kiro-cli wrote any file into the workspace. No result is recorded yet.
+- 11.8: manual. Before the first real Medium run, in the WSL clone: the user runs `kiro-cli whoami` with only the Medium_Env_Keys environment and records in docs/kiro-journal.md its output, exit code and the Credit_Meter_Reading before and after. No result is recorded yet.
+- 12.4: documentation only. scripts/trace.ts maps tests/medium to medium-agent in its SPECS list and exits 1 on an unclassified gap or a stale entry (tests/pipeline/unit/traceExit.test.ts checks the exit rule on a demo spec, header cites resurrection-pipeline 21.7 only). The medium-agent section and the exit code are shown by the user's run of npm run trace; no test runs the medium-agent mapping itself.
+- 12.5: documentation only. Process rule for the task list: .kiro/specs/medium-agent/tasks.md marks every task that needs kiro-cli, WSL or a Credit_Meter_Reading as 'Manual task (yours)' (15.1 for 11.8 and 15.2 for 1.8, 2.7, 3.10) and cites the first real Medium run as resurrection-pipeline task 16.1 (M9) without repeating it. No test reads tasks.md.
+- 12.6: documentation only. Process rule: .kiro/specs/medium-agent/tasks.md (conventions at the top and the checkpoint tasks) tells agents to run only npm run typecheck, npm run lint and one test file at a time and to stop with 'Ready for you to run:' for a full run; the workspace testing-workflow steering rule says the same. No test checks it.
+- 12.7: documentation only. Honesty rule applied in the Journal: the entries 'Medium-agent checkpoint 5', 'Medium-agent checkpoint 12' and the checkpoint 14 entry in docs/kiro-journal.md state only figures from user-pasted runs and name the command. No test scans the Journal for unsourced numbers.
+- 13.8: documentation only. Process rule: the medium-agent work added no third-party tool or dependency, so PREEXISTING.md is unchanged (stated in the Journal entry 'Medium-agent implementation'); the Context_Server and the Write_Guard import only Node built-ins (source scan test cites 13.5 and 13.7). No test checks PREEXISTING.md.
+
+Gaps per class:
+
+- needs a test: 0
+- documentation only: 5
+- covered, header missing: 0
+- manual: 5
+- optional, skipped in first pass: 0
 
 ### Classification check
 

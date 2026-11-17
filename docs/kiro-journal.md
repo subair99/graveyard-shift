@@ -1388,3 +1388,22 @@ Diagnosis (agent-run, plain `node` on the extracted Original lib/ip.js; the tabl
 - CI run 44038672434: test-linux, test-windows and test-no-identity all green. `writeGuard.integration.test.ts` ran 83 tests with 0 skipped on test-linux (the symlink and POSIX cases ran) and 2 skipped on test-windows (CI run 44038672434).
 - The existing intake, entry-reader and push-plan tests passed with unchanged expected values (Requirement 3.12; user-run output above).
 - Agent-run: none. This entry is documentation only.
+
+## 2026-11-17: Medium-agent checkpoint 12 (user-run and CI)
+- User-run facts. `npx vitest run --project pipeline --project pipeline-integration`: 96 files passed, 1024 tests passed, 8 skipped.
+- Spans, checked against targets (user-pasted run): pipeline 14.1 s (target 90 s), pipeline-integration 20.1 s (target 120 s).
+- Commit ec07e5a. CI run 44080718037: test-linux, test-windows and test-no-identity all green.
+- Agent-run: none. This entry is documentation only.
+
+## 2026-11-17: Medium-agent checkpoint 14 (user-run)
+- User-run facts, `npm test`: 199 files passed, 2358 tests passed, 11 skipped.
+- Spans, checked against targets (user-pasted `npm test` run): pipeline 14.0 s (target 90 s), pipeline-integration 56.6 s (target 120 s), proof-heavy 38.2 s (target 90 s), proof-integration 20.2 s (target 120 s), proof-property 35.0 s (target 60 s).
+- User-run facts, `npm run trace`: medium-agent criteria 110, cited 98, gaps 12 (manual 5). Unclassified: 5.2, 12.1, 12.4, 12.5, 12.6, 12.7, 13.8. The other specs were unchanged and no spec had unknown citations.
+- Follow-up (agent-made, no new number): 5.2 got a test (`localRunnerMedium.test.ts`, original/<path> paths and bytes equal the extracted files). 12.1 is cited by the same file, which runs the Local_Runner with a fake spawn, git, file system, prompt and clock. 12.4, 12.5, 12.6, 12.7 and 13.8 are classified "documentation only" in `docs/traceability-gaps.json`. The trace header parsers are now exported from `scripts/trace.ts` and `requirementsHeader.test.ts` uses them instead of a copy.
+- The trace result after these changes is not yet known; the user runs `npm run trace` again.
+- Agent-run: typecheck, lint and single test files only.
+## 2026-11-17: Medium-agent implementation (agent-made change; nothing run for this entry)
+- Change: the Medium runs as the Kiro CLI agent `.kiro/agents/medium.json` (`--agent medium`), with a write guard hook (`writeGuard.mjs`, rules in `pathRules.mjs`), a read-only context server (`contextServer.mjs`), new pure modules (`mediumEnv`, `presetMenu`, `guardLog`, `porcelain`, `mediumContext`) and tests in `tests/medium/`, run by the `pipeline` and `pipeline-integration` projects. The manual check is in `docs/medium-enforcement-test.md`.
+- Steering updated: `structure.md` (one line per new file) and `tech.md` (project lines name `tests/medium`). `PREEXISTING.md` is unchanged: no new dependency or data source.
+- Measured figures are in the entries "Medium-agent checkpoint 5" and "Medium-agent checkpoint 12" (user-pasted runs). No new number is stated here.
+- Agent-run: typecheck and lint only, for this documentation change.

@@ -218,36 +218,36 @@ Conventions for every task:
     - Reads every `.mjs` file of the Agent_Directory. Checks: Write_Guard imports only `node:` modules and `./pathRules.mjs` (3.7); the five files of 3.11 import the Path_Rules_File, and no file of `src/pipeline/intake/core/`, none of the five and not the Write_Guard defines its own control-character pattern, forbidden segment list or allowed-path check (3.11); the Context_Server imports no network or child-process module and calls no write, rename or delete function (6.4); only `prompt.ts` and `kiroArgs.ts` under `src/` and `scripts/` hold the `MEDIUM_PROMPT_PREFIX` text or the literal `--agent` (8.1); `process.env` use (11.3); no LLM client import in the agent files (11.5); no import of `src/pipeline/undertaker/` or `src/pipeline/gravedigger/` from the agent files or `src/pipeline/medium/`, naming file and import (13.5); only the Local_Runner receives the Gravedigger result on the Medium side (13.6); the guard and server import only Node built-ins and Agent_Directory files, and `package.json` has no new dependency for them (13.7).
     - _Requirements: 3.7, 3.11, 6.4, 8.1, 11.3, 11.5, 13.5, 13.6, 13.7_
 
-- [ ] 12. Checkpoint: code complete
+- [x] 12. Checkpoint: code complete
   - Agent: run `npm run typecheck` and `npm run lint` and fix findings.
   - Ready for you to run: `npx vitest run --project pipeline --project pipeline-integration`. Paste the output. Ensure all tests pass, ask the user if questions arise.
   - _Requirements: 12.1, 12.6_
 
-- [ ] 13. Documentation and traceability
-  - [ ] 13.1 Write the README subsection and the Enforcement_Test_Doc
+- [x] 13. Documentation and traceability
+  - [x] 13.1 Write the README subsection and the Enforcement_Test_Doc
     - `README.md`: a subsection under "Running the Medium in WSL" with the content of design Component 9 (the Medium runs only on the user's machine in WSL; the Write_Guard is the enforcement and the model's refusals are not; `kiro-cli agent validate --path .kiro/agents/medium.json`; the enforcement test in `docs/medium-enforcement-test.md`; the `kiro-cli whoami` check of 11.8 before the first real run; readings of an interrupted run recorded in the Journal by hand).
     - `docs/medium-enforcement-test.md`: steps 1 to 6 of design Component 9 against `.kiro/agents/medium.json`, only `--agent medium`, with meter readings before and after the run and the list of what to record.
     - _Requirements: 1.8, 3.10, 9.9, 13.9, 13.10_
 
-  - [ ] 13.2 Update steering and the Journal
+  - [x] 13.2 Update steering and the Journal
     - `.kiro/steering/structure.md`: one line each for `.kiro/agents/medium.json`, `src/pipeline/medium/agent/writeGuard.mjs`, `contextServer.mjs`, `pathRules.mjs`, `docs/medium-enforcement-test.md`, the new core modules and `tests/medium/`. `.kiro/steering/tech.md`: the `pipeline` and `pipeline-integration` project lines name `tests/medium`.
     - `docs/kiro-journal.md`: an entry for this change with no number that the user did not paste. `PREEXISTING.md` stays unchanged (no new dependency or data source).
     - _Requirements: 12.7, 13.2, 13.8_
 
-  - [ ] 13.3 Map `tests/medium/` in the trace and classify the manual criteria
+  - [x] 13.3 Map `tests/medium/` in the trace and classify the manual criteria
     - `scripts/trace.ts`: add `{ name: "medium-agent", requirements: ".kiro/specs/medium-agent/requirements.md", testsDir: "tests/medium" }` to `SPECS`.
     - `docs/traceability-gaps.json`: entries with class `manual` for 1.8, 2.7, 3.10, 11.7 and 11.8. Other uncited criteria are classified after the user's `npm run trace` output in task 14.
     - _Requirements: 12.4_
 
-  - [ ] 13.4 Write the docs test
+  - [x] 13.4 Write the docs test
     - File: `tests/medium/unit/docs.test.ts`: every path of 13.2 is in `structure.md` and exists; the README subsection contains `kiro-cli agent validate`, `.kiro/agents/medium.json` and `docs/medium-enforcement-test.md`; the Enforcement_Test_Doc names `.kiro/agents/medium.json` and no `--agent` value other than `medium`; `.gitignore` keeps `/.graveyard-work/`; the spike files of 13.3 exist with pinned sha256 values; no file of this spec lies under `~/.kiro/`.
     - _Requirements: 5.7, 13.1, 13.2, 13.3, 13.9, 13.10_
 
-  - [ ] 13.5 Write the requirements header test
+  - [x] 13.5 Write the requirements header test
     - File: `tests/medium/unit/requirementsHeader.test.ts`: every test file under `tests/medium/` starts with a `// Requirements:` line whose bare list names existing medium-agent criteria and whose `; resurrection-pipeline` group names existing criteria of that spec; files under `tests/medium/integration/` are named `*.integration.test.ts`.
     - _Requirements: 12.2, 12.3_
 
-- [ ] 14. Checkpoint: full suite and trace, run by the user
+- [-] 14. Checkpoint: full suite and trace, run by the user
   - Agent: run `npm run typecheck` and `npm run lint` and fix findings. Do not run `npm test`.
   - Ready for you to run: `npm test`, then `npm run trace`. Paste both outputs. The agent then adds a `docs/traceability-gaps.json` entry for each medium-agent criterion the trace reports as unclassified, and asks the user to run `npm run trace` again until it exits with code 0. Journal spans of `pipeline` and `pipeline-integration` come only from the pasted `npm test` output.
   - Ensure all tests pass, ask the user if questions arise.

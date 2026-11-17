@@ -3,7 +3,7 @@
 // Local_Runner with a fake spawn, fake git, fake file system, fake prompt and fake clock. No kiro-cli, no network.
 import path from "node:path";
 import fc from "fast-check";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { buildEligibilityRecord } from "../../../src/pipeline/gravedigger/core/record";
 import type { GravediggerResult } from "../../../src/pipeline/gravedigger/shell/gravedigger";
 import {
@@ -14,6 +14,14 @@ import {
 import { createKiroRunner, type SpawnedProcess, type SpawnFn } from "../../../src/pipeline/medium/shell/kiroRunner";
 import { LODASH_SET_CERT } from "../../pipeline/helpers/gravediggerCerts";
 
+// The preset menu is built from the fixed PRESETS inside runResurrect and no dependency reaches it, so
+// the test replaces only its printer, to let the menu text carry the planted value.
+const menu = vi.hoisted(() => ({ extra: "" }));
+vi.mock("../../../src/pipeline/medium/core/presetMenu", async (importOriginal) => {
+  const original = await importOriginal<typeof import("../../../src/pipeline/medium/core/presetMenu")>();
+  return { ...original, printPresetMenu: (...a: Parameters<typeof original.printPresetMenu>) => original.printPresetMenu(...a) + menu.extra };
+});
+
 const ROOT = "/home/u/graveyard-shift";
 const NOW = new Date("2026-11-16T10:00:00.000Z");
 const GUARD_LOG = ".graveyard-work/guard.log";
@@ -22,7 +30,7 @@ const ALLOW_LINE = "2026-11-16T10:00:00Z ALLOW fs_write resurrection/package.jso
 
 type Extract = Awaited<ReturnType<ResurrectDeps["extract"]>>;
 
-function setup(opts: { measurement?: string; original: Array<{ path: string; text: string }>; identityPath: string }) {
+function setup(opts: { certText?: string; eligibilityText?: string; measurement?: string; original: Array<{ path: string; text: string }>; identityPath: string }) {
   const err: string[] = [];
   const out: string[] = [];
   const asked: string[] = [];
@@ -92,9 +100,18 @@ function setup(opts: { measurement?: string; original: Array<{ path: string; tex
     repoRoot: ROOT,
     path: path.posix,
     fs,
-    coroner: async () => ({ certificates: [LODASH_SET_CERT], errors: [], notes: [] }),
+    coroner: async () => ({
+      certificates: [
+        opts.certText === undefined
+          ? LODASH_SET_CERT
+          : { ...LODASH_SET_CERT, openVulnerabilityIds: [opts.certText] },
+      ],
+      errors: [],
+      notes: [],
+    }),
     gravedigger: async (c): Promise<GravediggerResult> => ({
-      record: buildEligibilityRecord({
+      record: {
+        ...buildEligibilityRecord({
         name: c.package.name,
         version: c.package.version,
         cert: c,
@@ -105,7 +122,9 @@ function setup(opts: { measurement?: string; original: Array<{ path: string; tex
         packumentUrl: "https://registry.npmjs.org/x",
         tarballUrl: "https://registry.npmjs.org/x/-/x.tgz",
         fetchedAt: "2026-11-16T10:00:00Z",
-      }),
+        }),
+        ...(opts.eligibilityText === undefined ? {} : { successor: opts.eligibilityText }),
+      },
       tarball: new Uint8Array([1]),
     }),
     gitStatus: async () => ({ ok: true, value: "" }),
@@ -145,7 +164,14 @@ const token = fc.stringMatching(/^[a-z]{8,12}$/);
 const planted = fc.record({
   tok: token,
   kind: fc.constantFrom("identity", "credential", "path"),
-  target: fc.constantFrom("measurement", "original-a", "original-b"),
+  target: fc.constantFrom(
+    "measurement",
+    "certificate",
+    "eligibility",
+    "menu",
+    "original-a",
+    "original-b",
+  ),
 });
 
 function plantedText(kind: string, tok: string, identityPath: string): string {
@@ -165,14 +191,25 @@ describe("Property 7: the context scan stops on generated-file findings and on i
           { path: "package.json", text: target === "original-a" ? body : "{}" },
           { path: "lib/index.js", text: target === "original-b" ? body : "module.exports = 1;\n" },
         ];
+        menu.extra = target === "menu" ? `\n${text}` : "";
         const s = setup({
+          certText: target === "certificate" ? text : undefined,
+          eligibilityText: target === "eligibility" ? text : undefined,
           measurement: target === "measurement" ? body : undefined,
           original,
           identityPath,
         });
-        const rel =
-          target === "measurement" ? "measurement.json" : target === "original-a" ? "original/package.json" : "original/lib/index.js";
-        const shouldStop = target === "measurement" || kind === "identity";
+        const relByTarget: Record<string, string> = {
+          measurement: "measurement.json",
+          certificate: "certificate.json",
+          eligibility: "eligibility.json",
+          menu: "preset-menu.json",
+          "original-a": "original/package.json",
+          "original-b": "original/lib/index.js",
+        };
+        const rel = relByTarget[target]!;
+        const generated = !target.startsWith("original");
+        const shouldStop = generated || kind === "identity";
 
         const r = await runResurrect(["lodash.set"], s.deps);
 
