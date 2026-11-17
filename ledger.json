@@ -48,6 +48,16 @@
       "creditAfter": "2162.31",
       "exitCode": 0,
       "kiroCliVersion": "kiro-cli 3.3.0"
+    },
+    {
+      "mode": "local",
+      "package": "ip",
+      "version": "2.0.1",
+      "date": "2026-11-17T17:21:15Z",
+      "creditBefore": "2168.83",
+      "creditAfter": "2171.01",
+      "exitCode": 0,
+      "kiroCliVersion": "kiro-cli 3.4.0"
     }
   ]
 }
