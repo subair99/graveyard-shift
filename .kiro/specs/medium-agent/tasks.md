@@ -278,7 +278,7 @@ Conventions for every task:
     - The first real Medium run, which also records Requirement 11.7, is resurrection-pipeline task 16.1 (M9). It is not repeated here.
     - _Requirements: 3.10, 11.1, 11.7, 11.8_
 
-- [ ] 16. M9 attempt 1 fix: output format in the Preset_Menu_File
+- [x] 16. M9 attempt 1 fix: output format in the Preset_Menu_File
   - Cause and decision: docs/kiro-journal.md entry '2026-11-17: M9 attempt 1, first real Medium run (user-run, WSL)'. Requirements 5.3, 5.4, 6.2 and 7.5 and the design were amended for it on 2026-11-17.
   - [x] 16.1 Add `outputFormat` to `src/pipeline/medium/core/presetMenu.ts`
     - Generate the JSON Schemas of the Deltas_File and the Harness_File with zod's built-in `toJSONSchema` from the same zod schemas that `parseDeltasFile` and `parseHarnessFile` use. Add the two minimal examples for the made-up package `example-package` (the deltas example: one `returns-expected` delta, one case, its source `{ url, fetchedAt }`; no lodash.set or ip content). `parsePresetMenu` accepts the new key; `printPresetMenu` stays deterministic with the key order `presets`, `deltaKinds`, `ciOwnedKeys`, `outputFormat` (`deltas`, `harness`; `schema`, `example`).
@@ -290,11 +290,11 @@ Conventions for every task:
   - [x] 16.3 Agent_Prompt sentence
     - Add the sentence of Requirement 7.5 to the inline `prompt` of `.kiro/agents/medium.json` (`get_preset_menu` also gives the exact JSON Schemas of deltas.json and harness.json and an example; the output must match them), with no new backtick token outside the allowed set. Update the required-phrase list in `tests/medium/unit/agentPrompt.test.ts`. Check that `tests/medium/unit/agentDefinition.test.ts` and the Context_Server integration test under `tests/medium/integration/` still hold.
     - _Requirements: 7.5, 7.8, 6.2_
-  - [-] 16.4 Checks, then stop for the user
+  - [x] 16.4 Checks, then stop for the user
     - Run `npm run typecheck`, `npm run lint` and each touched test file one at a time (`npx vitest run <path>`). No `npm test`, no commit. Then stop and write the commands for the user (the full suite, and a second real run `npm run resurrect -- lodash.set` in WSL as a new M9 attempt).
     - _Requirements: 5.3, 5.4, 6.2, 7.5, 7.8_
 
-- [ ] 17. M9 ip attempt 1 fix: three gaps in the Medium contract
+- [x] 17. M9 ip attempt 1 fix: three gaps in the Medium contract
   - Cause and decision: docs/kiro-journal.md entry '2026-11-17: M9 ip attempt 1 (user-run, WSL)'. Requirements 5.3, 5.4, 6.2, 7.3, 7.4 and 7.8 and the design were amended for it on 2026-11-17. The three gaps are general: no ip-specific hint goes into any file of this task.
   - [x] 17.1 Date format in `buildAdvisories`
     - In `src/pipeline/medium/agent/contextServer.mjs` (and `contextServer.d.mts`), each entry of `content.advisory.sources` in the `measurement` result keeps `url` and `checkedOn` and gains `fetchedAt`: `<checkedOn>T00:00:00Z` plus `fetchedAtPrecision` `date-only` for a `YYYY-MM-DD` value; equal to `checkedOn` (no `fetchedAtPrecision`) for a value that is already a valid Fetch_Date; any other `checkedOn` is a tool error. The date check is one pure helper in the server file. Nothing else in the measurement changes; `measurement.json` itself stays a byte-for-byte copy (Requirement 5.1); certificate provenance is unchanged.
@@ -308,7 +308,7 @@ Conventions for every task:
     - `src/pipeline/medium/core/presetMenu.ts`: `inputClasses` becomes a list of `{ name, definition, appliesTo }` sorted by `name` in code-point order, key order `name`, `definition`, `appliesTo`; `parsePresetMenu` (strict) accepts it; `printPresetMenu` stays deterministic. Update `tests/medium/unit/presetMenu.test.ts` (every class of `PRESETS` is listed with a non-empty definition; `appliesTo` inside the preset's `deltaFunctions`; key order and class order; menu equals code), `tests/medium/unit/outputFormat.test.ts` if affected, and the Property 5 generator in `tests/medium/property/p05-preset-menu-roundtrip.test.ts`. Check other users of `PresetMenuEntry.inputClasses` with the typechecker (for example `src/pipeline/local/core/mediumContext.ts` and the Local_Runner tests).
     - Agent_Prompt: add the sentence of Requirement 7.4 to `.kiro/agents/medium.json`: when a preset offers an input class (listed with its definition by `get_preset_menu`) that covers the inputs of the advisory, use a `returns-expected-class` delta for that class and change behaviour only for inputs in that class, because any behaviour change outside a declared delta makes the verdict restless. Add its required phrase to `tests/medium/unit/agentPrompt.test.ts`, with no new backtick token outside the allowed set.
     - _Requirements: 5.3, 5.4, 7.4, 7.8_
-  - [ ] 17.4 Checks, then stop for the user
+  - [x] 17.4 Checks, then stop for the user
     - Run `npm run typecheck`, `npm run lint` and each touched test file one at a time (`npx vitest run <path>`). No `npm test`, no commit. Then stop and write: "Ready for you to run: npx vitest run --project pipeline --project pipeline-integration" and "npm run trace". Wait for the pasted output; add a `docs/traceability-gaps.json` entry only for a criterion the trace reports as unclassified.
     - _Requirements: 5.3, 5.4, 6.2, 7.3, 7.4, 7.8_
 

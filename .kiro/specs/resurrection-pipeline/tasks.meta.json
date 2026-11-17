@@ -1264,6 +1264,25 @@
         "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
         "timestamp": 1794935619401
       }
+    ],
+    "16.1 Manual task (yours): M9, real Medium runs (needs spec (b) and your meter readings)": [
+      {
+        "executionId": "ac2a8432-8e0d-4f1d-9b28-f188364eec3d",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794939162992
+      },
+      {
+        "executionId": "ac2a8432-8e0d-4f1d-9b28-f188364eec3d",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794940083079
+      }
+    ],
+    "16. After spec (b): real Medium runs (not part of steps (a) to (f))": [
+      {
+        "executionId": "ac2a8432-8e0d-4f1d-9b28-f188364eec3d",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794940083214
+      }
     ]
   }
 }

@@ -1511,3 +1511,29 @@ Comparison of the runs above with the design and requirements. No code changed.
   3. The input classes had no reviewed definition in the menu, and the prompt gave no rule to prefer a `returns-expected-class` delta when a class covers the advisory's inputs.
 - Decision: amend `.kiro/specs/medium-agent` (requirements 5.3, 5.4, 6.2, 7.3, 7.4, 7.8 and the design) and add task 17 there. No code is changed by this entry.
 - Agent-run: none. This entry is documentation only.
+
+## 2026-11-17: M9 ip attempt 2 (task 16.1, second half; user-run)
+- Command: `npm run resurrect -- ip`. Meter readings typed at the prompts: before 2192.7, after 2195.15. No cost or difference is computed here.
+- What the Medium did: it used all six context tools. It wrote `resurrection/lib/ip.js`: `isPublic` returns `false` for exactly one string argument in the non-public-address class, through its own strict parser written from the class definition; all other input goes through the Original's `!ip.isPrivate(addr)`. 0 lines of the Original were removed and 68 lines were added in the pull request. It wrote `resurrection/README.md` (unchanged) and `package.json` (`name` `@graveyard-shift/ip`, `version` 2.0.2 only).
+- `deltas.json`: one `returns-expected-class` delta `ispublic-non-public-address` on `isPublic`, class `non-public-address`, expected `false`, the five measured advisory inputs, source `https://github.com/advisories/GHSA-2p57-rm9w-gvfp`, `fetchedAt` `2026-11-15T00:00:00Z` (served by the context tool as a date only).
+- `harness.json`: all 20 exports to `ip-address`.
+- Ledger committed (976f84c).
+- CI run 44143541821: all five jobs green. Verdict `alive`, seed 19642828, `isPublic` 146 cases, all 20 exports tested. Pull request #9 "ip 2.0.2: alive".
+- User checks: `gh attestation verify` exit 0 for `resurrection.tgz`, `proof-report.json` and `certificate.json`. Diff against npm ip@2.0.1: only `lib/ip.js` and `package.json` differ; the README is identical.
+- Pull request #9 was squash-merged as `graveyard/ip`; the branches were deleted.
+- Comparison (the user's): ip attempt 1 (over-broad canonicalization of every input, never pushed, failed local intake on the date format) and the stub restless run 43867172769 (restless on `isPublic(":::")`), versus attempt 2 (change limited to the declared class, so no behaviour change outside the delta).
+- Nightly run 44144930929 (user-run, after PR #9 merged as graveyard/ip, 079a21f): verify green. "Entries: 3 total, 0 not-checked." ip: verified, "Replay identical and attestations verified.", tool versions equal, no new advisories for ip@2.0.1 (OSV fetched 2026-11-17T18:11:04Z). lodash.set: verified, no new advisories (fetched 18:11:17Z). inflight: not-resurrected, no new advisories (fetched 18:10:49Z).
+
+## 2026-11-17: Dependency audit (user-run, WSL)
+- `npm audit --omit=dev`: 0 vulnerabilities.
+- `npm audit` (all): 5 high, all one dev-only advisory GHSA-fc5q-39xc-vjpf (picomatch ReDoS), via vitest -> vite -> tinyglobby -> fdir -> picomatch. The only offered fix is `npm audit fix --force`, which downgrades vitest to 3.1.4 (breaking).
+- Decision (user): accepted for now, not fixed. picomatch only matches the project's own test globs, never package input. Recheck before submission for a patched picomatch; then use an npm `overrides` entry.
+- Agent-run: none. These entries are documentation only.
+
+## 2026-11-17: Medium-agent tasks 16.4 and 17.4 checkpoint (user-run, Windows clone, before commit 8c6fc71)
+- User-run facts. `npx vitest run --project pipeline --project pipeline-integration`: 100 files passed, 1081 tests passed, 8 skipped.
+- Spans, checked against targets (user-pasted run): pipeline 14.4 s (target 90 s), pipeline-integration 19.2 s (target 120 s).
+- Trace (user-run): `npm run trace` exit 0; medium-agent criteria 110, cited 100, gaps 10; other specs unchanged; 0 unknown citations.
+- CI run 44142899326: green on all three jobs.
+- The full `npm test` for task 16.4 was also run earlier by the user: 200 files, 2373 passed (no other figures given).
+- Agent-run: none. This entry is documentation only.

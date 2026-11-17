@@ -23,6 +23,12 @@ Third-party libraries and data sources used are listed here as they are added.
 - @types/node, @types/react, @types/react-dom (MIT), dev dependencies with type definitions.
 - Licenses of the packages above were read from the `package.json` in `node_modules` on 2026-11-15: next 16.4.6, react 19.3.1, @types/node 26.6.6, @types/react 19.3.0, @types/react-dom 19.3.0, tsx 4.23.15, eslint 10.15.0, @eslint/js 10.0.1, @babel/core 8.1.2, @babel/eslint-parser 8.1.2, @babel/preset-typescript 8.0.7, vitest 5.1.0, fast-check 4.10.2, zod 4.6.7 (all MIT); semver 7.8.6, yaml 2.9.1 (ISC); typescript 7.0.2 (Apache-2.0).
 
+### Known advisory (accepted)
+
+- GHSA-fc5q-39xc-vjpf (picomatch ReDoS), reported by `npm audit` on 2026-11-17 (user-run): 5 high findings, all this one dev-only advisory, through vitest -> vite -> tinyglobby -> fdir -> picomatch. `npm audit --omit=dev` found 0 vulnerabilities. No new dependency is added.
+- Accepted for now (user decision, 2026-11-17): the only offered fix, `npm audit fix --force`, downgrades vitest to 3.1.4 (breaking). picomatch only matches the project's own test globs, never package input.
+- Action: recheck before submission for a patched picomatch; if one exists, add an npm `overrides` entry for it.
+
 ## CI actions
 `.github/workflows/ci.yml`, `resurrect.yml` and `nightly.yml` use these GitHub Actions (all MIT; license as reported by the GitHub API `/repos/<repo>/license` on 2026-11-15). `resurrect.yml` and `nightly.yml` pin each to a full commit SHA.
 - actions/checkout (MIT). Source: https://github.com/actions/checkout. License: https://raw.githubusercontent.com/actions/checkout/main/LICENSE

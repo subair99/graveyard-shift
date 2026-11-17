@@ -584,15 +584,15 @@ Conventions for every task:
   - Ensure all tests pass, ask the user if questions arise.
   - _Requirements: 21.2, 21.7, 21.8_
 
-- [ ] 16. After spec (b): real Medium runs (not part of steps (a) to (f))
+- [x] 16. After spec (b): real Medium runs (not part of steps (a) to (f))
   - This group starts only after spec (b) exists and the Medium agent is installed. Steps (e) and (f) and checkpoint 15 do not wait for it, and task 12 does not depend on it.
-  - [ ] 16.1 Manual task (yours): M9, real Medium runs (needs spec (b) and your meter readings)
+  - [x] 16.1 Manual task (yours): M9, real Medium runs (needs spec (b) and your meter readings)
     - Run in WSL, in the separate clone, one per invocation: `cd ~/graveyard-shift && git pull origin main && npm ci` (only if `package-lock.json` changed), then
       `npm run resurrect -- lodash.set`
       `npm run resurrect -- ip` (only if task 1.8 left at least one delta; there is no ip stub fixture)
     - Type the credit meter reading when asked, before and after (leave it empty if you have none; it is stored as `not provided`). The runner prints the Credit_Ceiling statement (150, a rule that is not enforced).
     - Paste back: the terminal output, the exit code, the dispatch run URL, the pull request URL and what the pull request shows. Record in the Journal (V12) the exit code and output of a "no credits" case if it happened and whether the CLI printed usage. Commit `ledger.json` to `main` yourself, from `~/graveyard-shift` (`git add ledger.json`, commit, `git push origin main`), then `git pull origin main` in the Windows clone. A stub pull request is never the demo entry (close it).
-    - Progress 2026-11-17: lodash.set done (attempt 2, see Journal 'M9 attempt 2'); the ip run is still to do. Keep open until the ip run.
+    - Progress 2026-11-17: lodash.set (attempt 2) and ip (attempt 2) are both done; see the Journal entries 'M9 attempt 2' and 'M9 ip attempt 2 (task 16.1, second half; user-run)'. 16.1 complete.
     - _Requirements: 6.6, 7.1, 7.2, 7.3, 7.6, 19.2, 19.3, 19.8, 23.15_
 
   - [x] 16.2 Manual task (yours): M8 (second run), dispatch `nightly.yml` again once an `alive` entry from M9 is merged
