@@ -38,6 +38,16 @@
       "creditAfter": "not provided",
       "exitCode": 0,
       "kiroCliVersion": "kiro-cli 3.3.0"
+    },
+    {
+      "mode": "local",
+      "package": "lodash.set",
+      "version": "4.3.2",
+      "date": "2026-11-17T16:54:46Z",
+      "creditBefore": "2160.48",
+      "creditAfter": "2162.31",
+      "exitCode": 0,
+      "kiroCliVersion": "kiro-cli 3.3.0"
     }
   ]
 }
