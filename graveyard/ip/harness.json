@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "package": "ip",
+  "functions": {
+    "address": { "preset": "ip-address" },
+    "cidr": { "preset": "ip-address" },
+    "cidrSubnet": { "preset": "ip-address" },
+    "fromLong": { "preset": "ip-address" },
+    "fromPrefixLen": { "preset": "ip-address" },
+    "isEqual": { "preset": "ip-address" },
+    "isLoopback": { "preset": "ip-address" },
+    "isPrivate": { "preset": "ip-address" },
+    "isPublic": { "preset": "ip-address" },
+    "isV4Format": { "preset": "ip-address" },
+    "isV6Format": { "preset": "ip-address" },
+    "loopback": { "preset": "ip-address" },
+    "mask": { "preset": "ip-address" },
+    "normalizeToLong": { "preset": "ip-address" },
+    "not": { "preset": "ip-address" },
+    "or": { "preset": "ip-address" },
+    "subnet": { "preset": "ip-address" },
+    "toBuffer": { "preset": "ip-address" },
+    "toLong": { "preset": "ip-address" },
+    "toString": { "preset": "ip-address" }
+  }
+}
