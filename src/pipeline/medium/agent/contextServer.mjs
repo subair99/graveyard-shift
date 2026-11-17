@@ -82,6 +82,7 @@ export function buildAdvisories(certificateText, measurementText) {
     } catch {
       throw new Error("measurement.json is not valid JSON");
     }
+    addFetchedAt(measurement.content);
   }
   const open = isObject(certificate) && isObject(certificate.vitalSigns) ? certificate.vitalSigns.openVulnerabilities : undefined;
   if (!isObject(open) || typeof open.available !== "boolean") {
@@ -113,6 +114,39 @@ export function buildAdvisories(certificateText, measurementText) {
 
 function isObject(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+/** True for a real calendar date written YYYY-MM-DD. */
+function isDateOnly(value) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (m === null) return false;
+  const d = new Date(`${value}T00:00:00.000Z`);
+  return !Number.isNaN(d.getTime()) && d.toISOString().startsWith(value);
+}
+
+/** True for a real UTC instant written YYYY-MM-DDTHH:mm:ssZ (the Fetch_Date format of UtcTimestampSchema). */
+function isFetchDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(value)) return false;
+  const d = new Date(value);
+  return !Number.isNaN(d.getTime()) && d.toISOString() === value.replace("Z", ".000Z");
+}
+
+/** Adds fetchedAt (and fetchedAtPrecision for a date-only value) to each content.advisory.sources entry, in place. */
+function addFetchedAt(content) {
+  if (!isObject(content) || !isObject(content.advisory) || content.advisory.sources === undefined) return;
+  const sources = content.advisory.sources;
+  if (!Array.isArray(sources)) throw new Error("measurement.json advisory.sources is not a list");
+  for (const source of sources) {
+    const on = isObject(source) ? source.checkedOn : undefined;
+    if (typeof on === "string" && isDateOnly(on)) {
+      source.fetchedAt = `${on}T00:00:00Z`;
+      source.fetchedAtPrecision = "date-only";
+    } else if (typeof on === "string" && isFetchDate(on)) {
+      source.fetchedAt = on;
+    } else {
+      throw new Error("measurement.json advisory source checkedOn is not a valid date (YYYY-MM-DD or YYYY-MM-DDTHH:mm:ssZ)");
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------

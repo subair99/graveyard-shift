@@ -294,12 +294,12 @@ A dependency-free stdio MCP server built from `spikes/kiro-agent/mcp-stub/server
 ```json
 {"available":true,
  "advisories":[{"id":"…","aliases":["…"],"summary":"…","provenance":[{"sourceUrl":"…","fetchedAt":"…"}]}],
- "measurement":{"label":"user-checked","content":"<parsed measurement.json, unchanged>"}}
+ "measurement":{"label":"user-checked","content":"<parsed measurement.json; each advisory.sources entry also has fetchedAt and, for a date only, fetchedAtPrecision \"date-only\" (amended 2026-11-17, M9 ip attempt 1)>"}}
 ```
 
 - `id`, `aliases`, `summary` are copied unchanged from `vitalSigns.openVulnerabilities.value`; `provenance` is the Source_URL and Fetch_Date list of the certificate fact `openVulnerabilities`, copied unchanged into each advisory (the certificate stores provenance per fact, not per vulnerability).
 - When `openVulnerabilities.available` is false: `{"available":false,"reason":<reason>}`, plus `measurement` when present.
-- `measurement` is present exactly when `measurement.json` exists in the Medium_Context; `content` is its parsed JSON, unchanged, so the sources and check dates in it are the ones the user recorded (for `ip-2.0.1.json`, `advisory.sources[].url` and `checkedOn`). A `measurement.json` that does not parse is a tool error.
+- `measurement` is present exactly when `measurement.json` exists in the Medium_Context; `content` is its parsed JSON, so the sources and check dates in it are the ones the user recorded (for `ip-2.0.1.json`, `advisory.sources[].url` and `checkedOn`, a date only such as `2026-11-15`), with one addition. Amended 2026-11-17 after M9 ip attempt 1, see docs/kiro-journal.md entry '2026-11-17: M9 ip attempt 1 (user-run, WSL)': each entry of `content.advisory.sources` keeps `url` and `checkedOn` unchanged and gains `fetchedAt`, a valid Fetch_Date (the format `UtcTimestampSchema` accepts, which `deltas.json` requires). A `checkedOn` of the form `YYYY-MM-DD` gives `fetchedAt` = `<checkedOn>T00:00:00Z` and `fetchedAtPrecision` = `date-only`; a `checkedOn` that is already a valid Fetch_Date gives `fetchedAt` = `checkedOn` and no `fetchedAtPrecision`; any other `checkedOn` is a tool error. The check is one pure helper inside `contextServer.mjs` (the server cannot import TypeScript), and a unit test compares its accepted forms with `UtcTimestampSchema`. Nothing else in `content` changes, and the certificate provenance dates are copied unchanged. The Agent_Prompt tells the Medium to copy `fetchedAt`, so the date-only label stays visible in the tool result. A `measurement.json` that does not parse is a tool error.
 - A certificate that does not parse or has no `openVulnerabilities` fact: tool error.
 
 **`read_original_file` containment (Requirement 6.3).** Reject an absolute path (POSIX or drive form) or one containing U+0000 before touching the file system. Then `realpath(resolve(originalDir, path))` must lie inside `realpath(originalDir)` and be a regular file. Any failure returns `isError: true`, text `path not found or not allowed`, no bytes.
@@ -328,7 +328,8 @@ Steps: keep caller keys in `MEDIUM_ENV_KEYS` (exact name, as on Linux) with a de
 **`src/pipeline/medium/core/presetMenu.ts`** (Requirements 5.3, 5.4)
 
 ```ts
-export interface PresetMenuEntry { name: string; package: string; functions: string[]; deltaFunctions: string[]; inputClasses: string[] }
+export interface InputClassEntry { name: string; definition: string; appliesTo: string[] } // added 2026-11-17 (M9 ip attempt 1): definition is the reviewed text written next to the class predicate in the preset source; appliesTo is a subset of the preset's deltaFunctions
+export interface PresetMenuEntry { name: string; package: string; functions: string[]; deltaFunctions: string[]; inputClasses: InputClassEntry[] } // was string[] (class names) before 2026-11-17
 export interface PresetMenuFile { presets: PresetMenuEntry[]; deltaKinds: string[]; ciOwnedKeys: string[]; outputFormat: OutputFormat } // outputFormat added 2026-11-17 (M9 attempt 1): { deltas: {schema, example}, harness: {schema, example} }
 export function buildPresetMenu(presets: PresetMenu, deltaKinds: readonly string[], ciOwnedKeys: readonly string[]): PresetMenuFile;
 export function deltaKindsOf(schema: typeof DeltaSchema): string[]; // DeltaSchema.options, schema order
@@ -354,9 +355,9 @@ The inline `prompt` value, one paragraph per criterion. The test of Requirement 
 >
 > (7.2) Keep the public API: export names, signatures and return shapes. Keep the `license` field and the license file unchanged. Keep every author credit of `author` and `contributors`. Raise the `version` by a patch or minor step only. Set `name` to @graveyard-shift/ followed by the original name. Add no `dependencies` entry, no `preinstall`, `install`, `postinstall` or `prepare` script, and no `bin` field, and do not set the `type` field to module.
 >
-> (7.3) The resurrection differs from the Original only in the source changes that fix the advisories returned by `get_advisories`, and in the `name` and `version` fields.
+> (7.3) The resurrection differs from the Original only in the source changes that fix the advisories returned by `get_advisories`, and in the `name` and `version` fields. `resurrection/` contains every file of the Original, unchanged, except the source changes of the fix and the name and version in package.json; copy README, LICENSE and test files as they are, do not leave them out. (Second sentence amended 2026-11-17 after M9 ip attempt 1, see docs/kiro-journal.md entry '2026-11-17: M9 ip attempt 1 (user-run, WSL)'; it adds no backtick token.)
 >
-> (7.4) Each delta in `deltas.json` has the kind `prototype-unchanged`, `returns-expected` or `returns-expected-class`. Its advisory is an identifier or alias returned by `get_advisories`. Its function is in the deltaFunctions of the preset that tests it. All cases of one `returns-expected` delta have the same expected value; otherwise split the delta. A `returns-expected-class` delta names a class from that preset's inputClasses only and supplies no predicate, pattern or code. Every case carries a source URL and a fetch date copied from a tool result: either the provenance of an advisory returned by `get_advisories`, or a source URL and its check date recorded under the `measurement` key of `get_advisories`. Write no URL or date that does not appear in a tool result.
+> (7.4) Each delta in `deltas.json` has the kind `prototype-unchanged`, `returns-expected` or `returns-expected-class`. Its advisory is an identifier or alias returned by `get_advisories`. Its function is in the deltaFunctions of the preset that tests it. All cases of one `returns-expected` delta have the same expected value; otherwise split the delta. A `returns-expected-class` delta names a class from that preset's inputClasses only and supplies no predicate, pattern or code. Every case carries a source URL and a fetch date copied from a tool result: either the provenance of an advisory returned by `get_advisories`, or a source URL and its check date recorded under the `measurement` key of `get_advisories`. Write no URL or date that does not appear in a tool result. For a source under the measurement key, copy its fetchedAt value as served, not the checkedOn date. When a preset offers an input class, listed with its definition by get_preset_menu, that covers the inputs of the advisory, use a returns-expected-class delta for that class and change behaviour only for inputs in that class, because any behaviour change outside a declared delta makes the verdict restless. (Last two sentences amended 2026-11-17 after M9 ip attempt 1, see docs/kiro-journal.md entry '2026-11-17: M9 ip attempt 1 (user-run, WSL)'; they add no backtick token. `measurement` is already in the allowed set.)
 >
 > (7.5) `harness.json` selects only preset names listed by `get_preset_menu`, gives a preset for every exported function of the Original, and sets none of the CI-owned keys `excluded`, `radius`, `caseCount`, `seed` and `perCallTimeoutMs`. `get_preset_menu` also gives the exact JSON Schemas of deltas.json and harness.json and an example of each; your output must match those schemas. (Amended 2026-11-17 after M9 attempt 1, see docs/kiro-journal.md entry '2026-11-17: M9 attempt 1'; the sentence adds no backtick token outside the allowed set.)
 >
@@ -459,13 +460,15 @@ readonly platform: Platform;
 ### Preset_Menu_File
 
 Amended 2026-11-17 after M9 attempt 1, see docs/kiro-journal.md entry '2026-11-17: M9 attempt 1': the file gains the top-level key `outputFormat` (Requirements 5.3, 5.4). It holds `deltas` and `harness`, each with `schema` (the JSON Schema, draft 2020-12, from zod's built-in `toJSONSchema` applied to the same zod schemas that `parseDeltasFile` and `parseHarnessFile` use) and `example` (one minimal valid file for the made-up package `example-package`; the deltas example is one `returns-expected` delta with one case and its source `{ url, fetchedAt }`; no lodash.set or ip content). If the installed zod cannot emit a schema for either file, the implementation stops and reports; no dependency is added.
-Key order `presets`, `deltaKinds`, `ciOwnedKeys`, `outputFormat`; inside `outputFormat` `deltas`, `harness`, and inside each `schema`, `example` (keys inside a schema or example follow `orderKeys`); entry key order `name`, `package`, `functions`, `deltaFunctions`, `inputClasses`; `canonicalJsonText` of the `orderKeys` form plus a final line feed.
+Key order `presets`, `deltaKinds`, `ciOwnedKeys`, `outputFormat`; inside `outputFormat` `deltas`, `harness`, and inside each `schema`, `example` (keys inside a schema or example follow `orderKeys`); entry key order `name`, `package`, `functions`, `deltaFunctions`, `inputClasses`; key order of each `inputClasses` entry `name`, `definition`, `appliesTo` (amended 2026-11-17 after M9 ip attempt 1, see docs/kiro-journal.md entry '2026-11-17: M9 ip attempt 1 (user-run, WSL)'); `canonicalJsonText` of the `orderKeys` form plus a final line feed.
 
 | List | Order |
 |---|---|
 | `presets` | by `name`, code-point order |
 | `functions`, `deltaFunctions` | as written in the preset |
-| `inputClasses` | key names in code-point order |
+| `inputClasses` | entries `{name, definition, appliesTo}` sorted by `name` in code-point order (amended 2026-11-17, M9 ip attempt 1; before: key names only) |
+| `inputClasses[].appliesTo` | as written in the preset; each name is in the preset's `deltaFunctions` |
+| `inputClasses[].definition` | non-empty reviewed plain-language text of exactly which inputs are in the class, written in the preset source next to the class predicate (for `non-public-address`: the parse grammar, the ranges, and that a parse failure means not in the class); the menu builder reads it, it is never copied by hand into the menu or the prompt |
 | `deltaKinds` | `DeltaSchema` option order: `prototype-unchanged`, `returns-expected`, `returns-expected-class` |
 | `ciOwnedKeys` | `CI_OWNED_KEYS` order: `excluded`, `radius`, `caseCount`, `seed`, `perCallTimeoutMs` |
 | `outputFormat` | last top-level key; `deltas` then `harness`; each `schema` then `example`; deterministic, the same bytes for the same code (amended 2026-11-17, M9 attempt 1) |
@@ -572,7 +575,7 @@ Reflection: the path parts of Requirements 3.2, 3.3 and 3.8 are one property (Pr
 
 ### Property 14: `get_advisories` copies advisories and the measurement unchanged
 
-*For any* certificate with an available `openVulnerabilities` fact (arbitrary vulnerabilities, aliases, summaries, provenance lists) and any optional measurement JSON, `buildAdvisories` returns one advisory per vulnerability with `id`, `aliases` and `summary` equal to the certificate's and `provenance` equal to the fact's Source_URL and Fetch_Date list; it has a `measurement` key if and only if measurement text is given, and then its `label` is `user-checked` and its `content` deep-equals the parsed measurement.
+*For any* certificate with an available `openVulnerabilities` fact (arbitrary vulnerabilities, aliases, summaries, provenance lists) and any optional measurement JSON, `buildAdvisories` returns one advisory per vulnerability with `id`, `aliases` and `summary` equal to the certificate's and `provenance` equal to the fact's Source_URL and Fetch_Date list; it has a `measurement` key if and only if measurement text is given, and then its `label` is `user-checked` and its `content` deep-equals the parsed measurement except that each `advisory.sources` entry gains `fetchedAt` (and `fetchedAtPrecision` `date-only` for a date-only `checkedOn`): `fetchedAt` matches `UtcTimestampSchema`, equals `<checkedOn>T00:00:00Z` for a date-only `checkedOn`, and no other key changes (amended 2026-11-17 after M9 ip attempt 1, see docs/kiro-journal.md entry '2026-11-17: M9 ip attempt 1 (user-run, WSL)').
 
 **Validates: Requirements 6.2**
 
@@ -634,10 +637,10 @@ Example tests cover fixed files, source scans and boundary cases. Child-process 
 | File | Kind | Covers |
 |---|---|---|
 | `unit/agentDefinition.test.ts` | example; checker over the parsed JSON plus a single-mutation table | 1.1 to 1.7, 2.1 to 2.5, 3.1, 13.4 |
-| `unit/agentPrompt.test.ts` | example; required phrases, kinds, CI-owned keys, backtick tokens, tool names | 7.1 to 7.8, 8.4 |
+| `unit/agentPrompt.test.ts` | example; required phrases (including the 2026-11-17 phrases: Original files unchanged, copy the served fetchedAt, returns-expected-class when a preset class covers the inputs), kinds, CI-owned keys, backtick tokens, tool names | 7.1 to 7.8, 8.4 |
 | `unit/pathRules.test.ts` | example; runtime export names equal the `.d.mts` names; server `MAX_FILE_BYTES` and tool names match the TypeScript sources | 3.11 (single source), 6.2, 6.5 |
 | `unit/sourceScan.test.ts` | example; every `.mjs` of the Agent_Directory | 3.7, 3.11, 6.4, 8.1, 11.3, 11.5, 13.5, 13.6, 13.7 |
-| `unit/presetMenu.test.ts` | example; printed menu vs `PRESETS`, `DeltaSchema`, `CI_OWNED_KEYS` | 5.3 |
+| `unit/presetMenu.test.ts` | example; printed menu vs `PRESETS`, `DeltaSchema`, `CI_OWNED_KEYS`; every class of `PRESETS` is listed with a non-empty definition and an `appliesTo` inside the preset's `deltaFunctions`; key order and class order (amended 2026-11-17, M9 ip attempt 1) | 5.3, 5.4 |
 | `unit/localRunnerMedium.test.ts` | example; fake spawn, git, fs, prompt, clock | 4.5, 4.6, 5.1 (measurement present and absent), 5.6, 5.7, 8.3, 8.6, 9.5 to 9.10, 10.1, 10.11 |
 | `unit/docs.test.ts` | example; `structure.md` paths exist, README subsection phrases, Enforcement_Test_Doc names `.kiro/agents/medium.json` and only `--agent medium`, `.gitignore` entry, spike files pinned by sha256 | 5.7, 13.1, 13.2, 13.3, 13.9, 13.10 |
 | `unit/requirementsHeader.test.ts` | example | 12.2, 12.3 |
@@ -655,7 +658,7 @@ Example tests cover fixed files, source scans and boundary cases. Child-process 
 | `property/p14-advisories.test.ts` | property, in-process `buildAdvisories` | Property 14 |
 | `integration/writeGuard.integration.test.ts` | child process; every case of `spikes/kiro-agent/hooks/pre-tool-write-guard.test-cases.json` with its `expect`, counted from the file, plus cases for each condition of 3.3 and for 3.4 to 3.6 (including missing and non-string `tool_name`); `needs: symlink` and `needs: posix` skipped where unsupported; empty standard output, no stray file | 3.2 to 3.7, 3.9 |
 | `integration/guardLog.integration.test.ts` | child process | 4.1 to 4.4, 4.7 |
-| `integration/contextServer.integration.test.ts` | child process against a temp Medium_Context; `get_advisories` with and without `measurement.json`; size limit on each tool; start failure; over-long line; Properties 12 and 13 on one long-lived process each | 6.1 to 6.9, Properties 12, 13 |
+| `integration/contextServer.integration.test.ts` | child process against a temp Medium_Context; `get_advisories` with and without `measurement.json` (with a date-only `checkedOn`, each served source has `fetchedAt` `<date>T00:00:00Z` and `fetchedAtPrecision` `date-only`; amended 2026-11-17, M9 ip attempt 1); size limit on each tool; start failure; over-long line; Properties 12 and 13 on one long-lived process each | 6.1 to 6.9, Properties 12, 13 |
 | `integration/secrets.integration.test.ts` | child processes and the runner with fakes; sentinels in `GITHUB_TOKEN`, one other variable and a `.env` file | 11.4 |
 
 Existing tests that change, in their own files (Requirement 12.2):
@@ -680,8 +683,8 @@ Existing tests that change, in their own files (Requirement 12.2):
 | `.kiro/agents/medium.json` | Agent_Definition |
 | `src/pipeline/medium/agent/pathRules.mjs`, `pathRules.d.mts` | Path_Rules_File and declaration |
 | `src/pipeline/medium/agent/writeGuard.mjs`, `writeGuard.d.mts` | Write_Guard and declaration of its pure functions |
-| `src/pipeline/medium/agent/contextServer.mjs`, `contextServer.d.mts` | Context_Server and declaration of `buildAdvisories` |
-| `src/pipeline/medium/core/mediumEnv.ts`, `presetMenu.ts`, `guardLog.ts` | pure Medium-side helpers |
+| `src/pipeline/medium/agent/contextServer.mjs`, `contextServer.d.mts` | Context_Server and declaration of `buildAdvisories` (serves `fetchedAt` for each measurement source; amended 2026-11-17, M9 ip attempt 1, see docs/kiro-journal.md entry '2026-11-17: M9 ip attempt 1') |
+| `src/pipeline/medium/core/mediumEnv.ts`, `presetMenu.ts`, `guardLog.ts` | pure Medium-side helpers (`presetMenu.ts` lists each input class with its reviewed definition and `appliesTo`, read from the preset sources under `src/pipeline/harness/core/presets/`; amended 2026-11-17, M9 ip attempt 1) |
 | `src/pipeline/local/core/porcelain.ts`, `mediumContext.ts` | pure Local_Runner helpers |
 | `docs/medium-enforcement-test.md` | Enforcement_Test_Doc |
 | `tests/medium/**` | test files of the Testing Strategy table |

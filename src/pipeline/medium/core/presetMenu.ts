@@ -14,7 +14,13 @@ export interface PresetMenuEntry {
   package: string;
   functions: string[];
   deltaFunctions: string[];
-  inputClasses: string[];
+  inputClasses: PresetMenuInputClass[];
+}
+
+export interface PresetMenuInputClass {
+  name: string;
+  definition: string;
+  appliesTo: string[];
 }
 
 type JsonObject = { [key: string]: unknown };
@@ -41,6 +47,15 @@ const FILE_KEY_ORDER = ["presets", "deltaKinds", "ciOwnedKeys", "outputFormat"] 
 const OUTPUT_FORMAT_KEY_ORDER = ["deltas", "harness"] as const;
 const OUTPUT_FORMAT_ENTRY_KEY_ORDER = ["schema", "example"] as const;
 const ENTRY_KEY_ORDER = ["name", "package", "functions", "deltaFunctions", "inputClasses"] as const;
+const INPUT_CLASS_KEY_ORDER = ["name", "definition", "appliesTo"] as const;
+
+const PresetMenuInputClassSchema = z
+  .object({
+    name: z.string(),
+    definition: z.string(),
+    appliesTo: z.array(z.string()),
+  })
+  .strict();
 
 const PresetMenuEntrySchema = z
   .object({
@@ -48,7 +63,7 @@ const PresetMenuEntrySchema = z
     package: z.string(),
     functions: z.array(z.string()),
     deltaFunctions: z.array(z.string()),
-    inputClasses: z.array(z.string()),
+    inputClasses: z.array(PresetMenuInputClassSchema),
   })
   .strict();
 
@@ -138,7 +153,15 @@ export function buildPresetMenu(
     package: p.package,
     functions: [...p.functions],
     deltaFunctions: [...p.deltaFunctions],
-    inputClasses: Object.keys(p.inputClasses).sort(compareCodePoints),
+    inputClasses: Object.keys(p.inputClasses)
+      .sort(compareCodePoints)
+      .map((className) => {
+        const doc = Object.hasOwn(p.inputClassDocs, className) ? p.inputClassDocs[className] : undefined;
+        if (doc === undefined) {
+          throw new Error(`preset ${p.name}: input class "${className}" has no definition in inputClassDocs`);
+        }
+        return { name: className, definition: doc.definition, appliesTo: [...doc.appliesTo] };
+      }),
   }));
   entries.sort((a, b) => compareCodePoints(a.name, b.name));
   return {
@@ -163,7 +186,12 @@ export function printPresetMenu(menu: PresetMenuFile): string {
   const ordered = orderKeys(menu as unknown as Record<string, unknown>, FILE_KEY_ORDER, {
     presets: (list) =>
       (list as PresetMenuEntry[]).map((e) =>
-        orderKeys(e as unknown as Record<string, unknown>, ENTRY_KEY_ORDER),
+        orderKeys(e as unknown as Record<string, unknown>, ENTRY_KEY_ORDER, {
+          inputClasses: (classes) =>
+            (classes as PresetMenuInputClass[]).map((c) =>
+              orderKeys(c as unknown as Record<string, unknown>, INPUT_CLASS_KEY_ORDER),
+            ),
+        }),
       ),
     outputFormat: (of) =>
       orderKeys(of as JsonObject, OUTPUT_FORMAT_KEY_ORDER, {

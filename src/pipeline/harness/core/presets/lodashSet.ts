@@ -21,6 +21,7 @@ export const LODASH_SET_PRESET: Preset = {
   functions: ["default"],
   deltaFunctions: ["default"],
   inputClasses: {},
+  inputClassDocs: {},
   optionsSchema: z.strictObject({}),
   build: (_options, _fn) => ({
     args: ordinaryArgs,

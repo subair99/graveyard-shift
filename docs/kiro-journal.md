@@ -1475,3 +1475,39 @@ Comparison of the runs above with the design and requirements. No code changed.
 - Meter (user-read): 2144.08 of 4000 used at 14:28 WAT, after the run. The previous user reading was 2139.10 at about 13:57, before the task 15.3 round. No cost is computed for the attempt.
 - Decision: fix by adding an `outputFormat` key to the Preset_Menu_File. It holds the JSON Schemas of the Deltas_File and the Harness_File, generated from the same zod schemas as `parseDeltasFile` and `parseHarnessFile`, and a minimal valid example of each for a made-up package `example-package`. Also one Agent_Prompt sentence, tests, and amended requirements 5.3, 5.4, 6.2 and 7.5 and design (medium-agent spec, new task 16).
 - Agent-run: none. This entry is documentation only.
+
+## 2026-11-17: M9 attempt 2, lodash.set (task 16.1, first half; user-run)
+- Command: `npm run resurrect -- lodash.set` in the WSL clone.
+- Meter readings typed at the prompts (bonus kiroween-20-26): before 2160.48, after 2162.31. No cost or difference is computed here.
+- Medium environment keys: `GRAVEYARD_CERTIFICATE_PATH`, `GUARD_LOG_FILE`, `HOME`, `LANG`, `PATH`, `TERM`, `USER`.
+- What the Medium did: it used all six context tools and wrote `resurrection/` (`index.js` with a guard in `baseSet` that returns early on `__proto__`, `constructor` and `prototype`; `package.json` name `@graveyard-shift/lodash.set`, version 4.3.3; `LICENSE` and `README.md` unchanged), `deltas.json` (one `prototype-unchanged` delta, `set-prototype-pollution`, for `default`, advisory GHSA-p6mc-m468-83gw) and `harness.json` (`default` to `lodash-set`).
+- Ledger entry committed (eca3e7a).
+- Dispatch run 44131158893: all five jobs green. Verdict `alive`, seed 340701121, `default` 211 cases, delta demonstrated.
+- Pull request #8 "lodash.set 4.3.3: alive" (not a stub run).
+- User checks: the diff against npm lodash.set@4.3.2 shows only the 4-line guard and the name and version change. `gh attestation verify` succeeded (exit 0) for:
+  - `resurrection.tgz` sha256:4c643ada8a7e2c6f13c9a31e30f35cd3f571dac12aad6eb6a79d0c3863b4e573
+  - `proof-report.json` sha256:e812ec3069299d7a470c2b8d30b5f56d6c281dc36f247268257dcdaaae3fcfc6
+  - `certificate.json` sha256:c9c2cf7a7925b608f543e80beab6c9aaf9467158435268d3825f8f912b89204f
+  - signer `resurrect.yml@refs/heads/main`
+- PR #8 was squash-merged as `graveyard/lodash.set` (23a5120). The branches were deleted.
+- Task 16.1 stays open until the ip run. The ip run is still to be done.
+- Agent-run: none. These entries are documentation only.
+
+## 2026-11-17: Nightly run 44133404391 (task 16.2; user-run)
+- Job `verify` green on `gh` 2.103.3. Summary: "Entries: 2 total, 0 not-checked."
+- `lodash.set`: verified ("Replay identical and attestations verified."), tool versions equal, no new advisories (OSV fetched 2026-11-17T17:07:46Z).
+- `inflight`: not-resurrected, no new advisories.
+- Closes the open item "Still unmeasured: whether 'attestations: read' is enough for 'gh attestation verify'" in the 2026-11-16 entries "M8 nightly run 43884658382 failed on a missing graveyard/" and "First real Crypt entry, M10 done, second M8 nightly run 43898696521" (those entries are not rewritten). The nightly job with `contents: read` and `attestations: read` verified the attestations of the alive entry `lodash.set` on the runner, so that pair of permissions is sufficient for `gh attestation verify`.
+- Agent-run: none. These entries are documentation only.
+## 2026-11-17: M9 ip attempt 1 (user-run, WSL)
+- Command: `npm run resurrect -- ip`, at about 18:20.
+- Meter readings typed at the prompts: before 2168.83, after 2171.01. No cost or difference is computed here.
+- What the Medium did: it used `tool_load`, then all six context tools. It wrote `resurrection/package.json` (only `name` and `version` changed) and `resurrection/lib/ip.js` (`isPublic` canonicalizes every input through `normalizeToLong`, `toBuffer` plus `toString`, or the IPv4-mapped reduction, then calls `isPrivate`). It wrote `deltas.json` (one `returns-expected` delta for `isPublic` with the five measured advisory inputs, expected `false`, source `https://github.com/advisories/GHSA-2p57-rm9w-gvfp`, `fetchedAt` "2026-11-15", copied from the `checkedOn` of the measurement) and `harness.json` (all 20 exports to `ip-address`). It did not copy `README.md`.
+- Local intake failed: `deltas.0.cases.0..4.source.fetchedAt` must be UTC ISO 8601. Nothing was pushed. The user saved the output outside the repository.
+- Note: this fix is essentially the over-broad canonicalization of the first ip stub attempt (run 43867172769), which was restless on `isPublic(":::")`.
+- Three gaps in the general Medium contract (no package-specific hints):
+  1. Date format: `get_advisories` served the advisory dates of the measurement as recorded (`YYYY-MM-DD`), which `deltas.json` does not accept as a `fetchedAt`.
+  2. The prompt did not say that `resurrection/` holds every Original file unchanged except the fix and the name and version.
+  3. The input classes had no reviewed definition in the menu, and the prompt gave no rule to prefer a `returns-expected-class` delta when a class covers the advisory's inputs.
+- Decision: amend `.kiro/specs/medium-agent` (requirements 5.3, 5.4, 6.2, 7.3, 7.4, 7.8 and the design) and add task 17 there. No code is changed by this entry.
+- Agent-run: none. This entry is documentation only.

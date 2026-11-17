@@ -68,7 +68,7 @@
 //     prefix length, no whitespace.
 //   Not parsed: non-strings, empty strings, surrounding whitespace, signs, exponents, CIDR notation.
 
-import type { InputClassPredicate } from "./types";
+import type { InputClassDoc, InputClassPredicate } from "./types";
 
 const V4_BITS = 32;
 const V6_BITS = 128;
@@ -232,6 +232,25 @@ export function isNonPublicAddress(input: unknown): boolean {
   const v4 = parseV4(input);
   return v4 === null ? false : inRanges(v4, V4_BITS, V4_TABLE);
 }
+
+/**
+ * Reviewed definition shown to the Medium by the preset menu. Kept next to the predicate and the
+ * range tables above: change them together. Written from the parser and the tables of this file.
+ */
+export const NON_PUBLIC_ADDRESS_DOC: InputClassDoc = {
+  definition:
+    "A call is in the class when it has exactly one argument, that argument is a string, and the string parses as an IPv4 or IPv6 address inside one of the ranges listed below. " +
+    "A string that contains a colon is parsed as IPv6; any other string is parsed as IPv4. " +
+    "A parse failure means not in the class, and so do a non-string, an empty string, surrounding whitespace, a sign, an exponent, CIDR notation, a prefix length, brackets and a zone id. " +
+    "IPv4 grammar: 1 to 4 parts separated by dots. Each part is decimal without a leading zero (127), octal with a leading zero (010 is 8; 09 does not parse; 0 is zero) or hexadecimal with 0x or 0X and at least one digit (0x7f); a part is at most 12 characters. " +
+    "Every part but the last is at most 255. The last part fills the remaining bytes, so 127.1 is 127.0.0.1 and a single part is a 32-bit integer such as 2130706433 or 0x7f000001; a last part too large for its bytes does not parse. " +
+    "IPv6 grammar: 8 groups of 1 to 4 hexadecimal digits in any case, with at most one :: standing for at least one group, and an optional dotted-decimal IPv4 tail in the last 32 bits (exactly four decimal parts 0 to 255 without leading zeros, no octal or hex). " +
+    "IPv4 ranges: 127.0.0.0/8, 10.0.0.0/8, 192.168.0.0/16, 172.16.0.0/12 and 169.254.0.0/16. " +
+    "IPv6 ranges: ::1 (/128), :: (/128), fc00::/7 and fe80::/16 (not the rest of fe80::/10). " +
+    "An IPv6 address whose first 96 bits are 0:0:0:0:0:ffff (IPv4-mapped, written ::ffff:a.b.c.d or ::ffff:7f00:1) is judged by its embedded IPv4 address against the IPv4 ranges only. " +
+    "Every other address is not in the class, for example 0.0.0.0/8, 100.64.0.0/10, 224.0.0.0/4 and 2001:db8::/32.",
+  appliesTo: ["isPublic"],
+};
 
 /** Class predicate over the argument array of one call: exactly one string argument. */
 export const nonPublicAddressPredicate: InputClassPredicate = (args) =>

@@ -12,7 +12,7 @@ Conventions for every task:
 - Tests make no network call (the network guard stays active), need no `kiro-cli` binary and spend no credit. `kiro-cli`, `git`, the file system, the meter prompt and the clock are fakes in Local_Runner tests (Requirement 12.1).
 - Required tests are not marked. Optional property tests (Properties 5, 6, 10, 12, 13, 14) are marked `*`. The Write_Guard tests (Properties 1, 2, 3 and the case table), the path-rules agreement tests (Property 4, Requirement 3.8 inside Property 1), the fail-closed Local_Runner tests (Properties 7, 11, the runner unit test, the secrets test) and every test a criterion names are required.
 - Honesty: no run time, credit figure or count enters code, docs or `docs/kiro-journal.md` unless the user ran it and pasted it; each figure names its source run by date and command (Requirement 12.7).
-- Do not change anything under `spikes/` (Requirement 13.3), and do not change `requirements.md`, `design.md` or `.config.kiro` of this spec.
+- Do not change anything under `spikes/` (Requirement 13.3), and do not change `.config.kiro` of this spec. `requirements.md` and `design.md` change only through the amendments the user authorized on 2026-11-17 (tasks 16 and 17).
 
 **First pass: skip every optional (*) task; the user decides at the end which to add back.**
 
@@ -290,9 +290,28 @@ Conventions for every task:
   - [x] 16.3 Agent_Prompt sentence
     - Add the sentence of Requirement 7.5 to the inline `prompt` of `.kiro/agents/medium.json` (`get_preset_menu` also gives the exact JSON Schemas of deltas.json and harness.json and an example; the output must match them), with no new backtick token outside the allowed set. Update the required-phrase list in `tests/medium/unit/agentPrompt.test.ts`. Check that `tests/medium/unit/agentDefinition.test.ts` and the Context_Server integration test under `tests/medium/integration/` still hold.
     - _Requirements: 7.5, 7.8, 6.2_
-  - [ ] 16.4 Checks, then stop for the user
+  - [-] 16.4 Checks, then stop for the user
     - Run `npm run typecheck`, `npm run lint` and each touched test file one at a time (`npx vitest run <path>`). No `npm test`, no commit. Then stop and write the commands for the user (the full suite, and a second real run `npm run resurrect -- lodash.set` in WSL as a new M9 attempt).
     - _Requirements: 5.3, 5.4, 6.2, 7.5, 7.8_
+
+- [ ] 17. M9 ip attempt 1 fix: three gaps in the Medium contract
+  - Cause and decision: docs/kiro-journal.md entry '2026-11-17: M9 ip attempt 1 (user-run, WSL)'. Requirements 5.3, 5.4, 6.2, 7.3, 7.4 and 7.8 and the design were amended for it on 2026-11-17. The three gaps are general: no ip-specific hint goes into any file of this task.
+  - [x] 17.1 Date format in `buildAdvisories`
+    - In `src/pipeline/medium/agent/contextServer.mjs` (and `contextServer.d.mts`), each entry of `content.advisory.sources` in the `measurement` result keeps `url` and `checkedOn` and gains `fetchedAt`: `<checkedOn>T00:00:00Z` plus `fetchedAtPrecision` `date-only` for a `YYYY-MM-DD` value; equal to `checkedOn` (no `fetchedAtPrecision`) for a value that is already a valid Fetch_Date; any other `checkedOn` is a tool error. The date check is one pure helper in the server file. Nothing else in the measurement changes; `measurement.json` itself stays a byte-for-byte copy (Requirement 5.1); certificate provenance is unchanged.
+    - Tests: add a unit test of `buildAdvisories` (date-only, full timestamp, invalid value, measurement without sources, no `measurement` key without text; the served `fetchedAt` passes `UtcTimestampSchema`) in `tests/medium/unit/` and extend `tests/medium/integration/contextServer.integration.test.ts` (its MEASUREMENT fixture has a date-only `checkedOn`) to check the served `fetchedAt` and `fetchedAtPrecision` over the real child process. Update `tests/medium/property/p14-advisories.test.ts` (Property 14 as amended) if it compares `content` for deep equality.
+    - _Requirements: 6.2, 6.9, 5.1_
+  - [x] 17.2 Agent_Prompt: resurrection/ holds every Original file
+    - Add the sentence of Requirement 7.3 to the inline `prompt` of `.kiro/agents/medium.json`: `resurrection/` contains every file of the Original, unchanged, except the source changes of the fix and the name and version in package.json. Add the sentence of Requirement 7.4 about copying the served `fetchedAt` (not `checkedOn`). No new backtick token outside the allowed set. Add the required phrases to the list in `tests/medium/unit/agentPrompt.test.ts`; check that `tests/medium/unit/agentDefinition.test.ts` still holds.
+    - _Requirements: 7.3, 7.4, 7.8_
+  - [x] 17.3 Input classes with reviewed definitions, and the returns-expected-class sentence
+    - Preset sources (`src/pipeline/harness/core/presets/`): write the reviewed definition and `appliesTo` of each input class next to its predicate (for `non-public-address` in `ipNonPublicAddress.ts`, from its doc comment: parse grammar, ranges, a parse failure means not in the class) and expose them through the `Preset` type in `types.ts`, so that the definition cannot drift from the predicate. Keep `compiler.ts` behaviour unchanged. A preset with no classes (`lodash-set`) has an empty list.
+    - `src/pipeline/medium/core/presetMenu.ts`: `inputClasses` becomes a list of `{ name, definition, appliesTo }` sorted by `name` in code-point order, key order `name`, `definition`, `appliesTo`; `parsePresetMenu` (strict) accepts it; `printPresetMenu` stays deterministic. Update `tests/medium/unit/presetMenu.test.ts` (every class of `PRESETS` is listed with a non-empty definition; `appliesTo` inside the preset's `deltaFunctions`; key order and class order; menu equals code), `tests/medium/unit/outputFormat.test.ts` if affected, and the Property 5 generator in `tests/medium/property/p05-preset-menu-roundtrip.test.ts`. Check other users of `PresetMenuEntry.inputClasses` with the typechecker (for example `src/pipeline/local/core/mediumContext.ts` and the Local_Runner tests).
+    - Agent_Prompt: add the sentence of Requirement 7.4 to `.kiro/agents/medium.json`: when a preset offers an input class (listed with its definition by `get_preset_menu`) that covers the inputs of the advisory, use a `returns-expected-class` delta for that class and change behaviour only for inputs in that class, because any behaviour change outside a declared delta makes the verdict restless. Add its required phrase to `tests/medium/unit/agentPrompt.test.ts`, with no new backtick token outside the allowed set.
+    - _Requirements: 5.3, 5.4, 7.4, 7.8_
+  - [ ] 17.4 Checks, then stop for the user
+    - Run `npm run typecheck`, `npm run lint` and each touched test file one at a time (`npx vitest run <path>`). No `npm test`, no commit. Then stop and write: "Ready for you to run: npx vitest run --project pipeline --project pipeline-integration" and "npm run trace". Wait for the pasted output; add a `docs/traceability-gaps.json` entry only for a criterion the trace reports as unclassified.
+    - _Requirements: 5.3, 5.4, 6.2, 7.3, 7.4, 7.8_
+
 ## Notes
 
 - Tasks marked with `*` are optional and can be skipped for a faster MVP (Properties 5, 6, 10, 12, 13, 14). Properties 1, 2, 3, 4, 7, 8, 9 and 11 are required.
@@ -319,7 +338,9 @@ Conventions for every task:
     { "id": 10, "tasks": ["15.3"] },
     { "id": 11, "tasks": ["16.1"] },
     { "id": 12, "tasks": ["16.2", "16.3"] },
-    { "id": 13, "tasks": ["16.4"] }
+    { "id": 13, "tasks": ["16.4"] },
+    { "id": 14, "tasks": ["17.1", "17.2", "17.3"] },
+    { "id": 15, "tasks": ["17.4"] }
   ]
 }
 ```

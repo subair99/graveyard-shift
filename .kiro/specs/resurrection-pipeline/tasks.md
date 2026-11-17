@@ -592,12 +592,14 @@ Conventions for every task:
       `npm run resurrect -- ip` (only if task 1.8 left at least one delta; there is no ip stub fixture)
     - Type the credit meter reading when asked, before and after (leave it empty if you have none; it is stored as `not provided`). The runner prints the Credit_Ceiling statement (150, a rule that is not enforced).
     - Paste back: the terminal output, the exit code, the dispatch run URL, the pull request URL and what the pull request shows. Record in the Journal (V12) the exit code and output of a "no credits" case if it happened and whether the CLI printed usage. Commit `ledger.json` to `main` yourself, from `~/graveyard-shift` (`git add ledger.json`, commit, `git push origin main`), then `git pull origin main` in the Windows clone. A stub pull request is never the demo entry (close it).
+    - Progress 2026-11-17: lodash.set done (attempt 2, see Journal 'M9 attempt 2'); the ip run is still to do. Keep open until the ip run.
     - _Requirements: 6.6, 7.1, 7.2, 7.3, 7.6, 19.2, 19.3, 19.8, 23.15_
 
-  - [ ] 16.2 Manual task (yours): M8 (second run), dispatch `nightly.yml` again once an `alive` entry from M9 is merged
+  - [x] 16.2 Manual task (yours): M8 (second run), dispatch `nightly.yml` again once an `alive` entry from M9 is merged
     - Start only after the pull request of an `alive` real Medium run (task 16.1) is merged to `main` by you. A stub entry does not count. This task is after spec (b) and blocks nothing; task 13.12 stays as it is and records "no `alive` entry yet" for `gh attestation verify`.
     - Same commands as task 13.12, in PowerShell: `gh workflow run nightly.yml --repo subair99/graveyard-shift --ref main`, then `gh run watch <run-id>` and `gh run view <run-id> --log` (read the summary), and `gh run download <run-id> -n nightly-report`.
     - Paste back (V9): the report line of the `alive` entry, the `gh` version on the runner, whether `gh attestation verify` worked on that real entry with the `contents: read` and `attestations: read` token, the exit code and the JSON field names (compare with what M6 recorded), and whether the `statement.subject[].digest.sha256` comparison held. If it differs from the sample used by `ghVerifyJson.test.ts` (task 13.7), stop and tell the agent, who then fixes the parser.
+    - Done 2026-11-17: nightly run 44133404391, see Journal; `attestations: read` confirmed sufficient.
     - _Requirements: 16.9, 16.10, 16.11, 16.13, 16.21_
 
 ## Notes

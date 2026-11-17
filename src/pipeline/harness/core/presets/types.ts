@@ -8,6 +8,14 @@ export type PresetOptions = Record<string, string | number | boolean | null>;
 /** Pure parent-side predicate over the decoded argument array of one call. */
 export type InputClassPredicate = (args: readonly unknown[]) => boolean;
 
+/** The reviewed description of one input class, kept in the preset source next to its predicate. */
+export interface InputClassDoc {
+  /** Plain-language text of exactly which inputs are in the class. */
+  readonly definition: string;
+  /** Functions the class applies to; each is in the preset's `deltaFunctions`, in preset order. */
+  readonly appliesTo: readonly string[];
+}
+
 export interface Preset {
   /** Name used in the Harness_File (`preset`). */
   readonly name: string;
@@ -22,6 +30,8 @@ export interface Preset {
    * `returns-expected-class` delta may name only a class listed here.
    */
   readonly inputClasses: Readonly<Record<string, InputClassPredicate>>;
+  /** Reviewed description of each class of `inputClasses` (same keys); shown to the Medium by the menu. */
+  readonly inputClassDocs: Readonly<Record<string, InputClassDoc>>;
   /** Strict schema of the options a Harness_File may give. */
   readonly optionsSchema: z.ZodType<PresetOptions>;
   /** Absolute path of a sandbox-side setup module applied to both sides, when the preset needs one. */

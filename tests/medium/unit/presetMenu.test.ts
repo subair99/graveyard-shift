@@ -3,6 +3,7 @@
 
 import { describe, expect, it } from "vitest";
 import { CI_OWNED_KEYS } from "../../../src/pipeline/harness/core/compiler";
+import { compareCodePoints } from "../../../src/pipeline/common/canonical";
 import { DeltaSchema } from "../../../src/pipeline/harness/core/deltas";
 import { PRESETS } from "../../../src/pipeline/harness/core/presets";
 import {
@@ -37,8 +38,48 @@ describe("printed preset menu", () => {
       expect(entry.package).toBe(preset!.package);
       expect(entry.functions).toEqual([...preset!.functions]);
       expect(entry.deltaFunctions).toEqual([...preset!.deltaFunctions]);
-      expect(entry.inputClasses).toEqual(Object.keys(preset!.inputClasses).sort());
+      expect(entry.inputClasses.map((c) => c.name)).toEqual(Object.keys(preset!.inputClasses).sort(compareCodePoints));
     }
+  });
+
+  it("lists every class of PRESETS with its definition and an appliesTo inside deltaFunctions", () => {
+    let classCount = 0;
+    for (const entry of menu().presets) {
+      const preset = Object.values(PRESETS).find((p) => p.name === entry.name)!;
+      expect(Object.keys(preset.inputClassDocs).sort()).toEqual(Object.keys(preset.inputClasses).sort());
+      for (const cls of entry.inputClasses) {
+        classCount += 1;
+        const doc = preset.inputClassDocs[cls.name]!;
+        expect(cls.definition.trim().length).toBeGreaterThan(0);
+        expect(cls.definition).toBe(doc.definition);
+        expect(cls.appliesTo.length).toBeGreaterThan(0);
+        expect(cls.appliesTo).toEqual([...doc.appliesTo]);
+        for (const fn of cls.appliesTo) expect(preset.deltaFunctions).toContain(fn);
+        const positions = cls.appliesTo.map((fn) => preset.deltaFunctions.indexOf(fn));
+        expect(positions).toEqual([...positions].sort((a, b) => a - b));
+      }
+    }
+    expect(classCount).toBeGreaterThan(0);
+  });
+
+  it("gives the ip-address class definition its grammar and the rule that a parse failure is not in the class", () => {
+    const ip = menu().presets.find((p) => p.name === "ip-address")!;
+    expect(ip.inputClasses.map((c) => c.name)).toEqual(["non-public-address"]);
+    const text = ip.inputClasses[0]!.definition;
+    expect(text).toContain("parse failure means not in the class");
+    expect(text).toContain("172.16.0.0/12");
+  });
+
+  it("is deterministic and round-trips", () => {
+    const again = printPresetMenu(buildPresetMenu(PRESETS, deltaKindsOf(DeltaSchema), CI_OWNED_KEYS));
+    expect(again).toBe(printed);
+    expect(printPresetMenu(menu())).toBe(printed);
+  });
+
+  it("refuses a class without a definition", () => {
+    const base = Object.values(PRESETS).find((p) => Object.keys(p.inputClasses).length > 0)!;
+    const broken = { ...base, inputClassDocs: {} };
+    expect(() => buildPresetMenu({ [broken.name]: broken }, [], [])).toThrow(/no definition/);
   });
 
   it("names every delta kind of DeltaSchema in schema order", () => {
@@ -72,6 +113,12 @@ describe("printed preset menu", () => {
       "functions",
       "deltaFunctions",
       "inputClasses",
+    ]);
+    const withClass = raw.presets.find((p) => (p["inputClasses"] as unknown[]).length > 0);
+    expect(Object.keys((withClass!["inputClasses"] as Record<string, unknown>[])[0]!)).toEqual([
+      "name",
+      "definition",
+      "appliesTo",
     ]);
   });
 

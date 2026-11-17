@@ -12,7 +12,7 @@ import { fileURLToPath } from "node:url";
 import * as fc from "fast-check";
 import { z } from "zod";
 import type { FunctionHarness } from "../../../../proof/types";
-import { nonPublicAddressPredicate } from "./ipNonPublicAddress";
+import { NON_PUBLIC_ADDRESS_DOC, nonPublicAddressPredicate } from "./ipNonPublicAddress";
 import type { Preset, PresetOptions } from "./types";
 
 /** Absolute path of the sandbox-side setup module. */
@@ -457,6 +457,7 @@ export const IP_ADDRESS_PRESET: IpAddressPreset = {
   functions: IP_EXPORTS,
   deltaFunctions: ["isPublic"],
   inputClasses: { "non-public-address": nonPublicAddressPredicate },
+  inputClassDocs: { "non-public-address": NON_PUBLIC_ADDRESS_DOC },
   optionsSchema: z.strictObject({}),
   setupModule: IP_SETUP_MODULE_PATH,
   build: (_options, fn) => {

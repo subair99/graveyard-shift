@@ -1252,6 +1252,18 @@
         "chatSessionId": "sess_870e3307-acf7-4220-a46a-b5d5e8cb5b63",
         "timestamp": 1794856598608
       }
+    ],
+    "16.2 Manual task (yours): M8 (second run), dispatch `nightly.yml` again once an `alive` entry from M9 is merged": [
+      {
+        "executionId": "f7d891ac-a044-4ab5-824d-04498ea08b3c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794935488053
+      },
+      {
+        "executionId": "f7d891ac-a044-4ab5-824d-04498ea08b3c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794935619401
+      }
     ]
   }
 }

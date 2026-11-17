@@ -20,6 +20,8 @@ export declare const TOOLS: readonly ContextServerTool[];
 
 /**
  * Pure. Returns the JSON text of the get_advisories result. Throws an Error with a plain message when the
- * certificate text does not parse or holds no openVulnerabilities data, or when the measurement text does not parse.
+ * certificate text does not parse or holds no openVulnerabilities data, when the measurement text does not parse, or
+ * when an advisory.sources entry of the measurement has a checkedOn that is neither YYYY-MM-DD nor a valid Fetch_Date.
+ * Each such entry gains fetchedAt (and fetchedAtPrecision "date-only" for a date-only checkedOn).
  */
 export declare function buildAdvisories(certificateText: string, measurementText: string | null): string;

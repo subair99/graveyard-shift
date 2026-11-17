@@ -200,7 +200,21 @@ describe("tool outputs", () => {
     makeContext(dir);
     writeFileSync(join(dir, "measurement.json"), JSON.stringify(MEASUREMENT));
     const out = JSON.parse(text(callOne(dir, "get_advisories")));
-    expect(out.measurement).toEqual({ label: "user-checked", content: MEASUREMENT });
+    expect(out.measurement).toEqual({
+      label: "user-checked",
+      content: {
+        advisory: {
+          sources: [
+            {
+              url: "https://example.invalid/m",
+              checkedOn: "2026-05-02",
+              fetchedAt: "2026-05-02T00:00:00Z",
+              fetchedAtPrecision: "date-only",
+            },
+          ],
+        },
+      },
+    });
     expect(out.advisories).toHaveLength(2);
   });
 });

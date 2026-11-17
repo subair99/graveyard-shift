@@ -654,6 +654,49 @@
         "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
         "timestamp": 1794933608518
       }
+    ],
+    "16.4 Checks, then stop for the user": [
+      {
+        "executionId": "c2f5418a-8b65-475f-867a-7b5bdd0049dc",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794936365898
+      }
+    ],
+    "17.1 Date format in `buildAdvisories`": [
+      {
+        "executionId": "c2f5418a-8b65-475f-867a-7b5bdd0049dc",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794936637367
+      },
+      {
+        "executionId": "c2f5418a-8b65-475f-867a-7b5bdd0049dc",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794936753767
+      }
+    ],
+    "17.2 Agent_Prompt: resurrection/ holds every Original file": [
+      {
+        "executionId": "c2f5418a-8b65-475f-867a-7b5bdd0049dc",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794936754077
+      },
+      {
+        "executionId": "c2f5418a-8b65-475f-867a-7b5bdd0049dc",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794936985672
+      }
+    ],
+    "17.3 Input classes with reviewed definitions, and the returns-expected-class sentence": [
+      {
+        "executionId": "c2f5418a-8b65-475f-867a-7b5bdd0049dc",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794936986223
+      },
+      {
+        "executionId": "c2f5418a-8b65-475f-867a-7b5bdd0049dc",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794937620937
+      }
     ]
   }
 }
