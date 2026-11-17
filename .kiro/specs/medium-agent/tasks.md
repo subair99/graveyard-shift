@@ -278,6 +278,21 @@ Conventions for every task:
     - The first real Medium run, which also records Requirement 11.7, is resurrection-pipeline task 16.1 (M9). It is not repeated here.
     - _Requirements: 3.10, 11.1, 11.7, 11.8_
 
+- [ ] 16. M9 attempt 1 fix: output format in the Preset_Menu_File
+  - Cause and decision: docs/kiro-journal.md entry '2026-11-17: M9 attempt 1, first real Medium run (user-run, WSL)'. Requirements 5.3, 5.4, 6.2 and 7.5 and the design were amended for it on 2026-11-17.
+  - [x] 16.1 Add `outputFormat` to `src/pipeline/medium/core/presetMenu.ts`
+    - Generate the JSON Schemas of the Deltas_File and the Harness_File with zod's built-in `toJSONSchema` from the same zod schemas that `parseDeltasFile` and `parseHarnessFile` use. Add the two minimal examples for the made-up package `example-package` (the deltas example: one `returns-expected` delta, one case, its source `{ url, fetchedAt }`; no lodash.set or ip content). `parsePresetMenu` accepts the new key; `printPresetMenu` stays deterministic with the key order `presets`, `deltaKinds`, `ciOwnedKeys`, `outputFormat` (`deltas`, `harness`; `schema`, `example`).
+    - If the installed zod cannot emit a schema for the Deltas_File or Harness_File schemas, STOP and report to the user. Add no dependency.
+    - _Requirements: 5.3, 5.4, 6.2_
+  - [x] 16.2 Tests for the output format
+    - The two examples pass `parseDeltasFile` and `parseHarnessFile`. Every committed fixture `deltas.json` and `harness.json` under `tests/pipeline/fixtures` (stub and real) validates against the emitted schemas, using the schema as a structural check without adding a dependency (a minimal in-test validator is allowed). Two builds give identical bytes (determinism). Update `tests/medium/unit/presetMenu.test.ts` (and the Property 5 generator in `tests/medium/property/p05-preset-menu-roundtrip.test.ts` if `parsePresetMenu` now requires the key).
+    - _Requirements: 5.3, 5.4_
+  - [x] 16.3 Agent_Prompt sentence
+    - Add the sentence of Requirement 7.5 to the inline `prompt` of `.kiro/agents/medium.json` (`get_preset_menu` also gives the exact JSON Schemas of deltas.json and harness.json and an example; the output must match them), with no new backtick token outside the allowed set. Update the required-phrase list in `tests/medium/unit/agentPrompt.test.ts`. Check that `tests/medium/unit/agentDefinition.test.ts` and the Context_Server integration test under `tests/medium/integration/` still hold.
+    - _Requirements: 7.5, 7.8, 6.2_
+  - [ ] 16.4 Checks, then stop for the user
+    - Run `npm run typecheck`, `npm run lint` and each touched test file one at a time (`npx vitest run <path>`). No `npm test`, no commit. Then stop and write the commands for the user (the full suite, and a second real run `npm run resurrect -- lodash.set` in WSL as a new M9 attempt).
+    - _Requirements: 5.3, 5.4, 6.2, 7.5, 7.8_
 ## Notes
 
 - Tasks marked with `*` are optional and can be skipped for a faster MVP (Properties 5, 6, 10, 12, 13, 14). Properties 1, 2, 3, 4, 7, 8, 9 and 11 are required.
@@ -301,7 +316,10 @@ Conventions for every task:
     { "id": 7, "tasks": ["13.4"] },
     { "id": 8, "tasks": ["15.1"] },
     { "id": 9, "tasks": ["15.2"] },
-    { "id": 10, "tasks": ["15.3"] }
+    { "id": 10, "tasks": ["15.3"] },
+    { "id": 11, "tasks": ["16.1"] },
+    { "id": 12, "tasks": ["16.2", "16.3"] },
+    { "id": 13, "tasks": ["16.4"] }
   ]
 }
 ```

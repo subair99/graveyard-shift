@@ -47,13 +47,25 @@ describe("printed preset menu", () => {
     expect(menu().deltaKinds).toEqual(kinds);
   });
 
+  it("names the schema and example of both output files and nothing else", () => {
+    const of = menu().outputFormat;
+    expect(Object.keys(of).sort()).toEqual(["deltas", "harness"]);
+    for (const entry of [of.deltas, of.harness]) {
+      expect(Object.keys(entry).sort()).toEqual(["example", "schema"]);
+    }
+  });
+
   it("names every CI-owned key in order", () => {
     expect(menu().ciOwnedKeys).toEqual([...CI_OWNED_KEYS]);
   });
 
   it("has the fixed key order", () => {
     const raw = JSON.parse(printed) as { presets: Record<string, unknown>[] };
-    expect(Object.keys(raw)).toEqual(["presets", "deltaKinds", "ciOwnedKeys"]);
+    expect(Object.keys(raw)).toEqual(["presets", "deltaKinds", "ciOwnedKeys", "outputFormat"]);
+    const of = (raw as unknown as { outputFormat: Record<string, Record<string, unknown>> }).outputFormat;
+    expect(Object.keys(of)).toEqual(["deltas", "harness"]);
+    expect(Object.keys(of.deltas ?? {})).toEqual(["schema", "example"]);
+    expect(Object.keys(of.harness ?? {})).toEqual(["schema", "example"]);
     expect(Object.keys(raw.presets[0] ?? {})).toEqual([
       "name",
       "package",

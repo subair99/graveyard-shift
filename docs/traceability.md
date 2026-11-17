@@ -793,7 +793,7 @@ A citation shows which tests claim to cover a criterion; it does not prove cover
 
 ### Summary
 
-- Test files scanned: 20
+- Test files scanned: 21
 - Acceptance criteria: 110
 - Criteria cited by at least one test file: 100
 - Criteria with no citing test file (gaps): 10
@@ -838,13 +838,13 @@ A citation shows which tests claim to cover a criterion; it does not prove cover
 | 4.7 | `tests/medium/integration/guardLog.integration.test.ts` |
 | 5.1 | `tests/medium/unit/localRunnerMedium.test.ts` |
 | 5.2 | `tests/medium/unit/localRunnerMedium.test.ts` |
-| 5.3 | `tests/medium/unit/presetMenu.test.ts` |
-| 5.4 | `tests/medium/unit/presetMenu.test.ts` |
+| 5.3 | `tests/medium/unit/outputFormat.test.ts`<br>`tests/medium/unit/presetMenu.test.ts` |
+| 5.4 | `tests/medium/unit/outputFormat.test.ts`<br>`tests/medium/unit/presetMenu.test.ts` |
 | 5.5 | `tests/medium/property/p07-context-scan.test.ts` |
 | 5.6 | `tests/medium/property/p11-local-runner-checks.test.ts`<br>`tests/medium/unit/localRunnerMedium.test.ts` |
 | 5.7 | `tests/medium/unit/docs.test.ts`<br>`tests/medium/unit/localRunnerMedium.test.ts` |
 | 6.1 | `tests/medium/integration/contextServer.integration.test.ts` |
-| 6.2 | `tests/medium/integration/contextServer.integration.test.ts`<br>`tests/medium/unit/pathRules.test.ts` |
+| 6.2 | `tests/medium/integration/contextServer.integration.test.ts`<br>`tests/medium/unit/outputFormat.test.ts`<br>`tests/medium/unit/pathRules.test.ts` |
 | 6.3 | `tests/medium/integration/contextServer.integration.test.ts` |
 | 6.4 | `tests/medium/unit/sourceScan.test.ts` |
 | 6.5 | `tests/medium/integration/contextServer.integration.test.ts`<br>`tests/medium/unit/pathRules.test.ts` |

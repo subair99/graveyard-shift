@@ -600,6 +600,16 @@
         "executionId": "384829c2-4584-410b-97d2-6cc0a05bc405",
         "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
         "timestamp": 1794920454856
+      },
+      {
+        "executionId": "c464b08c-002e-4d37-b180-d63cb569624c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794931841464
+      },
+      {
+        "executionId": "c464b08c-002e-4d37-b180-d63cb569624c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794932050375
       }
     ],
     "15. Manual tasks in the WSL clone (Kiro CLI)": [
@@ -607,6 +617,42 @@
         "executionId": "384829c2-4584-410b-97d2-6cc0a05bc405",
         "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
         "timestamp": 1794920455086
+      }
+    ],
+    "16.1 Add `outputFormat` to `src/pipeline/medium/core/presetMenu.ts`": [
+      {
+        "executionId": "c464b08c-002e-4d37-b180-d63cb569624c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794932053866
+      },
+      {
+        "executionId": "c464b08c-002e-4d37-b180-d63cb569624c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794932154064
+      }
+    ],
+    "16.2 Tests for the output format": [
+      {
+        "executionId": "c464b08c-002e-4d37-b180-d63cb569624c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794932158296
+      },
+      {
+        "executionId": "c464b08c-002e-4d37-b180-d63cb569624c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794933451637
+      }
+    ],
+    "16.3 Agent_Prompt sentence": [
+      {
+        "executionId": "c464b08c-002e-4d37-b180-d63cb569624c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794933452099
+      },
+      {
+        "executionId": "c464b08c-002e-4d37-b180-d63cb569624c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794933608518
       }
     ]
   }

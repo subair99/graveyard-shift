@@ -1465,3 +1465,13 @@ Comparison of the runs above with the design and requirements. No code changed.
   - Run A's precondition (clean `resurrection/`) was not met.
 - The points in requirements.md "Deferred to recorded runs" stay deferred. `MEDIUM_ENV_KEYS` and all code are unchanged.
 - Agent-run: none. This entry is documentation only.
+
+## 2026-11-17: M9 attempt 1, first real Medium run (user-run, WSL)
+- Command: `npm run resurrect -- lodash.set`, started about 14:23 on 2026-11-17 in the WSL clone.
+- What the Medium did: it read all six context tools, found the right fix (skip `__proto__`, `constructor` and `prototype` in `baseSet`), planned the name `@graveyard-shift/lodash.set` at version 4.3.3 and a `prototype-unchanged` delta for GHSA-p6mc-m468-83gw. It then wrote nothing and stopped under its rule 7.7: its tools never give the format of `deltas.json` and `harness.json`.
+- Runner result: the Ledger entry was written (readings "not provided"). Intake failed with `missing-required` for all three outputs. Nothing was pushed and nothing was deleted.
+- The user pressed Enter at both reading prompts on purpose (skipped). The prompts work as designed.
+- Medium environment keys printed: `GRAVEYARD_CERTIFICATE_PATH`, `GUARD_LOG_FILE`, `HOME`, `LANG`, `PATH`, `TERM`, `USER`. This is also the Requirement 11.7 record of the key names. `kiro-cli` started and used the logged-in account.
+- Meter (user-read): 2144.08 of 4000 used at 14:28 WAT, after the run. The previous user reading was 2139.10 at about 13:57, before the task 15.3 round. No cost is computed for the attempt.
+- Decision: fix by adding an `outputFormat` key to the Preset_Menu_File. It holds the JSON Schemas of the Deltas_File and the Harness_File, generated from the same zod schemas as `parseDeltasFile` and `parseHarnessFile`, and a minimal valid example of each for a made-up package `example-package`. Also one Agent_Prompt sentence, tests, and amended requirements 5.3, 5.4, 6.2 and 7.5 and design (medium-agent spec, new task 16).
+- Agent-run: none. This entry is documentation only.
