@@ -2,7 +2,8 @@
 // Resolve the branch once (the caller passes the SHA), fetch, verify the tip, merge base, diff, cat-file.
 
 import { spawn } from "node:child_process";
-import { ALLOWED_MEDIUM_PATHS, INTAKE_LIMITS } from "../../common/constants";
+import { INTAKE_LIMITS } from "../../common/constants";
+import { isAllowlisted } from "../../medium/agent/pathRules.mjs";
 import { err, ok, type Result } from "../../common/result";
 import type { EntryType, IntakeEntry } from "../core/types";
 
@@ -76,10 +77,6 @@ export function parseRawDiff(raw: string): Changed[] {
     changed.push({ path, mode: newMode, blob });
   }
   return changed;
-}
-
-function isAllowlisted(path: string): boolean {
-  return path.startsWith(ALLOWED_MEDIUM_PATHS[0]) || path === ALLOWED_MEDIUM_PATHS[1] || path === ALLOWED_MEDIUM_PATHS[2];
 }
 
 function parseBatchCheck(text: string, shas: readonly string[]): Map<string, number> {

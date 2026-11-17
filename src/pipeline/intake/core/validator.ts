@@ -4,35 +4,14 @@ import {
   ALLOWED_EXTENSIONS,
   CONTROL_FILES,
   DELTAS_FILE,
-  FORBIDDEN_SEGMENTS,
   HARNESS_FILE,
   INTAKE_LIMITS,
   LICENSE_FILE_NAME,
   RESURRECTION_DIR,
   TEXT_EXTENSIONS,
 } from "./limits";
-import { codePointLabel, firstControlCharacter } from "./safePath";
+import { badPathReason, isAllowlisted } from "../../medium/agent/pathRules.mjs";
 import type { IntakeEntry, IntakeResult, Violation, ViolationCode } from "./types";
-
-function badPathReason(path: string): string | null {
-  if (path.length === 0) return "empty path";
-  const control = firstControlCharacter(path);
-  if (control !== null) return `control character ${codePointLabel(control)} in path`;
-  if (path.includes("\\")) return "backslash in path";
-  if (/^[A-Za-z]:/.test(path)) return "drive prefix in path";
-  if (path.startsWith("/")) return "absolute path";
-  const segments = path.split("/");
-  for (const segment of segments) {
-    if (segment === "") return "empty path segment";
-    if (segment === "..") return "'..' path segment";
-    if (FORBIDDEN_SEGMENTS.includes(segment.toLowerCase())) return `forbidden path segment '${segment}'`;
-  }
-  return null;
-}
-
-function isAllowlisted(path: string): boolean {
-  return path.startsWith(RESURRECTION_DIR) || CONTROL_FILES.includes(path);
-}
 
 function extensionOf(path: string): string {
   const name = path.slice(path.lastIndexOf("/") + 1);

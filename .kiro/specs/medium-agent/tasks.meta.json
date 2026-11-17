@@ -1,0 +1,238 @@
+{
+  "pbtResults": {
+    "1.4 Write property test for the path-rules move (before the move)": {
+      "status": "passed",
+      "lastRunTimestamp": 1794898946693
+    },
+    "4.3 Write property test for malformed events": {
+      "status": "passed",
+      "lastRunTimestamp": 1794899757974
+    },
+    "4.4 Write property test for Guard_Log lines": {
+      "status": "passed",
+      "lastRunTimestamp": 1794899826540
+    }
+  },
+  "executionHistory": {
+    "1.1 Include `tests/medium/` in the existing vitest projects": [
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794894936470
+      },
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794898732587
+      }
+    ],
+    "1.2 Create the Path_Rules_File": [
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794898732939
+      },
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794898817862
+      }
+    ],
+    "1.3 Move the intake path arbitraries into a shared helper": [
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794898820855
+      },
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794898883497
+      }
+    ],
+    "1.4 Write property test for the path-rules move (before the move)": [
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794898891773
+      },
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794898967308
+      }
+    ],
+    "1.5 Take the rules from the Path_Rules_File in intake, entry readers and push plan": [
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794898967854
+      },
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794899070127
+      }
+    ],
+    "1. Shared path rules: one source, unchanged results (design Component 2)": [
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794899070306
+      }
+    ],
+    "2.1 Implement `src/pipeline/medium/core/mediumEnv.ts`": [
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794899070574
+      },
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794899117647
+      }
+    ],
+    "2.2 Implement `src/pipeline/medium/core/presetMenu.ts` and its example test": [
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794899118213
+      },
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794899189857
+      }
+    ],
+    "2.4 Implement `src/pipeline/medium/core/guardLog.ts`": [
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794899189415
+      },
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794899225327
+      }
+    ],
+    "2. Medium core helpers (pure)": [
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794899225511
+      }
+    ],
+    "3.1 Implement `src/pipeline/local/core/porcelain.ts`": [
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794899225803
+      },
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794899463512
+      }
+    ],
+    "3.3 Implement `src/pipeline/local/core/mediumContext.ts`": [
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794899463915
+      },
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794899529991
+      }
+    ],
+    "3. Local_Runner core helpers (pure)": [
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794899530179
+      }
+    ],
+    "4.1 Implement `src/pipeline/medium/agent/writeGuard.mjs` and `writeGuard.d.mts`": [
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794899533609
+      },
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794899615066
+      }
+    ],
+    "4.2 Write property test for the guard paths": [
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794899615557
+      },
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794899699151
+      }
+    ],
+    "4.3 Write property test for malformed events": [
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794899699735
+      },
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794899771254
+      }
+    ],
+    "4.4 Write property test for Guard_Log lines": [
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794899770728
+      },
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794899838262
+      }
+    ],
+    "4.5 Write the Write_Guard case-table integration test": [
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794899838705
+      },
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794899955105
+      }
+    ],
+    "4.6 Write the Guard_Log integration test": [
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794899955710
+      },
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794900041035
+      }
+    ],
+    "4. Write_Guard (design Component 3)": [
+      {
+        "executionId": "135632be-1425-41bb-82c4-51be353bf31f",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794900041140
+      }
+    ]
+  }
+}

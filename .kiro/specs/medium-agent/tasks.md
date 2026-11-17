@@ -18,40 +18,40 @@ Conventions for every task:
 
 ## Tasks
 
-- [ ] 1. Shared path rules: one source, unchanged results (design Component 2)
-  - [ ] 1.1 Include `tests/medium/` in the existing vitest projects
+- [x] 1. Shared path rules: one source, unchanged results (design Component 2)
+  - [x] 1.1 Include `tests/medium/` in the existing vitest projects
     - In `vitest.config.mts`, add `tests/medium/**/*.test.ts` to the `include` of project `pipeline` and exclude `tests/medium/integration/**`; add `tests/medium/integration/**/*.integration.test.ts` to project `pipeline-integration`. Targets and `BUDGET_SECONDS` stay unchanged.
     - Done first (the user's order lists it with the docs) so that `npx vitest run <path>` finds every new test file of the later tasks.
     - _Requirements: 12.2_
 
-  - [ ] 1.2 Create the Path_Rules_File
+  - [x] 1.2 Create the Path_Rules_File
     - Create `src/pipeline/medium/agent/pathRules.mjs` (no imports) and `pathRules.d.mts` with the outline of design Component 2: `ALLOWED_MEDIUM_PATHS` (readonly tuple in the declaration), `RESURRECTION_DIR`, `CONTROL_FILES`, `FORBIDDEN_SEGMENTS`, `CONTROL_CHARACTER_PATTERN`, `codePointLabel`, `firstControlCharacter`, `escapeControlCharacters`, `badPathReason`, `isAllowlisted`, `pathRuleProblem`. Copy the bodies and messages verbatim from `validator.ts`, `safePath.ts`, `limits.ts` and `constants.ts`.
     - Add `src/pipeline/medium/agent/pathRules.mjs` to `deterministicFiles` in `eslint.config.mjs`.
     - Write `tests/medium/unit/pathRules.test.ts`: the runtime export names of `pathRules.mjs` equal the names declared in `pathRules.d.mts`.
     - Run `npm run typecheck`, `npm run lint`, `npx vitest run tests/medium/unit/pathRules.test.ts`.
     - _Requirements: 3.11, 13.1_
 
-  - [ ] 1.3 Move the intake path arbitraries into a shared helper
+  - [x] 1.3 Move the intake path arbitraries into a shared helper
     - Move the path generators of `tests/pipeline/property/p13-intake-paths.test.ts` into `tests/pipeline/helpers/intakePathArbitraries.ts`; `p13` imports them with unchanged assertions.
     - Run `npx vitest run tests/pipeline/property/p13-intake-paths.test.ts`.
     - _Requirements: 3.8; resurrection-pipeline 9.5, 9.6_
 
-  - [ ] 1.4 Write property test for the path-rules move (before the move)
+  - [x] 1.4 Write property test for the path-rules move (before the move)
     - **Property 4: Moving the path rules keeps every path result**
     - **Validates: Requirements 3.11, 3.12**
     - File: `tests/medium/property/p04-path-rules-oracle.test.ts`. Freeze copies of the pre-move `badPathReason` and `isAllowlisted` (`validator.ts`), `isAllowlisted` (`fsEntries.ts`, `gitEntries.ts`), `isAllowedCommitPath` (`pushPlan.ts`) and `safePathForLog` (`safePath.ts`) in the test as oracles, and compare with the Path_Rules_File over `intakePathArbitraries` and arbitrary strings. Write and pass this test before task 1.5 changes the sources.
 
-  - [ ] 1.5 Take the rules from the Path_Rules_File in intake, entry readers and push plan
+  - [x] 1.5 Take the rules from the Path_Rules_File in intake, entry readers and push plan
     - Apply the table of design Component 2: `validator.ts` imports `badPathReason` and `isAllowlisted`; `safePath.ts` re-exports `CONTROL_CHARACTER_PATTERN`, `firstControlCharacter`, `codePointLabel` and defines `safePathForLog` as `escapeControlCharacters`; `limits.ts` re-exports `FORBIDDEN_SEGMENTS`; `constants.ts` re-exports `ALLOWED_MEDIUM_PATHS` (header comment names it); `fsEntries.ts`, `gitEntries.ts` import `isAllowlisted`; `pushPlan.ts` `isAllowedCommitPath` calls the imported `isAllowlisted`. Delete the local copies. TypeScript imports use the real extension (`.../medium/agent/pathRules.mjs`).
     - CI wiring checks, each once: `npm run typecheck`; `npm run lint`; `npx tsx scripts/ci/intake.ts` with no argument must exit with code 64 (it loads the intake import graph under tsx); then one file at a time `npx vitest run tests/pipeline/unit/intakeValidator.test.ts`, `tests/pipeline/unit/fsEntries.test.ts`, `tests/pipeline/unit/push.test.ts`, `tests/pipeline/integration/gitEntries.integration.test.ts`, `tests/medium/property/p04-path-rules-oracle.test.ts`. Expected values of existing tests stay unchanged; if one would need a change, stop and ask the user.
     - _Requirements: 3.11, 3.12; resurrection-pipeline 9.5, 9.6_
 
-- [ ] 2. Medium core helpers (pure)
-  - [ ] 2.1 Implement `src/pipeline/medium/core/mediumEnv.ts`
+- [x] 2. Medium core helpers (pure)
+  - [x] 2.1 Implement `src/pipeline/medium/core/mediumEnv.ts`
     - `MEDIUM_ENV_KEYS` (`PATH`, `HOME`, `USER`, `LANG`, `TERM`, with the comment that keys are added only from the Journal records of Requirements 11.8 and 11.7), `SECRET_KEY_PATTERN`, `MEDIUM_ADDED_KEYS`, `buildMediumEnv(caller, added)` with the three steps of design Component 5.
     - _Requirements: 11.1, 11.2_
 
-  - [ ] 2.2 Implement `src/pipeline/medium/core/presetMenu.ts` and its example test
+  - [x] 2.2 Implement `src/pipeline/medium/core/presetMenu.ts` and its example test
     - `buildPresetMenu`, `deltaKindsOf`, `printPresetMenu` (`canonicalJsonText(orderKeys(...))` plus a final line feed), `parsePresetMenu` (strict zod), with the key orders and list orders of the design's Data Models table.
     - Write `tests/medium/unit/presetMenu.test.ts`: the printed menu built from `PRESETS`, `DeltaSchema` and `CI_OWNED_KEYS` names every preset, function, delta function, class name, delta kind and CI-owned key of the code and nothing else.
     - _Requirements: 5.3, 5.4_
@@ -61,12 +61,12 @@ Conventions for every task:
     - **Validates: Requirements 5.4**
     - File: `tests/medium/property/p05-preset-menu-roundtrip.test.ts`.
 
-  - [ ] 2.4 Implement `src/pipeline/medium/core/guardLog.ts`
+  - [x] 2.4 Implement `src/pipeline/medium/core/guardLog.ts`
     - `summarizeGuardLog(text)`: line count of non-empty lines and the DENY lines (second space-separated field `DENY`), in order.
     - _Requirements: 10.3, 10.4_
 
-- [ ] 3. Local_Runner core helpers (pure)
-  - [ ] 3.1 Implement `src/pipeline/local/core/porcelain.ts`
+- [x] 3. Local_Runner core helpers (pure)
+  - [x] 3.1 Implement `src/pipeline/local/core/porcelain.ts`
     - `GIT_STATUS_ARGV` (`status --porcelain -z --untracked-files=all`), `LEDGER_FIRST_MESSAGE` (`commit ledger.json first`), `parsePorcelainZ` (rename and copy records yield both paths), `unexpectedChangedPaths`, `dirtyTreeLines` (paths escaped with `safePathForLog`).
     - _Requirements: 10.1, 10.2, 10.5_
 
@@ -75,7 +75,7 @@ Conventions for every task:
     - **Validates: Requirements 10.2, 10.5**
     - File: `tests/medium/property/p10-porcelain.test.ts`.
 
-  - [ ] 3.3 Implement `src/pipeline/local/core/mediumContext.ts`
+  - [x] 3.3 Implement `src/pipeline/local/core/mediumContext.ts`
     - `MEDIUM_CONTEXT_DIR`, `GUARD_LOG_FILE_REL`, `measurementFilePath`, `planMediumContext` and `contextScanFindings` as in design Component 7: generated files get the full `redactionScanFindsAnything` scan; Original files only `findIdentity`; findings returned as `rel` in plan order.
     - _Requirements: 5.1, 5.2, 5.5_
 
@@ -84,34 +84,34 @@ Conventions for every task:
     - **Validates: Requirements 5.1, 5.2**
     - File: `tests/medium/property/p06-context-plan.test.ts`.
 
-- [ ] 4. Write_Guard (design Component 3)
-  - [ ] 4.1 Implement `src/pipeline/medium/agent/writeGuard.mjs` and `writeGuard.d.mts`
+- [x] 4. Write_Guard (design Component 3)
+  - [x] 4.1 Implement `src/pipeline/medium/agent/writeGuard.mjs` and `writeGuard.d.mts`
     - Imports only `node:fs`, `node:path`, `node:url` and `./pathRules.mjs`; reads only `process.env.GUARD_LOG_FILE`.
     - Export `WRITE_TOOLS`, `PATH_KEYS`, `decide(eventText, fs)` with the nine decision steps and the Root_Relative_Form of design Component 3 (no fallback to `process.cwd()`), and `formatLogLine(decision, at)` (200 code-unit cut, then `escapeControlCharacters`; internal errors logged by code or name only).
     - `main` runs only when the file is the process entry: read standard input, `decide` with the real file system, write `stderrLine`, append the log line when `GUARD_LOG_FILE` is non-empty (append failure ignored), exit with `exitCode`; any exception exits 2; nothing on standard output.
     - _Requirements: 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 4.1, 4.2, 4.3, 4.4, 11.3_
 
-  - [ ] 4.2 Write property test for the guard paths
+  - [x] 4.2 Write property test for the guard paths
     - **Property 1: The Write_Guard allows exactly the paths the Shared_Path_Rules accept**
     - **Validates: Requirements 3.2, 3.3, 3.8**
     - File: `tests/medium/property/p01-guard-paths.test.ts`, in-process `decide` on an empty temporary root with the real file system, 200 runs, generators from `tests/pipeline/helpers/intakePathArbitraries.ts` plus `./`, absolute inside and outside, `//`, `~` and `.graveyard-work/` paths. Checks both directions against the Intake_Validator path checks.
 
-  - [ ] 4.3 Write property test for malformed events
+  - [x] 4.3 Write property test for malformed events
     - **Property 2: The Write_Guard is total and fails closed on malformed events**
     - **Validates: Requirements 3.4, 3.6**
     - File: `tests/medium/property/p02-guard-total.test.ts`, fake `GuardFs`.
 
-  - [ ] 4.4 Write property test for Guard_Log lines
+  - [x] 4.4 Write property test for Guard_Log lines
     - **Property 3: Guard_Log lines are well formed and round trip through the Local_Runner reader**
     - **Validates: Requirements 4.1, 4.2, 4.3, 10.3**
     - File: `tests/medium/property/p03-guard-log.test.ts`, `formatLogLine` with `summarizeGuardLog` (task 2.4).
 
-  - [ ] 4.5 Write the Write_Guard case-table integration test
+  - [x] 4.5 Write the Write_Guard case-table integration test
     - File: `tests/medium/integration/writeGuard.integration.test.ts`. Start the guard as a child process (`node src/pipeline/medium/agent/writeGuard.mjs`) for every case of `spikes/kiro-agent/hooks/pre-tool-write-guard.test-cases.json` with its `expect`, counted from the file, plus new cases for each condition of Requirement 3.3 and for 3.4 to 3.6 (invalid JSON, non-object, missing and non-string `tool_name`, no target path, empty path, missing or non-existent `cwd`, non-write tool). Assert the exit code, the `write-guard: blocked:` prefix for blocked cases, empty standard output and no file other than the Guard_Log in the temporary root. Report `needs: symlink` cases as skipped where links cannot be created and `needs: posix` cases as skipped on Windows.
     - Run `npx vitest run tests/medium/integration/writeGuard.integration.test.ts`.
     - _Requirements: 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.9_
 
-  - [ ] 4.6 Write the Guard_Log integration test
+  - [x] 4.6 Write the Guard_Log integration test
     - File: `tests/medium/integration/guardLog.integration.test.ts`, child process with `GUARD_LOG_FILE` in a temporary directory: an allowed write, a blocked write, a non-Write_Tool call, invalid JSON, a missing `tool_name`, a path of more than 200 code units, a path with a control character, an existing log that is only appended to, and an unwritable Guard_Log (missing parent, a directory) with unchanged exit code and standard error.
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.7_
 

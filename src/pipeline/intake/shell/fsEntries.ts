@@ -3,12 +3,9 @@
 
 import { lstat, readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { ALLOWED_MEDIUM_PATHS, INTAKE_LIMITS } from "../../common/constants";
+import { INTAKE_LIMITS } from "../../common/constants";
+import { isAllowlisted } from "../../medium/agent/pathRules.mjs";
 import type { EntryType, IntakeEntry } from "../core/types";
-
-function isAllowlisted(path: string): boolean {
-  return path.startsWith(ALLOWED_MEDIUM_PATHS[0]) || path === ALLOWED_MEDIUM_PATHS[1] || path === ALLOWED_MEDIUM_PATHS[2];
-}
 
 function typeOf(s: { isFile(): boolean; isSymbolicLink(): boolean; isBlockDevice(): boolean; isCharacterDevice(): boolean; nlink: number }): EntryType {
   if (s.isSymbolicLink()) return "symlink";

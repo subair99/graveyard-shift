@@ -1,5 +1,6 @@
 // Push plan (R8.2, R8.4, R8.7, R8.11, R23.6). Pure: no I/O, no clock.
-import { ALLOWED_MEDIUM_PATHS, REPO } from "../../common/constants";
+import { REPO } from "../../common/constants";
+import { isAllowlisted } from "../../medium/agent/pathRules.mjs";
 import { resurrectBranchName } from "../../common/branchNames";
 import { supportedPackageNameProblem } from "../../common/packageNames";
 import { err, ok, type Result } from "../../common/result";
@@ -28,11 +29,7 @@ export const WORKFLOW_FILE = "resurrect.yml";
 export const WORKFLOW_RUNS_URL = `https://github.com/${REPO}/actions/workflows/${WORKFLOW_FILE}`;
 
 export function isAllowedCommitPath(path: string): boolean {
-  return (
-    path.startsWith(ALLOWED_MEDIUM_PATHS[0]) ||
-    path === ALLOWED_MEDIUM_PATHS[1] ||
-    path === ALLOWED_MEDIUM_PATHS[2]
-  );
+  return isAllowlisted(path);
 }
 
 /** `gh workflow run ...` arguments. `branch` null gives the eligibility-only dispatch (no `-f branch=`). */

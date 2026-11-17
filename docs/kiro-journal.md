@@ -1378,3 +1378,7 @@ Diagnosis (agent-run, plain `node` on the extracted Original lib/ip.js; the tabl
 - Reason: the observation under "untrustedMediumOutput (1.3)" above: a path with a newline passed validation and, echoed to a CI log, could inject a `::` workflow command. Now any C0 control character (U+0000 to U+001F) or U+007F is a `bad-path` violation whose reason names the first code point (`U+000A`); log and summary output prints paths through `safePathForLog` (`\u000a`).
 - Code: `src/pipeline/intake/core/safePath.ts`, `validator.ts`, `scripts/ci/lib/intakeSteps.ts`, `src/pipeline/local/shell/resurrect.ts`, `push.ts`.
 - Tests (agent-run, one file at a time, each passed): intakeValidator 34, p13-intake-paths 1, untrustedMediumOutput 71, ciIntakeEntry 23, resurrect 25, push 8, stubFixture 5, stubFixtureIp 5, gitEntries.integration 3. `npm run typecheck` and `npm run lint` exit 0. No full suite run by the agent.
+
+## 2026-11-16: Credit meter reading (user-run)
+- User-read meter, 2026-11-16 20:28 WAT: bonus kiroween-20-26, 1837.99 of 4000 credits used, 46 days left.
+- Derived, not read: 2162.01 credits left (4000 - 1837.99). The window since the 1,055.73 reading (entry "Spike 8 and credits") includes IDE work, so it is not a per-run cost.

@@ -17,6 +17,11 @@ const heavyFiles = [
 // (target 120 s), so the `pipeline` project (target 90 s) keeps the unit and property files.
 const pipelineIntegrationFiles = "tests/pipeline/integration/**/*.test.ts";
 
+// Medium agent tests (tests/medium/) share these two projects; its integration tests go to
+// `pipeline-integration`, the rest to `pipeline`. Targets are unchanged.
+const mediumIntegrationDir = "tests/medium/integration/**";
+const mediumIntegrationFiles = "tests/medium/integration/**/*.integration.test.ts";
+
 export default defineConfig({
   test: {
     environment: "node",
@@ -54,15 +59,15 @@ export default defineConfig({
       defineProject({
         test: {
           name: "pipeline",
-          include: ["tests/pipeline/**/*.test.ts"],
-          exclude: [...configDefaults.exclude, pipelineIntegrationFiles],
+          include: ["tests/pipeline/**/*.test.ts", "tests/medium/**/*.test.ts"],
+          exclude: [...configDefaults.exclude, pipelineIntegrationFiles, mediumIntegrationDir],
           testTimeout: 60000,
         },
       }),
       defineProject({
         test: {
           name: "pipeline-integration",
-          include: [pipelineIntegrationFiles],
+          include: [pipelineIntegrationFiles, mediumIntegrationFiles],
           testTimeout: 60000,
         },
       }),

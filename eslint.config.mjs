@@ -10,6 +10,8 @@ export const deterministicFiles = [
   "src/proof/child/codec/**/*.ts",
   // Pure pipeline directories (common/shell/system.ts is outside: not under core/).
   "src/pipeline/**/core/**/*.ts",
+  // The Shared_Path_Rules (medium-agent design Component 2): pure, no imports.
+  "src/pipeline/medium/agent/pathRules.mjs",
 ];
 
 export const deterministicRules = {

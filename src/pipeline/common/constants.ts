@@ -1,4 +1,7 @@
-// Shared constants of the resurrection pipeline. Pure data; no imports.
+// Shared constants of the resurrection pipeline. Pure data; the only import is ALLOWED_MEDIUM_PATHS,
+// re-exported from the Path_Rules_File (medium/agent/pathRules.mjs), the one source of the Shared_Path_Rules.
+
+export { ALLOWED_MEDIUM_PATHS } from "../medium/agent/pathRules.mjs";
 
 /** The only place with this string (R13.8). */
 export const PREDICATE_TYPE =
@@ -24,5 +27,3 @@ export const INTAKE_LIMITS = {
   maxDepth: 8,
   maxControlFileBytes: 65_536,
 } as const;
-
-export const ALLOWED_MEDIUM_PATHS = ["resurrection/", "deltas.json", "harness.json"] as const;
