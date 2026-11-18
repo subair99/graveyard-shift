@@ -251,11 +251,11 @@ Conventions for every task:
   - _Requirements: 10.8, 10.9, 10.10_
 
 - [ ] 15. Manual tasks on GitHub
-  - [ ] 15.1 Manual task (yours): enable GitHub Pages
-    - Repository settings, Pages, "Build and deployment", Source: "GitHub Actions". Report in the Journal that the setting is on (date). The agent claims nothing about the Site until 15.2 is reported.
+  - [x] 15.1 Manual task (yours): enable GitHub Pages
+    - Repository settings, Pages, "Build and deployment", Source: "GitHub Actions". Report in the Journal that the setting is on (date). Pages was enabled through the GitHub API with `build_type=workflow` instead of the settings page (user-run 2026-11-18); the Pages source is GitHub Actions either way. The agent claims nothing about the Site until 15.2 is reported.
     - _Requirements: 9.8_
 
-  - [ ] 15.2 Manual task (yours): first `pages.yml` run by `workflow_dispatch` (settles design open question 8)
+  - [x] 15.2 Manual task (yours): first `pages.yml` run by `workflow_dispatch` (settles design open question 8)
     - After this spec's changes are on `main`: `gh workflow run pages.yml --ref main`, then `gh run watch`. Record in the Journal: the run address, the conclusion of `build` and `deploy`, the page address (`https://subair99.github.io/graveyard-shift/`), what the home page, the Crypt_Index and one Entry_Page show (expected: "No recent nightly result in this build."), and whether `configure-pages` needed another permission or order (open question 8). Only after this record may the README "Live demo" line change (Requirement 9.9, a separate request).
     - _Requirements: 9.5, 9.8, 9.9, 11.8_
 

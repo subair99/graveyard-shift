@@ -14,7 +14,7 @@ export function DownloadsSection({ entry }: { entry: EntryView }) {
           </li>
         ))}
       </ul>
-      <p>{DOWNLOADS_SENTENCE}</p>
+      {entry.verifyCommands.length > 0 ? <p>{DOWNLOADS_SENTENCE}</p> : null}
     </section>
   );
 }

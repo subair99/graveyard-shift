@@ -1,9 +1,10 @@
 /**
  * Documentation checks (task 13.2): the paths of the crypt-ui lines of structure.md exist, .gitignore, the README site
  * section, PREEXISTING.md entries of the three Pages actions, the trace mapping and the budget entry.
- * Criterion 9.9 (README "Live demo" line after a reported deployment) stays a manual gap and is not cited here.
+ * Criterion 9.9 (README "Live demo" line after a reported deployment): the line is the deployed address and the
+ * Journal records the address and the pages run of the reported deployment.
  */
-// Requirements: 10.8, 10.9, 11.1, 11.4, 11.5, 11.6, 11.9
+// Requirements: 9.9, 10.8, 10.9, 11.1, 11.4, 11.5, 11.6, 11.9
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
@@ -106,6 +107,24 @@ describe("README site section", () => {
     expect(ledger).toContain("the credit meter shows credits used (the user's statement, 2026-11-17)");
     // The cost of a run is not stated (the 150-credit ceiling is a rule, not a measured cost).
     expect(ledger).toContain("no figure is stated here");
+  });
+});
+
+describe("README Live demo line (Requirement 9.9)", () => {
+  const ADDRESS = "https://subair99.github.io/graveyard-shift/";
+
+  it("is the deployed address and no longer says coming soon", () => {
+    const line = read("README.md")
+      .split("\n")
+      .find((l) => l.startsWith("- Live demo:"));
+    expect(line).toBe(`- Live demo: ${ADDRESS}`);
+    expect(line).not.toMatch(/coming soon/i);
+  });
+
+  it("the Journal records the reported deployment with the same address and the pages run", () => {
+    const journal = read("docs/kiro-journal.md");
+    expect(journal).toContain(ADDRESS.replace(/\/$/, ""));
+    expect(journal).toContain("44276857142");
   });
 });
 

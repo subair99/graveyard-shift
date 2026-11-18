@@ -392,6 +392,16 @@
         "executionId": "05921a76-2b77-47e9-b0ed-76fbb54bcbe3",
         "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
         "timestamp": 1794993243379
+      },
+      {
+        "executionId": "1d278dd7-c3ec-492b-9a52-6fcf61fa9109",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794997330908
+      },
+      {
+        "executionId": "1d278dd7-c3ec-492b-9a52-6fcf61fa9109",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794998305653
       }
     ],
     "8.2 Write the theme test": [
@@ -571,6 +581,30 @@
         "executionId": "d42db9e5-13b4-4a47-9e83-437034022d60",
         "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
         "timestamp": 1794992608241
+      }
+    ],
+    "15.1 Manual task (yours): enable GitHub Pages": [
+      {
+        "executionId": "9c02ed50-4fb1-4e28-b274-666b4997f42d",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794994612068
+      },
+      {
+        "executionId": "9c02ed50-4fb1-4e28-b274-666b4997f42d",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794994827153
+      }
+    ],
+    "15.2 Manual task (yours): first `pages.yml` run by `workflow_dispatch` (settles design open question 8)": [
+      {
+        "executionId": "b17b7918-9d4e-4c32-93b2-26945e076ffd",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794995276852
+      },
+      {
+        "executionId": "1d278dd7-c3ec-492b-9a52-6fcf61fa9109",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794997330270
       }
     ]
   }
