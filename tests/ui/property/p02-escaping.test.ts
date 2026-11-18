@@ -1,13 +1,11 @@
 // Requirements: 7.1, 7.5
 // Feature: crypt-ui, Property 2: File_Text renders as inert text
-import fc from "fast-check";
+import { fc, fcParams } from "../../engine/helpers/fc";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { JsonText } from "../../../src/ui/components/JsonText";
 import { unescapeHtml } from "../helpers/unescapeHtml";
-
-const NUM_RUNS = 100;
 
 const hostile = fc.constantFrom(
   "<script>alert(1)</script>", "<img src=x onerror=alert(1)>", "\"><b>", "'><i>", "&lt;b&gt;", "&amp;",
@@ -36,7 +34,7 @@ describe("Property 2: File_Text renders as inert text", () => {
         expect(text).not.toMatch(/[<>]/);
         expect(unescapeHtml(text)).toBe(s);
       }),
-      { numRuns: NUM_RUNS },
+      fcParams(),
     );
   });
 
@@ -50,7 +48,7 @@ describe("Property 2: File_Text renders as inert text", () => {
         expect(text).not.toMatch(/[<>]/);
         expect(unescapeHtml(text)).toBe(s);
       }),
-      { numRuns: NUM_RUNS },
+      fcParams(),
     );
   });
 
@@ -61,7 +59,7 @@ describe("Property 2: File_Text renders as inert text", () => {
         expect(text).not.toMatch(/[<>]/);
         expect(unescapeHtml(text)).toBe(JSON.stringify(s, null, 2));
       }),
-      { numRuns: NUM_RUNS },
+      fcParams(),
     );
   });
 
@@ -73,7 +71,7 @@ describe("Property 2: File_Text renders as inert text", () => {
         expect(text).not.toMatch(/[<>]/);
         expect(unescapeHtml(text)).toBe(JSON.stringify(value, null, 2));
       }),
-      { numRuns: NUM_RUNS },
+      fcParams(),
     );
   });
 });

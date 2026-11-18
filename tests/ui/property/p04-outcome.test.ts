@@ -1,6 +1,6 @@
 // Requirements: 3.5, 3.8, 4.8, 5.5, 5.6, 6.2
 // Feature: crypt-ui, Property 4: Outcome, Verdict and verification fields follow the entry kind and Verdict
-import fc from "fast-check";
+import { fc, fcParams } from "../../engine/helpers/fc";
 import { describe, expect, it } from "vitest";
 import { ENTRY_FILES, bundleName } from "../../../src/pipeline/undertaker/core/layout";
 import { verifyCommands } from "../../../src/pipeline/undertaker/core/verifyCommands";
@@ -8,7 +8,6 @@ import { GRAVEYARD_PATH } from "../../../src/ui/core/site";
 import { buildSiteView } from "../../../src/ui/core/viewModel";
 import { siteInputArb } from "../helpers/arbitraries";
 
-const NUM_RUNS = 100;
 const FORBIDDEN_WORDS = ["resurrected", "alive", "success", "verified", "attested"];
 
 describe("Property 4: Outcome, Verdict and verification fields follow the entry kind and Verdict", () => {
@@ -62,7 +61,7 @@ describe("Property 4: Outcome, Verdict and verification fields follow the entry 
           }
         });
       }),
-      { numRuns: NUM_RUNS },
+      fcParams(),
     );
   });
 });

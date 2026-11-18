@@ -27,15 +27,23 @@ Requires Node.js LTS and npm.
 
 ```
 npm install
-npm run dev     # http://localhost:3000
-npm run build
+npm run dev     # http://localhost:3000/graveyard-shift/
+npm run build   # static export into out/
 npm run typecheck
 npm run lint
-npm test        # vitest, all six projects; set FC_SEED to replay a property-test seed
+npm test        # vitest, all seven projects; set FC_SEED to replay a property-test seed
 ```
 
+### The Crypt site
+The site (`src/app/`, `src/ui/`) is a static export. It lists the entries of `graveyard/` (the Crypt index), and each entry has a page with its Death Certificate, eligibility record, Proof of Life report, deltas, verification commands, downloads and the Medium attempts from `ledger.json`. Every fact keeps its source URL and fetch date. A `restless` or `inconclusive` verdict and a "not resurrected" entry are shown as such. The site reads only `graveyard/`, `ledger.json` and, in a build made after a completed nightly run on `main`, that run's report and conclusion. The "Last nightly re-verification" status on an entry page comes from that run's artifact (the `nightly-report` artifact that `pages.yml` downloads into `.crypt-nightly/`). A build without it shows "No recent nightly result in this build."
+
+- Development: `npm run dev`, then open http://localhost:3000/graveyard-shift/.
+- Build: `npm run build` writes the static export to `out/` (not committed). Then check it with `node scripts/ui/checkSite.mjs`.
+- Preview: `npm run start` does not serve the site. Run `npm run build`, then serve the directory `out/` under the path `/graveyard-shift/` with any static file server.
+- Deploy: `.github/workflows/pages.yml` builds and deploys to GitHub Pages. Setting Pages to deploy from GitHub Actions in the repository settings is a manual step by the repository owner. The workflow does not do it.
+
 ### Test projects
-Vitest runs six projects (`vitest.config.mts`). Select one with `npx vitest run --project <name>`.
+Vitest runs seven projects (`vitest.config.mts`). Select one with `npx vitest run --project <name>`.
 
 | Project | Files | Wall-clock target |
 |---|---|---|
@@ -45,8 +53,9 @@ Vitest runs six projects (`vitest.config.mts`). Select one with `npx vitest run 
 | `proof-integration` | `tests/proof/integration` (real sandbox child processes) | 120 s |
 | `pipeline` | `tests/pipeline`, except `tests/pipeline/integration` | 90 s (target) |
 | `pipeline-integration` | `tests/pipeline/integration` (real sandbox child processes, a real local git repository) | 120 s (target) |
+| `ui` | `tests/ui` | 60 s (target) |
 
-The table numbers (including the `proof-property`, `pipeline` and `pipeline-integration` rows) are targets, not measurements. Projects run in parallel, so a reporter (`tests/proof/helpers/budgetReporter.ts`) checks each project that ran against its own target, using its **span**: the time from its first test file starting to its last test file ending. Each project prints three lines starting `[budget] <project>:`: the span (checked), the sum of the file durations (information only: files run in parallel, so the sum can exceed the span) and the whole-run wall-clock (information only: an upper bound for the project). If the span cannot be measured, the check falls back to the whole-run wall-clock and the line says "span unavailable". A strict overrun fails the run. `PROOF_BUDGET_MODE=warn` downgrades that to a warning and `PROOF_LOG_TIMINGS=1` appends the checked value to [docs/kiro-journal.md](docs/kiro-journal.md). `PROOF_BUDGET_SCALE=<number>` (test aid only, never set in CI) multiplies every target (60 / 90 / 120 s) by a positive number, default 1, so a strict overrun (exit code 1) and a warn-mode overrun can be confirmed on one fast file; a value that is not a finite number > 0 fails the run with exit code 1 whatever the mode, and a scale other than 1 never writes the journal. The numbers a run prints are measurements of that run; measured timings recorded here come only from runs the user made, in that journal.
+The table numbers (including the `proof-property`, `pipeline`, `pipeline-integration` and `ui` rows) are targets, not measurements. Projects run in parallel, so a reporter (`tests/proof/helpers/budgetReporter.ts`) checks each project that ran against its own target, using its **span**: the time from its first test file starting to its last test file ending. Each project prints three lines starting `[budget] <project>:`: the span (checked), the sum of the file durations (information only: files run in parallel, so the sum can exceed the span) and the whole-run wall-clock (information only: an upper bound for the project). If the span cannot be measured, the check falls back to the whole-run wall-clock and the line says "span unavailable". A strict overrun fails the run. `PROOF_BUDGET_MODE=warn` downgrades that to a warning and `PROOF_LOG_TIMINGS=1` appends the checked value to [docs/kiro-journal.md](docs/kiro-journal.md). `PROOF_BUDGET_SCALE=<number>` (test aid only, never set in CI) multiplies every target (60 / 90 / 120 s) by a positive number, default 1, so a strict overrun (exit code 1) and a warn-mode overrun can be confirmed on one fast file; a value that is not a finite number > 0 fails the run with exit code 1 whatever the mode, and a scale other than 1 never writes the journal. The numbers a run prints are measurements of that run; measured timings recorded here come only from runs the user made, in that journal.
 
 Copy `.env.example` to `.env` and fill in `GITHUB_TOKEN`.
 
@@ -102,7 +111,7 @@ What a successful verification proves: that a workflow run of this repository si
 To re-check the Proof of Life itself, fetch the Original from the npm registry, check its Integrity_Hash against `proof-report.json`, and run `npm run proof:run` with the committed `resurrection.tgz`, the harness files and the seed of the report. The nightly does this replay (`src/pipeline/undertaker/shell/replay.ts`).
 
 ### Ledger and credits
-`ledger.json` holds the user's credit meter readings before and after each Medium run. It is the only record of the Medium's credit cost; no figure is stated here. It is committed to `main` by the user, from the WSL clone. No script and no workflow pushes it (the Push_Script and the workflows never do). The Credit_Ceiling of 150 credits is a rule the user follows, not a limit that the Local_Runner enforces.
+`ledger.json` holds the user's credit meter readings before and after each Medium run. The readings are as typed by the user: the credit meter shows credits used (the user's statement, 2026-11-17). The site lists them as typed and computes no difference. It is the only record of the Medium's credit cost; no figure is stated here. It is committed to `main` by the user, from the WSL clone. No script and no workflow pushes it (the Push_Script and the workflows never do). The Credit_Ceiling of 150 credits is a rule the user follows, not a limit that the Local_Runner enforces.
 
 ## Recording fixtures
 The engine's fixture tests replay recorded upstream responses from `tests/engine/fixtures/`.

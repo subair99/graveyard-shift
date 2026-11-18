@@ -1,7 +1,7 @@
-// Requirements: 3.7, 4.1, 4.3, 4.4, 5.1, 5.2, 5.3, 5.4, 5.7, 5.8, 5.9, 6.4, 6.9, 8.4, 8.5, 12.10, 12.11, 13.3
+// Requirements: 3.7, 4.1, 4.3, 4.4, 4.5, 4.6, 4.7, 4.9, 4.10, 5.1, 5.2, 5.3, 5.4, 5.7, 5.8, 5.9, 6.4, 6.6, 6.9, 8.4, 8.5, 12.4, 12.10, 12.11, 13.1, 13.2, 13.3, 13.4, 13.6
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { EntryView } from "../../../src/ui/components/EntryView";
-import { GH_MIN_VERSION } from "../../../src/pipeline/common/constants";
+import { GH_MIN_VERSION, REPO } from "../../../src/pipeline/common/constants";
 import { verifyCommands } from "../../../src/pipeline/undertaker/core/verifyCommands";
 import { VERIFIED_LABEL_ALIVE, VERIFIED_LABEL_NOT_ALIVE } from "../../../src/ui/core/nightlyLabels";
 import { runUrl } from "../../../src/ui/core/site";
@@ -156,6 +156,18 @@ describe("Entry_Page markup over the Fixture_Graveyard", () => {
     expect(rows).toHaveLength(2);
     expect(section).toContain("<td>not provided</td><td>not provided</td>");
     expect(section).toContain("<td>100.5</td><td>102</td>");
+    // R13.1, R13.3: the six column headers, the rows in the order of ledger.json, and the fixed note.
+    expect([...section.matchAll(/<th scope="col">([^<]*)<\/th>/g)].map((m) => m[1])).toEqual([
+      "date",
+      "mode",
+      "version",
+      "exit code",
+      "credit before",
+      "credit after",
+    ]);
+    expect(section.indexOf("2026-01-03T10:00:00Z")).toBeGreaterThan(-1);
+    expect(section.indexOf("2026-01-03T10:00:00Z")).toBeLessThan(section.indexOf("2026-01-04T10:00:00Z"));
+    expect(section).toContain("credit meter readings as typed by the user (the meter shows credits used)");
 
     const stub = sectionOf(page("stub-fixture"), "attempts");
     expect(stub).toContain(`<td>stub</td><td>4.0.0</td><td>${NOT_RECORDED}</td><td>${NOT_RECORDED}</td><td>${NOT_RECORDED}</td>`);
@@ -171,6 +183,8 @@ describe("Entry_Page markup over the Fixture_Graveyard", () => {
     expect(a).toContain(`<code>verified</code>: ${VERIFIED_LABEL_ALIVE}`);
     expect(a).toContain("reason: Replay identical and attestations verified.");
     expect(a).toContain(runUrl(1001));
+    // R12.4: the run link is exactly https://github.com/<REPO>/actions/runs/<runId>.
+    expect(a).toContain(`<a href="https://github.com/${REPO}/actions/runs/1001"`);
 
     const r = unescapeHtml(sectionOf(page("restless-fixture"), "nightly"));
     expect(r).toContain(`<code>verified</code>: ${VERIFIED_LABEL_NOT_ALIVE}`);
@@ -201,5 +215,165 @@ describe("Entry_Page markup over the Fixture_Graveyard", () => {
     const none = unescapeHtml(sectionOf(page("alive-fixture", (await site.read(null)).view), "nightly"));
     expect(none).toContain(NIGHTLY_NONE);
     expect(none).not.toContain("<code>");
+  });
+
+  /** Text of a markup fragment: inline tags removed, other tags become one space, entities unescaped. */
+  const plain = (markup: string): string =>
+    unescapeHtml(markup.replace(/<\/?(?:strong|code|a)\b[^>]*>/g, "").replace(/<[^>]*>/g, " "))
+      .replace(/\s+/g, " ")
+      .trim();
+  const patched = (name: string, change: (e: EntryViewData) => EntryViewData): SiteView => ({
+    ...view,
+    entries: view.entries.map((e) => (e.name === name ? change(e) : e)),
+  });
+  const FETCHED = "2026-11-16T15:31:29Z";
+
+  it("eligibility section: eligible, integrity comparison, every rule with its fields, in the order of the file (R4.5)", () => {
+    const e = entry("retired-fixture");
+    const rules = e.eligibility.rules.map((r, i) =>
+      i === 1 ? { ...r, reason: "unverified" as const, missingField: "dependencies" } : r,
+    );
+    const v = patched("retired-fixture", (x) => ({ ...x, eligibility: { ...x.eligibility, rules } }));
+    const t = plain(sectionOf(page("retired-fixture", v), "eligibility"));
+    expect(t).toContain("Eligible no");
+    expect(t).toContain(`expected ${e.eligibility.integrity.expected}`);
+    expect(t).toContain(`computed ${e.eligibility.integrity.computed}`);
+    expect(t).toContain("matches yes");
+    let from = 0;
+    for (const r of rules) {
+      const reason = r.reason !== undefined ? `; reason ${r.reason}` : "";
+      const missing = r.missingField !== undefined ? `; missing field ${r.missingField}` : "";
+      const line = `${r.rule}: holds ${r.holds ? "yes" : "no"}; observed ${JSON.stringify(r.observed)}${reason}${missing}`;
+      const at = t.indexOf(line, from);
+      expect(at, line).toBeGreaterThanOrEqual(0);
+      from = at + line.length;
+    }
+    expect(rules.map((r) => r.rule)).toEqual([
+      "license",
+      "dependencies",
+      "module-type",
+      "line-count",
+      "status",
+      "causes",
+      "open-vulnerability",
+    ]);
+  });
+
+  it("eligibility section: sources of each rule, 'first N of M sources' and 'no source was recorded' (R4.6)", () => {
+    const e = entry("retired-fixture");
+    const facts = e.eligibility.facts
+      .filter((f) => f.key !== "rule.dependencies")
+      .map((f) => (f.key === "rule.license" ? { ...f, provenanceTotal: 25 } : f));
+    const v = patched("retired-fixture", (x) => ({ ...x, eligibility: { ...x.eligibility, facts } }));
+    const t = plain(sectionOf(page("retired-fixture", v), "eligibility"));
+    const rulesText = t.slice(t.indexOf("Rules "), t.indexOf("Failed rules"));
+    const part = (from: string, to: string): string => rulesText.slice(rulesText.indexOf(`${from}: holds`), rulesText.indexOf(`${to}: holds`));
+
+    const license = part("license", "dependencies");
+    expect(license).toContain("first 1 of 25 sources");
+    expect(license).toContain(`Source: https://registry.npmjs.org/inflight/-/inflight-1.0.6.tgz, fetched ${FETCHED}`);
+    expect(part("dependencies", "module-type")).toContain("no source was recorded");
+
+    const status = part("status", "causes");
+    expect(status.match(/Source: /g)).toHaveLength(7);
+    expect(status).toContain(`Source: https://registry.npmjs.org/lru-cache, fetched ${FETCHED}`);
+    expect(status).not.toContain("sources");
+  });
+
+  it("not-resurrected page: heading, failed rules with observed values and sources, Successor, registry lookup and deprecation message (R4.7)", () => {
+    const deprecation = "This package is deprecated. Use lru-cache instead.";
+    const v = patched("retired-fixture", (x) => ({
+      ...x,
+      certificate: {
+        ...x.certificate,
+        facts: [
+          ...x.certificate.facts,
+          { key: "deprecation", value: deprecation, provenance: [{ sourceUrl: "https://registry.npmjs.org/inflight", fetchedAt: FETCHED }] },
+        ],
+      },
+    }));
+    const markup = page("retired-fixture", v);
+    expect(plain(sectionOf(markup, "not-resurrected"))).toBe(
+      "Not resurrected Nothing was resurrected, proven or attested for this package.",
+    );
+
+    const elig = plain(sectionOf(markup, "eligibility"));
+    expect(elig).toContain("Failed rules dependencies, status, open-vulnerability");
+    expect(elig).toContain("dependencies: holds no; observed 2");
+    expect(elig).toContain('status: holds no; observed "retired-with-successor"');
+    expect(elig).toContain("open-vulnerability: holds no; observed 0");
+    expect(elig).toContain(`Source: https://registry.npmjs.org/inflight/-/inflight-1.0.6.tgz, fetched ${FETCHED}`);
+    expect(elig).toContain("Successor lru-cache");
+
+    const cert = plain(sectionOf(markup, "certificate"));
+    expect(cert).toContain("Successor lru-cache");
+    expect(cert).toContain('successorLookup:lru-cache { "result": "exists" }');
+    expect(cert).toContain(`Source: https://registry.npmjs.org/lru-cache, fetched ${FETCHED}`);
+    expect(cert).toContain(`deprecation "${deprecation}"`);
+    expect(cert).toContain(`Source: https://registry.npmjs.org/inflight, fetched ${FETCHED}`);
+  });
+
+  it("a certificate value marked unavailable is shown as 'unavailable' with the file's reason, not as zero or empty (R4.9)", () => {
+    const gone = {
+      available: false as const,
+      source: "npm" as const,
+      attemptedUrl: "https://registry.npmjs.org/alive-fixture",
+      attemptedAt: FETCHED,
+      reason: "registry unreachable",
+    };
+    const v = patched("alive-fixture", (x) => ({
+      ...x,
+      certificate: {
+        ...x.certificate,
+        timeOfDeath: gone,
+        vitalSigns: {
+          ...x.certificate.vitalSigns,
+          openVulnerabilities: { ...gone, source: "osv" as const, attemptedUrl: "https://api.osv.dev/v1/query" },
+        },
+      },
+    }));
+    const t = plain(sectionOf(page("alive-fixture", v), "certificate"));
+    expect(t).toContain(
+      `Time of death unavailable (reason: registry unreachable; attempted URL: https://registry.npmjs.org/alive-fixture; attempted at: ${FETCHED})`,
+    );
+    expect(t).toContain(
+      `Open vulnerabilities unavailable (reason: registry unreachable; attempted URL: https://api.osv.dev/v1/query; attempted at: ${FETCHED})`,
+    );
+    expect(t).not.toContain("Open vulnerabilities none");
+  });
+
+  it("every Entry_Page links to the GitHub history of its files with a fixed label, and shows no pull request link (R4.10)", () => {
+    for (const name of ALL) {
+      const markup = unescapeHtml(page(name));
+      const href = `https://github.com/${REPO}/commits/main/graveyard/${name}`;
+      expect(markup, name).toContain(
+        `<a href="${href}" rel="noopener noreferrer">History of this entry's files on GitHub</a>`,
+      );
+      expect(markup.match(/\/commits\//g), name).toHaveLength(1);
+      expect(markup, name).not.toMatch(/\/pull\/|pull request/i);
+    }
+  });
+
+  it("the Attempts section holds only the heading, the fixed texts, the headers and the ledger values: no computed figure, no 'produced by' statement (R13.4)", () => {
+    for (const name of ["alive-fixture", "restless-fixture", "stub-fixture"] as const) {
+      const rows = entry(name).attempts;
+      expect(rows.length, name).toBeGreaterThan(0);
+      const nodes = sectionOf(page(name), "attempts")
+        .split(/<[^>]*>/)
+        .map((s) => unescapeHtml(s).trim())
+        .filter((s) => s !== "");
+      expect(nodes, name).toEqual([
+        "Attempts",
+        "credit meter readings as typed by the user (the meter shows credits used)",
+        ATTEMPTS_CAPTION,
+        "date",
+        "mode",
+        "version",
+        "exit code",
+        "credit before",
+        "credit after",
+        ...rows.flatMap((r) => [r.date, r.mode, r.version, r.exitCode, r.creditBefore, r.creditAfter]),
+      ]);
+    }
   });
 });

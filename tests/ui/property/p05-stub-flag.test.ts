@@ -1,12 +1,10 @@
 // Requirements: 2.4, 6.5, 13.5
 // Feature: crypt-ui, Property 5: The stub flag comes only from the Stub_Marker
-import fc from "fast-check";
+import { fc, fcParams } from "../../engine/helpers/fc";
 import { describe, expect, it } from "vitest";
 import { ENTRY_FILES } from "../../../src/pipeline/undertaker/core/layout";
 import { buildSiteView } from "../../../src/ui/core/viewModel";
 import { siteInputArb } from "../helpers/arbitraries";
-
-const NUM_RUNS = 100;
 
 describe("Property 5: The stub flag comes only from the Stub_Marker", () => {
   it("is true if and only if the entry files contain stub-run.json, whatever the Ledger and nightly say", () => {
@@ -26,7 +24,7 @@ describe("Property 5: The stub flag comes only from the Stub_Marker", () => {
           expect(view.entries[i]!.stub).toBe(entry.files.includes(ENTRY_FILES.stubMarker));
         });
       }),
-      { numRuns: NUM_RUNS },
+      fcParams(),
     );
   });
 
@@ -73,7 +71,7 @@ describe("Property 5: The stub flag comes only from the Stub_Marker", () => {
         expect(stubs(flipped)).toEqual(stubs(input));
         expect(stubs(input)).toEqual(input.entries.map((e) => e.stubMarker !== null));
       }),
-      { numRuns: NUM_RUNS },
+      fcParams(),
     );
   });
 });

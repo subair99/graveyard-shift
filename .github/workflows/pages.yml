@@ -1,0 +1,105 @@
+# Crypt_Site build and deploy (crypt-ui spec; design Component 7).
+#
+# - Workflow-level `permissions: {}`. Job `build`: contents read, actions read (the nightly artifact).
+#   Job `deploy`: pages write, id-token write. Nothing else anywhere.
+# - The nightly artifact is downloaded only on workflow_run of a completed run of this repository's nightly
+#   workflow on main (schedule or workflow_dispatch), whatever its conclusion; the run record carries the conclusion.
+#   Event values reach the step through `env:`, never inside a `run:` string.
+# - A push or a workflow_dispatch of this workflow builds without a download and without a run record; the Site then
+#   shows "No recent nightly result in this build."
+# - Node is pinned to 26.13.1 (PINNED_NODE_VERSION); a `node --version` step fails the job on a difference.
+# - No package code of a resurrection and no language-model run here.
+
+name: pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "graveyard/**"
+      - "ledger.json"
+      - "src/app/**"
+      - "src/ui/**"
+      - "scripts/ui/**"
+      - "next.config.mjs"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/pages.yml"
+  workflow_run:
+    workflows: [nightly]
+    types: [completed]
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: >-
+      github.event_name == 'push' ||
+      github.event_name == 'workflow_dispatch' || (
+        github.event_name == 'workflow_run' &&
+        github.event.workflow_run.name == 'nightly' &&
+        github.event.workflow_run.head_branch == 'main' &&
+        github.event.workflow_run.head_repository.full_name == github.repository &&
+        (github.event.workflow_run.event == 'schedule' || github.event.workflow_run.event == 'workflow_dispatch')
+      )
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: read
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26.13.1
+      - name: Check Node version
+        run: '[ "$(node --version)" = "v26.13.1" ] || { echo "unexpected Node version: $(node --version)"; exit 1; }'
+      - run: npm ci
+      - name: Download nightly report
+        id: nightly
+        if: github.event_name == 'workflow_run'
+        continue-on-error: true
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: nightly-report
+          path: .crypt-nightly
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+      - name: Write nightly run record
+        if: github.event_name == 'workflow_run'
+        env:
+          GS_RUN_ID: ${{ github.event.workflow_run.id }}
+          GS_RUN_STARTED_AT: ${{ github.event.workflow_run.run_started_at }}
+          GS_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          GS_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          GS_BUILD_SHA: ${{ github.sha }}
+        run: node scripts/ui/writeNightlyRun.mjs
+      - run: npm run build
+      - run: node scripts/ui/checkSite.mjs
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

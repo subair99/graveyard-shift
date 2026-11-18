@@ -1,14 +1,12 @@
-// Requirements: 12.1, 12.2, 12.3, 12.5, 12.6, 12.7, 12.8, 12.10, 12.11
+// Requirements: 12.1, 12.2, 12.3, 12.5, 12.6, 12.7, 12.8, 12.9, 12.10, 12.11
 // Feature: crypt-ui, Property 10: The nightly view follows the run record, the report state and the conclusion
-import fc from "fast-check";
+import { fc, fcParams } from "../../engine/helpers/fc";
 import { describe, expect, it } from "vitest";
 import { nightlyLabel } from "../../../src/ui/core/nightlyLabels";
 import { runUrl } from "../../../src/ui/core/site";
 import { nightlyNoReport, nightlyReportRejected } from "../../../src/ui/core/texts";
 import { buildSiteView, type NightlyInput, type SiteInput } from "../../../src/ui/core/viewModel";
 import { runRecordArb, siteInputArb } from "../helpers/arbitraries";
-
-const NUM_RUNS = 100;
 
 /** Same site with the Nightly_Input replaced (keeps entries and ledger). */
 function withNightly(input: SiteInput, nightly: NightlyInput | null): SiteInput {
@@ -23,7 +21,7 @@ describe("Property 10: The nightly view follows the run record, the report state
         expect(view.nightlyRun).toBeNull();
         for (const e of view.entries) expect(e.nightly).toEqual({ kind: "none-in-build" });
       }),
-      { numRuns: NUM_RUNS },
+      fcParams(),
     );
   });
 
@@ -45,7 +43,7 @@ describe("Property 10: The nightly view follows the run record, the report state
         expect(nr.buildSha).toBe(run.buildSha);
         expect(nr.commitsDiffer).toBe(run.headSha !== run.buildSha);
       }),
-      { numRuns: NUM_RUNS },
+      fcParams(),
     );
   });
 
@@ -79,7 +77,7 @@ describe("Property 10: The nightly view follows the run record, the report state
           }
         });
       }),
-      { numRuns: NUM_RUNS },
+      fcParams(),
     );
   });
 
@@ -98,7 +96,7 @@ describe("Property 10: The nightly view follows the run record, the report state
           for (const e of view.entries) expect(e.nightly).toEqual({ kind: "ended-without-report" });
         }
       }),
-      { numRuns: NUM_RUNS },
+      fcParams(),
     );
   });
 
@@ -112,7 +110,46 @@ describe("Property 10: The nightly view follows the run record, the report state
         );
         for (const e of view.entries) expect(e.nightly).toEqual({ kind: "report-rejected" });
       }),
-      { numRuns: NUM_RUNS },
+      fcParams(),
     );
   });
-});
+
+  it("12.9: the nightly stub, counts and ghVersion of the report change nothing in the view", () => {
+    fc.assert(
+      fc.property(siteInputArb({ nightly: "accepted" }), (input) => {
+        const nightly = input.nightly!;
+        if (nightly.reportState !== "accepted") throw new Error("generator contract");
+        const changed: SiteInput = {
+          ...input,
+          nightly: {
+            ...nightly,
+            report: {
+              ...nightly.report,
+              ghVersion: `changed ${nightly.report.ghVersion ?? "none"}`,
+              counts: {
+                total: nightly.report.counts.total + 1,
+                checkable: nightly.report.counts.checkable + 1,
+                notChecked: nightly.report.counts.notChecked + 1,
+              },
+              entries: nightly.report.entries.map((line) => ({ ...line, stub: !line.stub })),
+            },
+          },
+        };
+        expect(buildSiteView(changed)).toEqual(buildSiteView(input));
+      }),
+      fcParams(),
+    );
+  });
+
+  it("12.9: a nightly value, including the run conclusion, is never the outcome, Verdict or stub flag of an entry", () => {
+    fc.assert(
+      fc.property(siteInputArb(), (input) => {
+        const without = buildSiteView(withNightly(input, null));
+        const withRun = buildSiteView(input);
+        const pick = (view: typeof without) =>
+          view.entries.map((e) => ({ outcome: e.outcome, outcomeLabel: e.outcomeLabel, verdict: e.verdict, stub: e.stub }));
+        expect(pick(withRun)).toEqual(pick(without));
+      }),
+      fcParams(),
+    );
+  });});

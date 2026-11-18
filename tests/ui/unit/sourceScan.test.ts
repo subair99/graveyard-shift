@@ -165,6 +165,29 @@ const ALLOWED_OUTSIDE = new Set([
   "src/proof/types",
   "src/proof/shell/tarball/tarballExtractor",
 ]);
+// Named exceptions for the identifier `process`: exactly these members in exactly these scripts.
+// Only writeNightlyRun.mjs may read process.env (Requirement 1.5).
+const PROCESS_ALLOWED: Record<string, string[]> = {
+  "scripts/ui/checkSite.mjs": ["process.argv", "process.cwd", "process.stdout", "process.stderr", "process.exitCode"],
+  "scripts/ui/copyEntryFiles.ts": ["process.cwd", "process.stdout", "process.stderr", "process.exitCode"],
+  "scripts/ui/startNotice.mjs": ["process.stderr", "process.exitCode"],
+  "scripts/ui/writeNightlyRun.mjs": ["process.argv", "process.cwd", "process.env", "process.stdout", "process.exitCode"],
+};
+
+/**
+ * Every use of the name `process` must be a `process.<member>` access of an allowed member of that file.
+ * A bare use (destructuring, aliasing, passing it on) leaves more names than allowed member accesses.
+ */
+function processProblems(f: Facts, file: string): Hit[] {
+  const names = f.names.filter((h) => h.detail === "process");
+  if (names.length === 0) return [];
+  const allowed = PROCESS_ALLOWED[file] ?? [];
+  const members = f.members.filter((h) => h.detail.startsWith("process."));
+  const bad = members.filter((h) => !allowed.includes(h.detail));
+  const bare = names.length === members.length ? [] : names.slice(members.length).map((h) => ({ line: h.line, detail: "process (bare use)" }));
+  return [...bad, ...bare];
+}
+
 const ALLOWED_PACKAGES = (spec: string): boolean => /^(react|react-dom|next|zod|semver)(\/|$)/.test(spec);
 
 describe("Crypt UI source scans", () => {
@@ -210,9 +233,16 @@ describe("Crypt UI source scans", () => {
     expect(scan((f) => f.names.filter((h) => h.detail === "style"))).toEqual([]);
   });
 
-  it("reads process.env only in writeNightlyRun.mjs (1.5)", () => {
-    const hits = scan((f, file) => (file === "scripts/ui/writeNightlyRun.mjs" ? [] : f.members.filter((h) => h.detail === "process.env")));
-    expect(hits).toEqual([]);
+  it("catches `const { env } = process` (scanner self-check for the process rule)", () => {
+    const f = collectFacts(`const { env } = process; const a = process.argv;`, "x.ts");
+    expect(f.names.filter((h) => h.detail === "process")).toHaveLength(2);
+    expect(f.members.filter((h) => /^process\./.test(h.detail))).toHaveLength(1);
+    expect(processProblems(f, "src/ui/shell/x.ts")).toHaveLength(2);
+    expect(processProblems(f, "scripts/ui/startNotice.mjs")).toHaveLength(2);
+  });
+
+  it("uses the identifier `process` nowhere in src/ui and src/app, and only the named members in scripts/ui (1.5)", () => {
+    expect(scan((f, file) => processProblems(f, file))).toEqual([]);
   });
 
   it("has no external http(s) URL literal except the link-builder constants (1.3, 7.4)", () => {

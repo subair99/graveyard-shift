@@ -2,7 +2,7 @@
 // Feature: crypt-ui, Property 6: Entry order and view data are deterministic
 import { readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
-import fc from "fast-check";
+import { fc, fcParams } from "../../engine/helpers/fc";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { canonicalJsonText } from "../../../src/pipeline/common/canonical";
 import { buildSiteView } from "../../../src/ui/core/viewModel";
@@ -10,7 +10,6 @@ import { readSite, type SiteFs } from "../../../src/ui/shell/readSite";
 import { readResurrectionVersion } from "../../../src/ui/shell/tarballVersion";
 import { makeFixtureTree } from "../helpers/fixtureTree";
 
-const NUM_RUNS = 100;
 const ROOT = "/repo";
 
 type Kind = "file" | "directory" | "symlink" | "other";
@@ -101,7 +100,7 @@ describe("Property 6: Entry order and view data are deterministic", () => {
           expect((await viewJson(chosen, false)).json).toBe(first.json);
         },
       ),
-      { numRuns: NUM_RUNS },
+      fcParams(),
     );
   });
 });

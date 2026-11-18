@@ -1,6 +1,6 @@
-// Requirements: 3.9, 6.1, 6.3, 6.7, 6.8, 12.9
+// Requirements: 3.9, 6.1, 6.3, 6.7, 6.8
 // Feature: crypt-ui, Property 3: Every string in the view comes from an input, a fixed text or a link builder
-import fc from "fast-check";
+import { fc, fcParams } from "../../engine/helpers/fc";
 import { describe, expect, it } from "vitest";
 import { CAUSE_LABELS } from "../../../src/ui/core/causes";
 import { NIGHTLY_RESULT_ORDER } from "../../../src/pipeline/undertaker/core/nightlyClassify";
@@ -11,8 +11,6 @@ import { GRAVEYARD_PATH, downloadPath, entryRoute, historyUrl, runUrl } from "..
 import * as texts from "../../../src/ui/core/texts";
 import { buildSiteView, type SiteInput } from "../../../src/ui/core/viewModel";
 import { siteInputArb } from "../helpers/arbitraries";
-
-const NUM_RUNS = 100;
 
 /** Structural tags of the view (discriminators, Outcome values and labels), not texts shown as facts. */
 const TAGS = [
@@ -89,7 +87,7 @@ describe("Property 3: every string in the view comes from a known source", () =>
         view.entries.forEach((e, i) => checkLeaves(e, allowed, `entries[${i}]`, true));
         checkLeaves(view.nightlyRun, allowed, "nightlyRun", false);
       }),
-      { numRuns: NUM_RUNS },
+      fcParams(),
     );
   });
 
@@ -110,7 +108,7 @@ describe("Property 3: every string in the view comes from a known source", () =>
         if (input.nightly !== null) expect(view.nightlyRun?.runStartedAt).toBe(input.nightly.run.runStartedAt);
         else expect(view.nightlyRun).toBeNull();
       }),
-      { numRuns: NUM_RUNS },
+      fcParams(),
     );
   });
 });

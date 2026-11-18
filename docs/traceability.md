@@ -1,12 +1,12 @@
 # Traceability
 
-Generated on 2026-11-17 by `npm run trace` (system date; this is documentation, not a measured number).
+Generated on 2026-11-18 by `npm run trace` (system date; this is documentation, not a measured number).
 
 A citation shows which tests claim to cover a criterion; it does not prove coverage.
 
 One section per spec. Acceptance criteria come from the spec's `requirements.md`; citations are the `// Requirements:` header lines of the test files. Gap classes (class and evidence per gap) for every spec are read from `docs/traceability-gaps.json`. An unclassified gap or a stale classification entry in any spec makes `npm run trace` exit with 1.
 
-Header syntax: `// Requirements: 1.2, 4.3` is a bare list and means the spec the test belongs to (`tests/engine` is autopsy-engine, `tests/proof` is proof-of-life-engine, `tests/pipeline` is resurrection-pipeline, `tests/medium` is medium-agent). `// Requirements: proof-of-life-engine 15.5, 15.9` cites criteria of another spec, and groups are separated by semicolons: `// Requirements: 1.2, 4.3; proof-of-life-engine 15.5, 15.9`. A citation credits the criterion in the named spec's table, which shows the citing file path. An unknown spec name or an unknown number is listed under "Cited numbers that do not exist" in the section of the spec the citing file belongs to.
+Header syntax: `// Requirements: 1.2, 4.3` is a bare list and means the spec the test belongs to (`tests/engine` is autopsy-engine, `tests/proof` is proof-of-life-engine, `tests/pipeline` is resurrection-pipeline, `tests/medium` is medium-agent, `tests/ui` is crypt-ui). `// Requirements: proof-of-life-engine 15.5, 15.9` cites criteria of another spec, and groups are separated by semicolons: `// Requirements: 1.2, 4.3; proof-of-life-engine 15.5, 15.9`. A citation credits the criterion in the named spec's table, which shows the citing file path. An unknown spec name or an unknown number is listed under "Cited numbers that do not exist" in the section of the spec the citing file belongs to.
 
 ## Spec: autopsy-engine
 
@@ -935,6 +935,177 @@ Gaps per class:
 - covered, header missing: 0
 - manual: 5
 - optional, skipped in first pass: 0
+
+### Classification check
+
+- Unclassified gaps: none
+- Classified criteria that do not exist in requirements.md: none
+- Stale classification entries (no longer gaps): none
+- Duplicate classification entries: none
+
+### Cited numbers that do not exist in requirements.md
+
+none
+
+## Spec: crypt-ui
+
+Requirements: `.kiro/specs/crypt-ui/requirements.md`. Tests: `tests/ui/**/*.test.ts`.
+
+A citation shows which tests claim to cover a criterion; it does not prove coverage.
+
+### Summary
+
+- Test files scanned: 28
+- Acceptance criteria: 122
+- Criteria cited by at least one test file: 115
+- Criteria with no citing test file (gaps): 7
+
+### Criteria and citing test files
+
+| Criterion | Test files |
+| --- | --- |
+| 1.1 | `tests/ui/unit/readSite.test.ts` |
+| 1.2 | `tests/ui/unit/checkSite.test.ts`<br>`tests/ui/unit/config.test.ts` |
+| 1.3 | `tests/ui/unit/sourceScan.test.ts` |
+| 1.4 | `tests/ui/unit/config.test.ts`<br>`tests/ui/unit/pagesWorkflow.test.ts` |
+| 1.5 | `tests/ui/unit/sourceScan.test.ts` |
+| 1.6 | `tests/ui/unit/emptyCrypt.test.ts`<br>`tests/ui/unit/readSite.test.ts` |
+| 1.7 | `tests/ui/unit/config.test.ts` |
+| 1.8 | `tests/ui/unit/config.test.ts` |
+| 2.1 | `tests/ui/unit/readSite.test.ts`<br>`tests/ui/unit/sourceScan.test.ts` |
+| 2.2 | `tests/ui/unit/schemas.test.ts` |
+| 2.3 | `tests/ui/unit/readSite.test.ts` |
+| 2.4 | `tests/ui/property/p05-stub-flag.test.ts`<br>`tests/ui/unit/readSite.test.ts` |
+| 2.5 | `tests/ui/unit/coreTables.test.ts`<br>`tests/ui/unit/readSite.test.ts` |
+| 2.6 | `tests/ui/unit/readSite.test.ts` |
+| 2.7 | `tests/ui/property/p06-order.test.ts`<br>`tests/ui/unit/readSite.test.ts` |
+| 2.8 | `tests/ui/property/p06-order.test.ts` |
+| 2.9 | `tests/ui/unit/readSite.test.ts`<br>`tests/ui/unit/tarballVersion.test.ts` |
+| 2.10 | `tests/ui/unit/coreTables.test.ts`<br>`tests/ui/unit/tarballVersion.test.ts` |
+| 3.1 | `tests/ui/unit/homeIndex.test.ts`<br>`tests/ui/unit/textsTheme.test.ts` |
+| 3.2 | `tests/ui/unit/homeIndex.test.ts`<br>`tests/ui/unit/textsTheme.test.ts` |
+| 3.3 | `tests/ui/unit/homeIndex.test.ts`<br>`tests/ui/unit/textsTheme.test.ts` |
+| 3.4 | `tests/ui/unit/homeIndex.test.ts`<br>`tests/ui/unit/textsTheme.test.ts` |
+| 3.5 | `tests/ui/property/p04-outcome.test.ts` |
+| 3.6 | `tests/ui/unit/homeIndex.test.ts` |
+| 3.7 | `tests/ui/unit/emptyCrypt.test.ts`<br>`tests/ui/unit/entryPage.test.ts`<br>`tests/ui/unit/homeIndex.test.ts` |
+| 3.8 | `tests/ui/property/p04-outcome.test.ts` |
+| 3.9 | `tests/ui/property/p03-view-values.test.ts` |
+| 3.10 | `tests/ui/unit/homeIndex.test.ts` |
+| 4.1 | `tests/ui/unit/entryPage.test.ts` |
+| 4.2 | `tests/ui/unit/coreTables.test.ts` |
+| 4.3 | `tests/ui/unit/entryPage.test.ts` |
+| 4.4 | `tests/ui/unit/entryPage.test.ts` |
+| 4.5 | `tests/ui/unit/entryPage.test.ts` |
+| 4.6 | `tests/ui/unit/entryPage.test.ts` |
+| 4.7 | `tests/ui/unit/entryPage.test.ts` |
+| 4.8 | `tests/ui/property/p04-outcome.test.ts` |
+| 4.9 | `tests/ui/unit/entryPage.test.ts` |
+| 4.10 | `tests/ui/unit/entryPage.test.ts` |
+| 5.1 | `tests/ui/unit/entryPage.test.ts` |
+| 5.2 | `tests/ui/unit/entryPage.test.ts` |
+| 5.3 | `tests/ui/unit/entryPage.test.ts` |
+| 5.4 | `tests/ui/unit/entryPage.test.ts` |
+| 5.5 | `tests/ui/property/p04-outcome.test.ts`<br>`tests/ui/unit/sourceScan.test.ts` |
+| 5.6 | `tests/ui/property/p04-outcome.test.ts` |
+| 5.7 | `tests/ui/unit/entryPage.test.ts`<br>`tests/ui/unit/textsTheme.test.ts` |
+| 5.8 | `tests/ui/unit/entryPage.test.ts`<br>`tests/ui/unit/textsTheme.test.ts` |
+| 5.9 | `tests/ui/unit/entryPage.test.ts`<br>`tests/ui/unit/textsTheme.test.ts` |
+| 5.10 | `tests/ui/property/p13-copy.test.ts`<br>`tests/ui/unit/copyEntryFiles.test.ts` |
+| 5.11 | `tests/ui/unit/readSite.test.ts` |
+| 6.1 | `tests/ui/property/p03-view-values.test.ts` |
+| 6.2 | `tests/ui/property/p04-outcome.test.ts` |
+| 6.3 | `tests/ui/property/p03-view-values.test.ts` |
+| 6.4 | `tests/ui/unit/entryPage.test.ts`<br>`tests/ui/unit/homeIndex.test.ts` |
+| 6.5 | `tests/ui/property/p05-stub-flag.test.ts` |
+| 6.6 | `tests/ui/unit/entryPage.test.ts` |
+| 6.7 | `tests/ui/property/p03-view-values.test.ts` |
+| 6.8 | `tests/ui/property/p03-view-values.test.ts` |
+| 6.9 | `tests/ui/unit/entryPage.test.ts`<br>`tests/ui/unit/homeIndex.test.ts` |
+| 7.1 | `tests/ui/property/p02-escaping.test.ts`<br>`tests/ui/unit/hostile.test.ts`<br>`tests/ui/unit/sourceScan.test.ts` |
+| 7.2 | `tests/ui/property/p01-safe-link.test.ts`<br>`tests/ui/unit/hostile.test.ts` |
+| 7.3 | `tests/ui/property/p01-safe-link.test.ts`<br>`tests/ui/unit/hostile.test.ts` |
+| 7.4 | (none) |
+| 7.5 | `tests/ui/property/p02-escaping.test.ts` |
+| 7.6 | `tests/ui/property/p01-safe-link.test.ts`<br>`tests/ui/unit/hostile.test.ts`<br>`tests/ui/unit/sourceScan.test.ts` |
+| 7.7 | `tests/ui/unit/hostile.test.ts`<br>`tests/ui/unit/sourceScan.test.ts` |
+| 7.8 | `tests/ui/unit/hostile.test.ts` |
+| 8.1 | `tests/ui/unit/textsTheme.test.ts`<br>`tests/ui/unit/theme.test.ts` |
+| 8.2 | `tests/ui/unit/textsTheme.test.ts`<br>`tests/ui/unit/theme.test.ts` |
+| 8.3 | `tests/ui/unit/theme.test.ts` |
+| 8.4 | `tests/ui/unit/entryPage.test.ts`<br>`tests/ui/unit/homeIndex.test.ts` |
+| 8.5 | `tests/ui/unit/entryPage.test.ts`<br>`tests/ui/unit/homeIndex.test.ts` |
+| 8.6 | `tests/ui/unit/theme.test.ts` |
+| 8.7 | `tests/ui/unit/sourceScan.test.ts` |
+| 8.8 | (none) |
+| 9.1 | `tests/ui/unit/pagesWorkflow.test.ts` |
+| 9.2 | `tests/ui/unit/pagesWorkflow.test.ts` |
+| 9.3 | `tests/ui/unit/pagesWorkflow.test.ts` |
+| 9.4 | `tests/ui/unit/pagesWorkflow.test.ts` |
+| 9.5 | `tests/ui/unit/pagesWorkflow.test.ts` |
+| 9.6 | `tests/ui/unit/pagesWorkflow.test.ts` |
+| 9.7 | `tests/ui/unit/pagesWorkflow.test.ts`<br>`tests/ui/unit/writeNightlyRun.test.ts` |
+| 9.8 | (none) |
+| 9.9 | (none) |
+| 9.10 | `tests/ui/unit/pagesWorkflow.test.ts`<br>`tests/ui/unit/writeNightlyRun.test.ts` |
+| 9.11 | `tests/ui/unit/pagesWorkflow.test.ts`<br>`tests/ui/unit/writeNightlyRun.test.ts` |
+| 9.12 | `tests/ui/unit/pagesWorkflow.test.ts` |
+| 10.1 | `tests/ui/unit/fixtureGraveyard.test.ts` |
+| 10.2 | `tests/ui/unit/fixtureGraveyard.test.ts` |
+| 10.3 | `tests/ui/unit/fcSeed.test.ts` |
+| 10.4 | `tests/ui/unit/hostile.test.ts` |
+| 10.5 | `tests/ui/unit/checkSite.test.ts`<br>`tests/ui/unit/pagesWorkflow.test.ts` |
+| 10.6 | `tests/ui/unit/readSite.test.ts`<br>`tests/ui/unit/sourceScan.test.ts` |
+| 10.7 | `tests/ui/unit/requirementsHeader.test.ts` |
+| 10.8 | `tests/ui/unit/docs.test.ts` |
+| 10.9 | `tests/ui/unit/docs.test.ts` |
+| 10.10 | (none) |
+| 11.1 | `tests/ui/unit/docs.test.ts` |
+| 11.2 | `tests/ui/unit/sourceScan.test.ts` |
+| 11.3 | `tests/ui/unit/sourceScan.test.ts` |
+| 11.4 | `tests/ui/unit/docs.test.ts`<br>`tests/ui/unit/pagesWorkflow.test.ts` |
+| 11.5 | `tests/ui/unit/config.test.ts`<br>`tests/ui/unit/docs.test.ts` |
+| 11.6 | `tests/ui/unit/docs.test.ts` |
+| 11.7 | (none) |
+| 11.8 | (none) |
+| 11.9 | `tests/ui/unit/docs.test.ts` |
+| 12.1 | `tests/ui/property/p10-nightly-view.test.ts`<br>`tests/ui/unit/readSite.test.ts` |
+| 12.2 | `tests/ui/property/p10-nightly-view.test.ts`<br>`tests/ui/unit/coreTables.test.ts`<br>`tests/ui/unit/writeNightlyRun.test.ts` |
+| 12.3 | `tests/ui/property/p10-nightly-view.test.ts`<br>`tests/ui/unit/coreTables.test.ts` |
+| 12.4 | `tests/ui/unit/entryPage.test.ts` |
+| 12.5 | `tests/ui/property/p10-nightly-view.test.ts`<br>`tests/ui/unit/coreTables.test.ts` |
+| 12.6 | `tests/ui/property/p10-nightly-view.test.ts`<br>`tests/ui/unit/readSite.test.ts`<br>`tests/ui/unit/textsTheme.test.ts` |
+| 12.7 | `tests/ui/property/p10-nightly-view.test.ts` |
+| 12.8 | `tests/ui/property/p10-nightly-view.test.ts` |
+| 12.9 | `tests/ui/property/p10-nightly-view.test.ts` |
+| 12.10 | `tests/ui/property/p10-nightly-view.test.ts`<br>`tests/ui/unit/entryPage.test.ts`<br>`tests/ui/unit/homeIndex.test.ts`<br>`tests/ui/unit/textsTheme.test.ts` |
+| 12.11 | `tests/ui/property/p10-nightly-view.test.ts`<br>`tests/ui/unit/entryPage.test.ts`<br>`tests/ui/unit/homeIndex.test.ts`<br>`tests/ui/unit/textsTheme.test.ts` |
+| 13.1 | `tests/ui/unit/entryPage.test.ts` |
+| 13.2 | `tests/ui/unit/entryPage.test.ts` |
+| 13.3 | `tests/ui/unit/entryPage.test.ts`<br>`tests/ui/unit/textsTheme.test.ts` |
+| 13.4 | `tests/ui/unit/entryPage.test.ts` |
+| 13.5 | `tests/ui/property/p05-stub-flag.test.ts` |
+| 13.6 | `tests/ui/unit/entryPage.test.ts` |
+
+### Gaps
+
+Criteria that no test file cites, with the class and evidence from `docs/traceability-gaps.json`:
+
+- 7.4: optional, skipped in first pass. optional task not done (task 2.4*, Property 8: Built links have their fixed form). p03-view-values.test.ts checks only that every link string of the view is an allowed view string, and entryPage.test.ts checks the history link and the run link in the markup; no test checks the form of the Entry_Route and the Download_Path. Removed from the p03 header on 2026-11-18 (checkpoint 14).
+- 8.8: manual. Layout at a viewport width of 320 CSS pixels without horizontal scrolling of the page body needs a browser. No test renders CSS. theme.test.ts checks the stylesheet colours, focus and reduced motion only, the stylesheet sets overflow-x: auto on pre blocks (task 8.1 of .kiro/specs/crypt-ui/tasks.md). The user's look at the deployed pages (task 15.2) is the only check. No result is recorded yet.
+- 9.8: manual. Manual tasks 15.1 and 15.2 of .kiro/specs/crypt-ui/tasks.md: the user sets GitHub Pages to the source 'GitHub Actions' in the repository settings, runs pages.yml and reports the page address. No result is recorded yet, and the README Live demo line stays 'coming soon' until then.
+- 9.9: manual. The README Live demo line changes from 'coming soon' only after the user reports a successful deployment with its address in docs/kiro-journal.md (Manual_Task of criterion 9.8). No test checks the line. No deployment is recorded yet.
+- 10.10: documentation only. Process rule: .kiro/specs/crypt-ui/tasks.md (conventions at the top and the checkpoint tasks) and the workspace testing-workflow steering rule tell agents to run only npm run typecheck, npm run lint and one test file at a time, and to stop with 'Ready for you to run:' for a full run. No test checks it.
+- 11.7: documentation only. Process rule: the crypt-ui work changes no file under graveyard/, no ledger.json, no Pipeline writer and no .env.example variable. It is reviewable in the git history of those paths only; no test checks it.
+- 11.8: manual. The user records the first successful deployment (date, run address, page address) in docs/kiro-journal.md after the manual tasks 15.1 and 15.2 (task 15.2 lists 11.8). No deployment is recorded yet.
+
+Gaps per class:
+
+- needs a test: 0
+- documentation only: 2
+- covered, header missing: 0
+- manual: 4
+- optional, skipped in first pass: 1
 
 ### Classification check
 

@@ -451,6 +451,111 @@
         "executionId": "6a600d71-d88f-489e-84ea-25c362d073d9",
         "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
         "timestamp": 1794957834109
+      },
+      {
+        "executionId": "9450a3b4-d518-46e7-ba1c-d2388c1e11fd",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794985900792
+      }
+    ],
+    "11.1 Read the licenses of the three Pages actions": [
+      {
+        "executionId": "9450a3b4-d518-46e7-ba1c-d2388c1e11fd",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794985901222
+      },
+      {
+        "executionId": "9450a3b4-d518-46e7-ba1c-d2388c1e11fd",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794985930468
+      }
+    ],
+    "11.2 Write `.github/workflows/pages.yml` and the `PREEXISTING.md` entries": [
+      {
+        "executionId": "9450a3b4-d518-46e7-ba1c-d2388c1e11fd",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794985931135
+      },
+      {
+        "executionId": "9450a3b4-d518-46e7-ba1c-d2388c1e11fd",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794986011666
+      }
+    ],
+    "11.3 Extend the workflow lint tests": [
+      {
+        "executionId": "9450a3b4-d518-46e7-ba1c-d2388c1e11fd",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794986012172
+      },
+      {
+        "executionId": "9450a3b4-d518-46e7-ba1c-d2388c1e11fd",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794986185614
+      }
+    ],
+    "11. Pages_Workflow and third-party entries (design Component 7)": [
+      {
+        "executionId": "9450a3b4-d518-46e7-ba1c-d2388c1e11fd",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794986185867
+      }
+    ],
+    "12.1 Add the job `site` to `.github/workflows/ci.yml`": [
+      {
+        "executionId": "9450a3b4-d518-46e7-ba1c-d2388c1e11fd",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794986186195
+      },
+      {
+        "executionId": "9450a3b4-d518-46e7-ba1c-d2388c1e11fd",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794986286300
+      }
+    ],
+    "12. `ci.yml` job `site` (design Component 8; open question 6 confirmed in CI)": [
+      {
+        "executionId": "9450a3b4-d518-46e7-ba1c-d2388c1e11fd",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794986286539
+      }
+    ],
+    "13.1 Update the steering files and the README": [
+      {
+        "executionId": "9450a3b4-d518-46e7-ba1c-d2388c1e11fd",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794986286903
+      },
+      {
+        "executionId": "9450a3b4-d518-46e7-ba1c-d2388c1e11fd",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794986448847
+      }
+    ],
+    "13.2 Map `tests/ui` to this spec in the trace and classify the manual criteria": [
+      {
+        "executionId": "9450a3b4-d518-46e7-ba1c-d2388c1e11fd",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794986449463
+      },
+      {
+        "executionId": "9450a3b4-d518-46e7-ba1c-d2388c1e11fd",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794987047476
+      }
+    ],
+    "13. Documentation and traceability (design Component 9)": [
+      {
+        "executionId": "9450a3b4-d518-46e7-ba1c-d2388c1e11fd",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794987047681
+      }
+    ],
+    "14. Final checkpoint: full suite and trace, run by the user": [
+      {
+        "executionId": "5c1d2d18-3f6f-4e33-980a-3428ad3a4a69",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794987588781
       }
     ]
   }

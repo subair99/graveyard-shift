@@ -4,12 +4,10 @@ import { createHash } from "node:crypto";
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import fc from "fast-check";
+import { fc, fcParams } from "../../engine/helpers/fc";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { SiteView } from "../../../src/ui/core/viewModel";
 import { copyEntryFiles, nodeCopyFs } from "../../../src/ui/shell/copyEntryFiles";
-
-const NUM_RUNS = 100;
 
 const sha256 = (b: Uint8Array): string => createHash("sha256").update(b).digest("hex");
 
@@ -91,7 +89,7 @@ describe("Property 13: Copied entry files are byte-identical and complete", () =
           }
         }
       }),
-      { numRuns: NUM_RUNS },
+      fcParams(),
     );
   });
 });

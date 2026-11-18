@@ -200,7 +200,7 @@ Conventions for every task:
     - Write `tests/ui/unit/checkSite.test.ts`: the script as a child over small hand-made `out/` and `graveyard/` trees in temporary directories (a passing tree, an external script, an `on*` attribute, a `javascript:` anchor, a missing entry page, a changed copied byte).
     - _Requirements: 10.5_
 
-- [-] 10. Checkpoint: build and Site_Check_Script (settles design open questions 5, 6 and 7)
+- [x] 10. Checkpoint: build and Site_Check_Script (settles design open questions 5, 6 and 7)
   - Agent: run `npm run typecheck` and `npm run lint` and fix findings.
   - Ready for you to run: `npx vitest run --project ui`, then `npm run build`, then `node scripts/ui/checkSite.mjs`. Paste the three outputs.
   - Open question 7 (`tar` under the Next.js bundler): settled by the `npm run build` output. If the build fails on `tar`, the agent adds `serverExternalPackages: ["tar"]` to `next.config.mjs`, updates the config test and design Component 1, and asks for the build again.
@@ -209,33 +209,33 @@ Conventions for every task:
   - The agent records each result in design "Remaining open questions" as settled (with the date and "user-run") and appends a Journal entry with the pasted facts only. Ensure all tests pass, ask the user if questions arise.
   - _Requirements: 1.2, 1.6, 1.7, 10.5, 10.10_
 
-- [ ] 11. Pages_Workflow and third-party entries (design Component 7)
-  - [ ] 11.1 Read the licenses of the three Pages actions
+- [x] 11. Pages_Workflow and third-party entries (design Component 7)
+  - [x] 11.1 Read the licenses of the three Pages actions
     - Read the `LICENSE` file of `actions/configure-pages` at `v6.0.0`, `actions/upload-pages-artifact` at `v5.0.0` and `actions/deploy-pages` at `v5.0.1` through the GitHub web (for example `https://github.com/actions/configure-pages/blob/v6.0.0/LICENSE`). If a file cannot be fetched, stop and ask the user to read it; write no license from memory.
     - _Requirements: 11.4_
 
-  - [ ] 11.2 Write `.github/workflows/pages.yml` and the `PREEXISTING.md` entries
+  - [x] 11.2 Write `.github/workflows/pages.yml` and the `PREEXISTING.md` entries
     - The workflow text of design Component 7 with the pinned actions `actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0`, `actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0`, `actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1`: triggers and paths, `permissions: {}`, job permissions, the `build` `if:` (`github.event_name == 'push'`, `github.event_name == 'workflow_dispatch'` for `pages.yml` itself, or `workflow_run` with workflow name `nightly`, head branch `main`, head repository, nightly event `schedule` or `workflow_dispatch`, any conclusion; the push and `workflow_dispatch` builds have no download and no run record, so the Site shows "No recent nightly result in this build."), download with `name`, `path`, `github-token`, `run-id` and default `digest-mismatch`, the run record step with `GS_CONCLUSION` and no condition on the download outcome, `concurrency`, `timeout-minutes`, `NEXT_TELEMETRY_DISABLED`.
     - `PREEXISTING.md`: one entry per action with the license read in task 11.1 and the source URL.
     - _Requirements: 1.4, 9.1 to 9.7, 9.10 to 9.12, 11.4_
 
-  - [ ] 11.3 Extend the workflow lint tests
+  - [x] 11.3 Extend the workflow lint tests
     - Write `tests/ui/unit/pagesWorkflow.test.ts` with the checks of the design's test table (the three Pages pins equal the Journal values; the `if:` of `build` checks both the `workflow_run` path (name, branch `main`, repository, nightly event, no conclusion condition) and the `workflow_dispatch` path (and `push`), and a `workflow_dispatch` or `push` run has no download step condition that is true; event values only in `env:`). Confirm that `tests/pipeline/unit/workflowLint.test.ts` passes over the new file unchanged (SHA pins, `timeout-minutes`).
     - Run `npx vitest run tests/ui/unit/pagesWorkflow.test.ts`, then `npx vitest run tests/pipeline/unit/workflowLint.test.ts`.
     - _Requirements: 9.1 to 9.7, 9.10 to 9.12; resurrection-pipeline 12.13_
 
-- [ ] 12. `ci.yml` job `site` (design Component 8; open question 6 confirmed in CI)
-  - [ ] 12.1 Add the job `site` to `.github/workflows/ci.yml`
+- [x] 12. `ci.yml` job `site` (design Component 8; open question 6 confirmed in CI)
+  - [x] 12.1 Add the job `site` to `.github/workflows/ci.yml`
     - Text of design Component 8 with the comment naming crypt-ui Requirement 10.5; workflow-level permissions unchanged. Add its checks to `tests/ui/unit/pagesWorkflow.test.ts` (Node pin and check step, `NEXT_TELEMETRY_DISABLED`, `npm run build`, `checkSite.mjs`, no `secrets.`).
     - The first CI run of the job after the push is the user's; its result is recorded with the run address in the Journal.
     - _Requirements: 1.4, 10.5_
 
-- [ ] 13. Documentation and traceability (design Component 9)
-  - [ ] 13.1 Update the steering files and the README
+- [x] 13. Documentation and traceability (design Component 9)
+  - [x] 13.1 Update the steering files and the README
     - `.kiro/steering/structure.md`: `src/ui/core/`, `src/ui/shell/`, `src/ui/components/`, the `src/app/` files, `scripts/ui/*`, `tests/ui/`, `pages.yml`, the `site` job, `out/`, `.crypt-nightly/`, the project `ui`, the trace mapping. `.kiro/steering/tech.md` "Commands": `build`, `start`, `npx vitest run --project ui` (target 60 s). `README.md`: quick start for `npm run dev`, `npm run build` and the preview; the sentence of Requirement 11.6; in "Ledger and credits" the sentence "The credit meter shows credits used (the user's statement, 2026-11-17)." with no figure; "Live demo: _coming soon_" unchanged.
     - _Requirements: 9.9, 11.1, 11.6, 11.9_
 
-  - [ ] 13.2 Map `tests/ui` to this spec in the trace and classify the manual criteria
+  - [x] 13.2 Map `tests/ui` to this spec in the trace and classify the manual criteria
     - `scripts/trace.ts`: `{ name: "crypt-ui", requirements: ".kiro/specs/crypt-ui/requirements.md", testsDir: "tests/ui" }` in `SPECS`, and "`tests/ui` is crypt-ui" in the header-syntax sentence. `docs/traceability-gaps.json`: entries for 8.8 (320 px layout), 9.8, 11.7, 11.8 and any criterion the trace reports as uncited, each with its class and evidence.
     - Write `tests/ui/unit/docs.test.ts`: `structure.md` paths exist, `.gitignore` lines, README phrases, `PREEXISTING.md` entries for the three actions, the trace mapping and the budget entry.
     - _Requirements: 9.9, 10.8, 10.9, 11.1, 11.4, 11.5, 11.6, 11.9_
@@ -244,7 +244,7 @@ Conventions for every task:
     - Only from the user's pasted output of task 14, as "Spans, checked against targets (user-pasted run)".
     - _Requirements: 10.10, 11.8_
 
-- [ ] 14. Final checkpoint: full suite and trace, run by the user
+- [-] 14. Final checkpoint: full suite and trace, run by the user
   - Agent: run `npm run typecheck` and `npm run lint` and fix findings. Do not run `npm test`.
   - Ready for you to run: `npm test`, then `npm run trace`. Paste both outputs. The agent then adds a `docs/traceability-gaps.json` entry for each crypt-ui criterion the trace reports as unclassified, and asks the user to run `npm run trace` again until it exits with code 0. Spans of `ui` and `pipeline` in the Journal come only from the pasted `npm test` output.
   - Ensure all tests pass, ask the user if questions arise.

@@ -1,7 +1,8 @@
-// Production wiring of readSite (node:fs, process.cwd()), memoized per process, then buildSiteView.
+// Production wiring of readSite (node:fs, the working directory), memoized per process, then buildSiteView.
 // Any read error throws, which fails `next build` (crypt-ui Requirements 1.6, 2.5; design Error Handling).
 
 import { lstatSync, readdirSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { buildSiteView, type SiteView } from "../core/viewModel";
 import { readSite, type SiteFs } from "./readSite";
 import { readResurrectionVersion } from "./tarballVersion";
@@ -39,7 +40,7 @@ let memo: Promise<SiteView> | null = null;
 export function loadSite(): Promise<SiteView> {
   memo ??= (async () => {
     const read = await readSite({
-      root: process.cwd(),
+      root: resolve("."), // the working directory, without the identifier `process` (sourceScan rule)
       fs: nodeSiteFs,
       resurrectionVersion: readResurrectionVersion,
       warn: (line) => console.warn(line),

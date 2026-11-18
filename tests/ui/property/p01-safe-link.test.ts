@@ -1,15 +1,13 @@
 // Requirements: 7.2, 7.3, 7.6
 // Feature: crypt-ui, Property 1: Safe_Link renders an anchor exactly for absolute http(s) URLs
 // This file tests safeHref and the SafeLink static markup.
-import fc from "fast-check";
+import { fc, fcParams } from "../../engine/helpers/fc";
 import { describe, expect, it } from "vitest";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { safeHref } from "../../../src/ui/core/safeHref";
 import { SafeLink } from "../../../src/ui/components/SafeLink";
 import { unescapeHtml } from "../helpers/unescapeHtml";
-
-const NUM_RUNS = 100;
 
 const validUrl = fc.oneof(
   fc.webUrl({ validSchemes: ["http", "https"] }),
@@ -68,7 +66,7 @@ describe("Property 1 (safeHref half): anchors exactly for absolute http(s) URLs"
       fc.property(fc.oneof(validUrl, mixedCaseUrl), (url) => {
         expect(safeHref(url)).toBe(url);
       }),
-      { numRuns: NUM_RUNS },
+      fcParams(),
     );
   });
 
@@ -77,7 +75,7 @@ describe("Property 1 (safeHref half): anchors exactly for absolute http(s) URLs"
       fc.property(urlWithBadChar, (value) => {
         expect(safeHref(value)).toBeNull();
       }),
-      { numRuns: NUM_RUNS },
+      fcParams(),
     );
   });
 
@@ -86,7 +84,7 @@ describe("Property 1 (safeHref half): anchors exactly for absolute http(s) URLs"
       fc.property(otherSchemeUrl, (value) => {
         expect(safeHref(value)).toBeNull();
       }),
-      { numRuns: NUM_RUNS },
+      fcParams(),
     );
   });
 
@@ -102,7 +100,7 @@ describe("Property 1 (safeHref half): anchors exactly for absolute http(s) URLs"
         expect(["http:", "https:"]).toContain(url.protocol);
         expect(url.hostname).not.toBe("");
       }),
-      { numRuns: NUM_RUNS },
+      fcParams(),
     );
   });
 
@@ -120,7 +118,7 @@ describe("Property 1 (safeHref half): anchors exactly for absolute http(s) URLs"
         }
         expect(safeHref(value)).toBe(expected);
       }),
-      { numRuns: NUM_RUNS },
+      fcParams(),
     );
   });
 
@@ -140,7 +138,7 @@ describe("Property 1 (safeHref half): anchors exactly for absolute http(s) URLs"
           expect(unescapeHtml(markup)).toBe(value);
         }
       }),
-      { numRuns: NUM_RUNS },
+      fcParams(),
     );
   });
 

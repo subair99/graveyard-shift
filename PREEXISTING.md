@@ -37,6 +37,11 @@ Third-party libraries and data sources used are listed here as they are added.
 - actions/download-artifact (MIT). Source: https://github.com/actions/download-artifact. License: https://raw.githubusercontent.com/actions/download-artifact/main/LICENSE
 - actions/attest (MIT). Source: https://github.com/actions/attest. License: https://raw.githubusercontent.com/actions/attest/main/LICENSE
 
+`.github/workflows/pages.yml` also uses these three GitHub Actions, each pinned to a full commit SHA. All three are MIT; the `LICENSE` file was read at the pinned tag on 2026-11-18.
+- actions/configure-pages v6.0.0 (MIT, Copyright (c) 2021 GitHub, Inc.). Source: https://github.com/actions/configure-pages. License: https://raw.githubusercontent.com/actions/configure-pages/v6.0.0/LICENSE
+- actions/upload-pages-artifact v5.0.0 (MIT, Copyright (c) 2022 GitHub, Inc.). Source: https://github.com/actions/upload-pages-artifact. License: https://raw.githubusercontent.com/actions/upload-pages-artifact/v5.0.0/LICENSE
+- actions/deploy-pages v5.0.1 (MIT, Copyright (c) 2021 GitHub, Inc.). Source: https://github.com/actions/deploy-pages. License: https://raw.githubusercontent.com/actions/deploy-pages/v5.0.1/LICENSE
+
 ## Tools used by the pipeline
 - GitHub CLI `gh` (MIT), preinstalled on GitHub-hosted runners; the publish step uses it to create pull requests and the nightly uses `gh attestation verify`. Source: https://github.com/cli/cli. License: https://raw.githubusercontent.com/cli/cli/trunk/LICENSE
 - Sigstore (Apache-2.0), as used by GitHub Artifact Attestations (`actions/attest` signs with a Sigstore certificate and records the signature in a transparency log). Graveyard Shift does not install or import Sigstore code; it consumes the signed bundles. Sources: https://github.com/sigstore/cosign, https://github.com/sigstore/fulcio, https://github.com/sigstore/rekor (each Apache-2.0 per the GitHub API license endpoint, 2026-11-15). Docs: https://docs.github.com/en/actions/security-for-github-actions/using-artifact-attestations/using-artifact-attestations-to-establish-provenance-for-builds
