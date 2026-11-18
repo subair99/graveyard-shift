@@ -50,6 +50,8 @@ describe("home and Crypt_Index markup over the Fixture_Graveyard", () => {
     const markup = index(view);
     expect(markup).toContain("<caption>Graveyard entries</caption>");
     expect(markup).toContain('<th scope="col">');
+    expect(markup).toContain('<th scope="col">Analysed</th>');
+    expect(markup).not.toContain('<th scope="col">analysed</th>');
     expect(markup.match(/<tbody>[\s\S]*<\/tbody>/)?.[0].match(/<tr>/g)).toHaveLength(view.entries.length);
     expect(headingLevels(markup)).toEqual([1]);
     expect(text(markup)).not.toMatch(DEFERRED);

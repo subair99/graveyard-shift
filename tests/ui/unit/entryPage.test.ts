@@ -7,6 +7,7 @@ import { VERIFIED_LABEL_ALIVE, VERIFIED_LABEL_NOT_ALIVE } from "../../../src/ui/
 import { runUrl } from "../../../src/ui/core/site";
 import {
   ATTEMPTS_CAPTION,
+  DOWNLOADS_SENTENCE,
   NIGHTLY_NO_ENTRY_RESULT,
   NIGHTLY_NONE,
   NOT_ATTESTED_SENTENCE,
@@ -351,6 +352,51 @@ describe("Entry_Page markup over the Fixture_Graveyard", () => {
       );
       expect(markup.match(/\/commits\//g), name).toHaveLength(1);
       expect(markup, name).not.toMatch(/\/pull\/|pull request/i);
+    }
+  });
+
+  it("declared delta line shows the status once, then whether a demonstration is present", () => {
+    const deltas = plain(sectionOf(page("alive-fixture"), "deltas"));
+    expect(deltas).toContain("set-prototype-pollution (default): status demonstrated; demonstration present");
+    expect(deltas).not.toMatch(/demonstrated; demonstrated/);
+
+    const v = patched("restless-fixture", (x) => ({
+      ...x,
+      report:
+        x.report === null
+          ? null
+          : {
+              ...x.report,
+              deltas: x.report.deltas.map((d) => ({ ...d, status: "not-demonstrated" as const, demonstration: null })),
+            },
+    }));
+    const none = plain(sectionOf(page("restless-fixture", v), "deltas"));
+    expect(none).toContain("set-prototype-pollution (default): status not-demonstrated; no demonstration");
+  });
+
+  it("entry page labels start with a capital: Analysed, Integrity, Verified", () => {
+    const alive = page("alive-fixture");
+    expect(sectionOf(alive, "certificate")).toContain("<dt>Analysed</dt>");
+    const proof = sectionOf(alive, "proof");
+    expect(proof).toContain("<dt>Integrity</dt>");
+    expect(proof).toContain("<dt>Verified</dt>");
+    for (const lower of ["analysed", "integrity", "verified"]) {
+      expect(alive).not.toContain(`<dt>${lower}</dt>`);
+    }
+  });
+
+  it("the sentence about the files under graveyard/<package>/ appears only where verification commands are shown", () => {
+    for (const name of ["alive-fixture", "stub-fixture"] as const) {
+      expect(entry(name).verifyCommands.length, name).toBeGreaterThan(0);
+      expect(unescapeHtml(sectionOf(page(name), "downloads")), name).toContain(DOWNLOADS_SENTENCE);
+    }
+    for (const name of ["restless-fixture", "inconclusive-fixture", "retired-fixture"] as const) {
+      expect(entry(name).verifyCommands, name).toEqual([]);
+      expect(text(name), name).not.toContain(DOWNLOADS_SENTENCE);
+      expect(sectionOf(page(name), "downloads"), name).toContain("<ul>");
+    }
+    for (const name of ALL) {
+      expect(text(name).includes(DOWNLOADS_SENTENCE), name).toBe(entry(name).verifyCommands.length > 0);
     }
   });
 

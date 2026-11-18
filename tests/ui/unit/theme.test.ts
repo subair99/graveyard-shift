@@ -1,4 +1,5 @@
 // Requirements: 8.1, 8.2, 8.3, 8.6
+// The 8.8 block checks the wrapping rules only; the 320 px layout stays a manual check (traceability-gaps.json).
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -131,6 +132,28 @@ describe("focus, motion and isolation (Requirements 8.3, 8.6)", () => {
     expect(cssNoComments).toMatch(/color-scheme:\s*dark\s*;/);
     expect(cssNoComments).not.toMatch(/color-scheme:[^;]*light/i);
     expect(cssNoComments).not.toMatch(/prefers-color-scheme/i);
+  });
+});
+
+describe("long values wrap, code blocks scroll (Requirement 8.8)", () => {
+  it.each(["dd", "dt", "td", "th", "li", "p", "figcaption", "span", "div"])("%s wraps long unbroken text", (selector) => {
+    expect(declarationsOf(selector)).toMatch(/(^|[;\s])overflow-wrap\s*:\s*anywhere\b/);
+  });
+
+  it("pre keeps its own horizontal scroll and neither pre nor code inside it wraps", () => {
+    expect(declarationsOf("pre")).toMatch(/(^|[;\s])overflow-x\s*:\s*auto\b/);
+    expect(declarationsOf("pre")).toMatch(/(^|[;\s])overflow-wrap\s*:\s*normal\b/);
+    expect(declarationsOf("pre code")).toMatch(/(^|[;\s])overflow-wrap\s*:\s*normal\b/);
+  });
+
+  it("the components render the hashes in dd cells and not in code, so no rule for code outside pre is needed", () => {
+    const comps = join(__dirname, "..", "..", "..", "src", "ui", "components");
+    const proof = readFileSync(join(comps, "ProofSection.tsx"), "utf8");
+    const eligibility = readFileSync(join(comps, "EligibilitySection.tsx"), "utf8");
+    expect(proof).toMatch(/<dd>\{r\.original\.integrity\}<\/dd>/);
+    expect(proof).toMatch(/<dd>\{r\.resurrection\.treeHash \?\? NONE\}<\/dd>/);
+    expect(eligibility).toMatch(/<dd>\{e\.integrity\.expected\}<\/dd>/);
+    expect(eligibility).toMatch(/<dd>\{e\.integrity\.computed \?\? NONE\}<\/dd>/);
   });
 });
 

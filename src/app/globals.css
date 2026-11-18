@@ -110,9 +110,27 @@ td {
   overflow-wrap: anywhere;
 }
 
+/* Long unbroken values (sha512 integrity, tree hash, URLs) wrap inside their box (criterion 8.8). */
+dd,
+dt,
+li,
+p,
+figcaption,
+caption,
+span,
+div {
+  overflow-wrap: anywhere;
+}
+
 pre,
 code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+/* overflow-wrap is inherited: code blocks keep their own horizontal scroll and do not wrap. */
+pre,
+pre code {
+  overflow-wrap: normal;
 }
 
 pre {

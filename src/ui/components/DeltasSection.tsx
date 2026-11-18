@@ -22,7 +22,7 @@ export function DeltasSection({ entry }: { entry: EntryView }) {
                 <li key={i}>
                   <p>
                     <strong>{d.id}</strong> ({d.function}): {UI.deltaStatus} {d.status};{" "}
-                    {d.status === "demonstrated" ? UI.deltaDemonstrated : UI.deltaNotDemonstrated}
+                    {d.demonstration !== null ? UI.deltaDemonstrationPresent : UI.deltaDemonstrationAbsent}
                   </p>
                   {d.demonstration !== null ? (
                     <div>

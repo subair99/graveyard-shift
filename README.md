@@ -12,7 +12,7 @@ re-verifies every committed result without an LLM and without credits.
 
 Built for **Kiroween 2026** · Category: **Resurrection**
 
-- Live demo: _coming soon_
+- Live demo: https://subair99.github.io/graveyard-shift/
 - Demo video: _coming soon_
 
 ## How it works
