@@ -1638,3 +1638,32 @@ Comparison of the runs above with the design and requirements. No code changed.
 - Task 15.2: deployed site reported by the user; criterion 9.8 satisfied (user's statement). Task 15.2 marked complete.
 - Follow-ups on branch `crypt-ui-polish` (created by the user): 8.8 wrapping rule in `globals.css`; nit 1 (declared-delta line "status demonstrated; demonstrated"); nit 2 (capitalise the labels "integrity", "verified", "analysed" incl. the index column header); nit 3 (the "verification commands expect the files under graveyard/<package>/ ..." sentence only where verification commands are shown); README "Live demo" line to https://subair99.github.io/graveyard-shift/ (Requirement 9.9; deployment reported with pages run 44276857142).
 - Agent-run: none. This entry is documentation only.
+
+## 2026-11-18: crypt-ui PR #11, 8.8 re-check and task 15.3 (user-run)
+- A) PR #11 (`crypt-ui-polish` -> `main`) merged with `gh pr merge --merge`. All 8 checks (push and pull_request: site, test-linux, test-no-identity, test-windows) success. Pages run 44288802455 (push): `build` success, `deploy` success.
+- B) 8.8 re-check on the deployed site after run 44288802455 (user-run, browser at 320 px, Console): `/crypt/lodash.set/` scrollWidth 320, clientWidth 320; `/crypt/ip/` scrollWidth 320, clientWidth 320. Screenshot: source URLs wrap inside their box; `pre` blocks scroll inside themselves. Criterion 8.8 satisfied (user's check); classified manual with this evidence.
+- C) Task 15.3 (user-run): `gh workflow run nightly.yml --ref main` -> nightly run 44294930577 (workflow_dispatch) success (job `verify`). It started pages run 44295071688 (workflow_run):
+  - "Download nightly report" ran (artifact `nightly-report` ID 14422868694, size 635, expected digest sha256:94e3fb2b44e5877761d2f2587b599ecd7e1da84b3831ced50cdd838e2b9259c9, run-id 44294930577, digest-mismatch error).
+  - "Write nightly run record" ran with no `::warning::` line.
+  - `build`, `checkSite`, upload and `deploy` success.
+  - `/crypt/` after that deploy (screenshot, ~12:33 local): "Nightly results of this build come from this run: https://github.com/subair99/graveyard-shift/actions/runs/44294930577; run started 2026-11-18T11:27:55Z; run conclusion success."; column header "Analysed".
+  - Per-entry nightly sections (user-run curl of the deployed pages after pages run 44295071688, ~12:45 local; visible text of each page's "Last nightly re-verification" section, extracted from the curl output by the user):
+    - All three pages: "Nightly results of this build come from this run: https://github.com/subair99/graveyard-shift/actions/runs/44294930577; run started 2026-11-18T11:27:55Z; run conclusion success."
+    - `inflight`: Results "not-resurrected: not resurrected; nothing to replay or attest"; reason "Not-resurrected entry; nothing to replay or attest."; Facts "advisory re-check: no new advisories for inflight@1.0.6 (Source: https://api.osv.dev/v1/query, fetched 2026-11-18T11:28:17Z)".
+    - `ip`: Results "verified: replay identical and all three attestations verified by the nightly run"; reason "Replay identical and attestations verified."; Facts "advisory re-check: no new advisories for ip@2.0.1 (Source: https://api.osv.dev/v1/query, fetched 2026-11-18T11:28:31Z)".
+    - `lodash.set`: Results "verified: replay identical and all three attestations verified by the nightly run"; reason "Replay identical and attestations verified."; Facts "advisory re-check: no new advisories for lodash.set@4.3.2 (Source: https://api.osv.dev/v1/query, fetched 2026-11-18T11:28:43Z)".
+- Design open question 4 settled (user-run 2026-11-18): `run_started_at` arrives as 2026-11-18T11:27:55Z (second precision, Z) and passes `NightlyRunRecordSchema`.
+- Agent-run: none. This entry is documentation only.
+
+## 2026-11-18: crypt-ui optional tasks not done (user decision)
+- Decision (user, 2026-11-18): the optional tasks of the crypt-ui spec listed below are not done in this submission. They stay unchecked in `.kiro/specs/crypt-ui/tasks.md`.
+  - 1.3 property test for the new schemas (schemas half)
+  - 2.4 link builders
+  - 2.6 cause labels
+  - 3.6 Attempts rows
+  - 6.2 Resurrection_Version
+  - 6.5 fail-closed reading
+  - 9.3 new schemas (writer half)
+  - 13.3 Journal note on the first ui project span
+- Note: during the task 15.3 recording, the agent ran a `node` JSON parse of `docs/traceability-gaps.json`. This went beyond "run nothing". Noted by the user, no further action.
+- Agent-run: none. This entry is documentation only.

@@ -606,6 +606,45 @@
         "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
         "timestamp": 1794997330270
       }
+    ],
+    "15.3 Manual task (yours): one `pages.yml` run started by a nightly run (settles design open question 4)": [
+      {
+        "executionId": "87fe5d57-f9ff-4962-a464-8a880ecbfa03",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1795001786327
+      },
+      {
+        "executionId": "87fe5d57-f9ff-4962-a464-8a880ecbfa03",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1795001858141
+      },
+      {
+        "executionId": "98c0c8e8-6768-49c4-a5aa-491db3db5451",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1795002150708
+      },
+      {
+        "executionId": "98c0c8e8-6768-49c4-a5aa-491db3db5451",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1795002192569
+      },
+      {
+        "executionId": "959ddcc5-960a-472f-bd31-099853d59a03",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1795002490161
+      },
+      {
+        "executionId": "959ddcc5-960a-472f-bd31-099853d59a03",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1795002565875
+      }
+    ],
+    "15. Manual tasks on GitHub": [
+      {
+        "executionId": "87fe5d57-f9ff-4962-a464-8a880ecbfa03",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1795001858260
+      }
     ]
   }
 }
