@@ -250,7 +250,7 @@ Conventions for every task:
   - Ensure all tests pass, ask the user if questions arise.
   - _Requirements: 10.8, 10.9, 10.10_
 
-- [ ] 15. Manual tasks on GitHub
+- [x] 15. Manual tasks on GitHub
   - [x] 15.1 Manual task (yours): enable GitHub Pages
     - Repository settings, Pages, "Build and deployment", Source: "GitHub Actions". Report in the Journal that the setting is on (date). Pages was enabled through the GitHub API with `build_type=workflow` instead of the settings page (user-run 2026-11-18); the Pages source is GitHub Actions either way. The agent claims nothing about the Site until 15.2 is reported.
     - _Requirements: 9.8_
@@ -259,7 +259,7 @@ Conventions for every task:
     - After this spec's changes are on `main`: `gh workflow run pages.yml --ref main`, then `gh run watch`. Record in the Journal: the run address, the conclusion of `build` and `deploy`, the page address (`https://subair99.github.io/graveyard-shift/`), what the home page, the Crypt_Index and one Entry_Page show (expected: "No recent nightly result in this build."), and whether `configure-pages` needed another permission or order (open question 8). Only after this record may the README "Live demo" line change (Requirement 9.9, a separate request).
     - _Requirements: 9.5, 9.8, 9.9, 11.8_
 
-  - [ ] 15.3 Manual task (yours): one `pages.yml` run started by a nightly run (settles design open question 4)
+  - [x] 15.3 Manual task (yours): one `pages.yml` run started by a nightly run (settles design open question 4)
     - `gh workflow run nightly.yml --ref main` (or wait for the scheduled run); when it completes, the `pages` run starts by `workflow_run`. `workflow_run` fires only once `pages.yml` is on `main`, so the nightly run must complete after `pages.yml` is merged to `main` (a nightly run that completed earlier starts no `pages` run). Record in the Journal: both run addresses, the nightly conclusion, whether the download step succeeded, whether `writeNightlyRun.mjs` wrote the record or warned (the format of `run_started_at`, open question 4), and what the Crypt_Index and one Entry_Page show (expected: that run's results, run start time, conclusion and run link).
     - _Requirements: 9.10, 9.11, 12.2, 12.3, 12.10, 12.11, 11.8_
 
@@ -298,3 +298,4 @@ Conventions for every task:
   ]
 }
 ```
+- Decision 2026-11-18 (user): the optional tasks 1.3, 2.4, 2.6, 3.6, 6.2, 6.5, 9.3 and 13.3 are not done in this submission; they stay unchecked.
