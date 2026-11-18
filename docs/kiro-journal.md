@@ -1667,3 +1667,10 @@ Comparison of the runs above with the design and requirements. No code changed.
   - 13.3 Journal note on the first ui project span
 - Note: during the task 15.3 recording, the agent ran a `node` JSON parse of `docs/traceability-gaps.json`. This went beyond "run nothing". Noted by the user, no further action.
 - Agent-run: none. This entry is documentation only.
+
+## 2026-11-18: credit meter after crypt-ui and dependency recheck (user-run)
+
+- Credit meter (user's statement; the meter shows credits used): 2677.41 / 4000 used. Previous recorded reading: 2195.15 (after the ip run). No figure is derived beyond these two readings.
+- `npm audit --omit=dev` (user-run, ~12:59 local, PowerShell): found 0 vulnerabilities.
+- `npm audit` (user-run, ~12:59 local, PowerShell): 5 high, the same accepted dev-only picomatch GHSA-fc5q-39xc-vjpf chain (picomatch, fdir, tinyglobby, vite, vitest). The only fix offered is `npm audit fix --force`, which installs vitest@3.1.4 (breaking). It was not applied. PREEXISTING.md "Known advisory (accepted)" is unchanged.
+- Agent-run: none. This entry is documentation only.
