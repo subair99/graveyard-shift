@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "package": "inconclusive-fixture",
+  "functions": {
+    "default": {
+      "preset": "lodash-set"
+    }
+  }
+}

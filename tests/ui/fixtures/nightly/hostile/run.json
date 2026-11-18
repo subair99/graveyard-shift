@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "runId": 1001,
+  "runStartedAt": "2026-01-07T03:17:42Z",
+  "conclusion": "success",
+  "headSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "buildSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+}

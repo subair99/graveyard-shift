@@ -12,6 +12,8 @@ export const deterministicFiles = [
   "src/pipeline/**/core/**/*.ts",
   // The Shared_Path_Rules (medium-agent design Component 2): pure, no imports.
   "src/pipeline/medium/agent/pathRules.mjs",
+  // Pure Crypt UI core (crypt-ui design Component 2).
+  "src/ui/core/**/*.ts",
 ];
 
 export const deterministicRules = {

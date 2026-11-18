@@ -16,6 +16,7 @@ import {
   type GhResult,
   type NightlyDeps,
 } from "../../../src/pipeline/undertaker/shell/nightly";
+import { VERIFIED_REASON_ALIVE, VERIFIED_REASON_NOT_ALIVE } from "../../../src/pipeline/undertaker/core/nightlyReport";
 import { sriSha512 } from "../../../src/pipeline/undertaker/shell/replay";
 import type { CliDeps, CliResult } from "../../../src/proof/cli";
 import { deserializeReport } from "../../../src/proof/serialize/deserialize";
@@ -492,6 +493,22 @@ describe("runNightly", () => {
     expect(out.report.entries[0]!.stub).toBe(true);
     expect(r.summaries[0]).toContain("stub run");
     expect(primary(r)).toEqual(["verified"]);
+  });
+
+  it("gives an alive entry with an identical replay the alive verified reason", async () => {
+    const r = rig({});
+    await addEntry(r, "lodash.set");
+    const out = await runNightly(r.deps);
+    expect(out.report.entries[0]!.results).toEqual(["verified"]);
+    expect(out.report.entries[0]!.reason).toBe(VERIFIED_REASON_ALIVE);
+  });
+
+  it("gives a restless entry with an identical replay the not-alive verified reason", async () => {
+    const r = rig({});
+    await addEntry(r, "lodash.set", { verdict: "restless" });
+    const out = await runNightly(r.deps);
+    expect(out.report.entries[0]!.results).toEqual(["verified"]);
+    expect(out.report.entries[0]!.reason).toBe(VERIFIED_REASON_NOT_ALIVE);
   });
 });
 

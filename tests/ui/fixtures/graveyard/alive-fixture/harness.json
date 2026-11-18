@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "package": "alive-fixture",
+  "functions": {
+    "default": {
+      "preset": "lodash-set"
+    }
+  }
+}

@@ -1,0 +1,201 @@
+{
+  "schemaVersion": 1,
+  "package": {
+    "name": "hostile-fixture",
+    "version": "5.0.0"
+  },
+  "analysisDate": "2026-11-17T16:55:20Z",
+  "status": "dead",
+  "causes": [
+    "unpatched-cve"
+  ],
+  "openVulnerabilityIds": [
+    "GHSA-\"><img src=x onerror=alert(1)>"
+  ],
+  "timeOfDeath": {
+    "available": true,
+    "value": "2016-08-13T17:44:16Z"
+  },
+  "daysSinceDeath": 3747,
+  "vitalSigns": {
+    "maintainers": {
+      "available": true,
+      "value": [
+        "<script>alert('xss')</script>",
+        "\"><img src=x onerror=alert(1)>",
+        "../../etc/passwd",
+        "mathias</script><script>alert(2)</script>"
+      ]
+    },
+    "openVulnerabilities": {
+      "available": true,
+      "value": [
+        {
+          "id": "GHSA-\"><img src=x onerror=alert(1)>",
+          "aliases": [
+            "CVE-<script>alert('xss')</script>",
+            "&lt;b&gt;bold&lt;/b&gt; &amp; &#x3C;i&#x3E;"
+          ],
+          "summary": "<script>alert('xss')</script> \"><img src=x onerror=alert(1)> <style>body{display:none}</style>",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    "scorecard": {
+      "available": true,
+      "value": 7.5
+    },
+    "dependents": {
+      "available": true,
+      "value": 10593
+    },
+    "weeklyDownloads": {
+      "available": true,
+      "value": 2034648
+    }
+  },
+  "riskScore": 35,
+  "risk": {
+    "contributions": [
+      {
+        "component": "cause:unpatched-cve",
+        "points": 25
+      },
+      {
+        "component": "vitalSign:maintainers",
+        "points": 0
+      },
+      {
+        "component": "vitalSign:openVulnerabilities",
+        "points": 5
+      },
+      {
+        "component": "vitalSign:scorecard",
+        "points": 5
+      },
+      {
+        "component": "vitalSign:dependents",
+        "points": 0
+      },
+      {
+        "component": "vitalSign:weeklyDownloads",
+        "points": 0
+      }
+    ],
+    "rawScore": 35,
+    "formula": {
+      "weights": {
+        "cause:maintainer-gone": 20,
+        "cause:repo-archived": 20,
+        "cause:runtime-rot": 15,
+        "cause:unpatched-cve": 25,
+        "vitalSign:dependents": 0,
+        "vitalSign:maintainers": 0,
+        "vitalSign:openVulnerabilities:perVulnerability": 5,
+        "vitalSign:scorecard:multiplier": 2,
+        "vitalSign:weeklyDownloads": 0
+      },
+      "thresholds": {
+        "score:max": 100,
+        "score:min": 0,
+        "vitalSign:openVulnerabilities:maxPoints": 20,
+        "vitalSign:scorecard:maxPoints": 20
+      }
+    },
+    "unavailable": []
+  },
+  "facts": [
+    {
+      "key": "dependents",
+      "value": 10593,
+      "provenance": [
+        {
+          "sourceUrl": "javascript:alert(document.cookie)",
+          "fetchedAt": "2026-11-17T16:55:19Z"
+        }
+      ]
+    },
+    {
+      "key": "githubRepo",
+      "value": {
+        "archived": false,
+        "pushedAt": "2026-10-01T23:04:09Z"
+      },
+      "provenance": [
+        {
+          "sourceUrl": "data:text/html,<script>alert(1)</script>",
+          "fetchedAt": "2026-11-17T16:55:20Z"
+        }
+      ]
+    },
+    {
+      "key": "maintainers",
+      "value": [
+        "<script>alert('xss')</script>",
+        "\"><img src=x onerror=alert(1)>",
+        "../../etc/passwd",
+        "mathias</script><script>alert(2)</script>"
+      ],
+      "provenance": [
+        {
+          "sourceUrl": "JaVaScRiPt:alert(1)",
+          "fetchedAt": "2026-11-17T16:55:19Z"
+        }
+      ]
+    },
+    {
+      "key": "openVulnerabilities",
+      "value": [
+        {
+          "id": "GHSA-\"><img src=x onerror=alert(1)>",
+          "aliases": [
+            "CVE-<script>alert('xss')</script>",
+            "&lt;b&gt;bold&lt;/b&gt; &amp; &#x3C;i&#x3E;"
+          ],
+          "summary": "<script>alert('xss')</script> \"><img src=x onerror=alert(1)> <style>body{display:none}</style>",
+          "severity": "HIGH"
+        }
+      ],
+      "provenance": [
+        {
+          "sourceUrl": "https://evil.example/path ",
+          "fetchedAt": "2026-11-17T16:55:19Z"
+        }
+      ]
+    },
+    {
+      "key": "scorecard",
+      "value": 7.5,
+      "provenance": [
+        {
+          "sourceUrl": "evil.example:8080/path",
+          "fetchedAt": "2026-11-17T16:55:19Z"
+        }
+      ]
+    },
+    {
+      "key": "timeOfDeath",
+      "value": "2016-08-13T17:44:16Z",
+      "provenance": [
+        {
+          "sourceUrl": "vbscript:msgbox(1)",
+          "fetchedAt": "2026-11-17T16:55:19Z"
+        }
+      ]
+    },
+    {
+      "key": "weeklyDownloads",
+      "value": 2034648,
+      "provenance": [
+        {
+          "sourceUrl": "file:///etc/passwd",
+          "fetchedAt": "2026-11-17T16:55:19Z"
+        }
+      ]
+    }
+  ],
+  "notes": {
+    "githubTokenUsed": true,
+    "omittedFacts": []
+  }
+}

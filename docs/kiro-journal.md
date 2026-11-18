@@ -1537,3 +1537,36 @@ Comparison of the runs above with the design and requirements. No code changed.
 - CI run 44142899326: green on all three jobs.
 - The full `npm test` for task 16.4 was also run earlier by the user: 200 files, 2373 passed (no other figures given).
 - Agent-run: none. This entry is documentation only.
+## 2026-11-17: crypt-ui Pages action pins (user-run)
+- Commands (user-run, `gh` logged in, read-only), for each of the three repositories: `gh api repos/actions/<repo>/releases/latest --jq .tag_name`, then `gh api repos/actions/<repo>/commits/<tag> --jq .sha`.
+- `actions/configure-pages`: tag `v6.0.0`, commit `45bfe0192ca1faeb007ade9deae92b16b8254a0d`.
+- `actions/upload-pages-artifact`: tag `v5.0.0`, commit `fc324d3547104276b827a68afc52ff2a11cc49c9`.
+- `actions/deploy-pages`: tag `v5.0.1`, commit `368f82528645a54fb793d4d04e342629a3f51346`.
+- Also read by the user: `actions/download-artifact` `action.yml` at `9000827ccba6bdab643e8b6fd33ac0654aef8333` (v8.0.2, already pinned in `resurrect.yml`). Inputs include `name`, `path`, `github-token` (required when downloading from a different workflow run), `repository` (default `github.repository`), `run-id` (default `github.run_id`) and `digest-mismatch` (default `error`).
+- Used in `.kiro/specs/crypt-ui/design.md` (Component 7 and "Action pins"). The licenses of the three Pages actions are not recorded here; the workflow task reads each `LICENSE` at the pinned tag before writing `PREEXISTING.md`.
+- Agent-run: none. This entry is documentation only.
+
+## 2026-11-17: crypt-ui tasks 1.1, 1.2 and 2.1 checks (user-run, PowerShell, 20:54 local)
+- User-run: `npx vitest run --project ui`: 2 files, 5 tests passed (requirementsHeader.test.ts 1, schemas.test.ts 4); span 0.4 s (target 60 s).
+- User-run: `npx vitest run --project pipeline`: 91 files passed, 959 tests passed, 1 skipped; span 15.7 s (target 90 s). This confirms task 1.1 against the whole pipeline project.
+- Agent-run single-file results for tasks 1.1 and 1.2 (one run each): nightly 22 passed, nightlyReport 15 passed, p28 2 passed, p29 2 passed, schemas 4 passed.
+- Agent-run: none of the user-run figures above are agent-run. This entry is documentation only.
+## 2026-11-17: crypt-ui checkpoint 4 (user-run, PowerShell, 21:20 local)
+- User-run: `npx vitest run --project ui`: 9 files, 44 tests passed; span 1.9 s (target 60 s).
+- User-run: `npx vitest run --project pipeline`: 91 files passed, 959 tests passed, 1 skipped; span 14.8 s (target 90 s).
+- Agent-run: none. This entry is documentation only.
+## 2026-11-17: crypt-ui tasks 5 to 8 checks (user-run, PowerShell, 22:41 local)
+- User-run: `npx vitest run --project ui`: 21 files, 140 tests passed; span 16.4 s (target 60 s); p13-copy.test.ts 16357 ms.
+- Agent-run: none. This entry is documentation only.
+## 2026-11-18: crypt-ui open question 5 and audit (user-run)
+- User-run 2026-11-18, 00:20 local, PowerShell, robocopy of the working tree without `graveyard/`, `.env`, `.git`, `node_modules`; `npm ci`; `npm run build`: the build fails with `Page "/crypt/[name]" returned an empty array from "generateStaticParams()". With "output: export", at least one route must be generated. Build error: Failed to collect page data for /crypt/[name].` `node scripts/ui/checkSite.mjs` then reported the export directory missing.
+- User-run: `.env` contains no `NEXT_PUBLIC_` names (count: 0).
+- User-run 2026-11-18, 00:22 local: `npm audit --omit=dev`: found 0 vulnerabilities.
+- User-run 2026-11-18, 00:22 local: `npm audit`: 5 high, all the accepted dev-only picomatch GHSA-fc5q-39xc-vjpf chain (picomatch, fdir, tinyglobby, vite, vitest). The only fix offered is `npm audit fix --force`, which installs vitest@3.1.4 (breaking); it was not applied. `PREEXISTING.md` "Known advisory (accepted)" is unchanged.
+- Agent-run: none. This entry is documentation only.
+## 2026-11-18: crypt-ui build and checkSite, first runs (user-run, ~07:30 local, PowerShell)
+- A) Working tree: `npm run build` succeeded (routes /, /_not-found, /crypt, /crypt/inflight, /crypt/ip, /crypt/lodash.set; "Copied 20 entry files to out/graveyard/."). `node scripts/ui/checkSite.mjs` printed: "out/crypt/__next.crypt: page has no entry in graveyard/" and "Site check failed: 1 problem(s)."
+- B) Robocopy without `graveyard/` and `.env`, `npm ci`, `npm run build` succeeded (routes /, /_not-found, /crypt, /crypt/_empty; "Copied 0 entry files to out/graveyard/."). `node scripts/ui/checkSite.mjs` printed: "graveyard: directory not found", "out/crypt/__next.crypt: page has no entry in graveyard/", "Site check failed: 2 problem(s)." Confirmed: open question 5's fix builds /crypt/_empty.
+- Checkpoint 10 stays open until checkSite passes in both trees.
+- Read-only listing of `out/crypt/` in the working copy (orchestrator-read, not a run): index.html, index.txt, inflight/, ip/, lodash.set/, `__next.crypt/` (a directory whose only content is `__PAGE__.txt`, no index.html), `__next._full.txt`, `__next._tree.txt`.
+- Agent-run: none besides the read-only listing. This entry is documentation only.

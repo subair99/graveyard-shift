@@ -1,0 +1,10 @@
+export declare const BASE_PATH: string;
+export declare const EMPTY_CRYPT_PARAM: string;
+export declare function decodeEntities(text: string): string;
+export declare function isLocalReference(value: string): boolean;
+export declare function isAllowedAnchorHref(value: string): boolean;
+export declare function checkHtml(file: string, html: string): string[];
+export declare function checkCss(file: string, css: string): string[];
+export declare function listFiles(dir: string): string[];
+export declare function checkSite(options: { outDir: string; root: string }): { problems: string[] };
+export declare function runCheck(argv: string[], cwd: string): { exitCode: number; stdout: string[]; stderr: string[] };

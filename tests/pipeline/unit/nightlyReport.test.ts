@@ -13,6 +13,8 @@ import {
   buildNightlyReport,
   renderNightlyReportJson,
   renderNightlySummary,
+  VERIFIED_REASON_ALIVE,
+  VERIFIED_REASON_NOT_ALIVE,
   type NightlyEntryInput,
 } from "../../../src/pipeline/undertaker/core/nightlyReport";
 
@@ -35,6 +37,12 @@ function build(entries: NightlyEntryInput[], ghVersion: string | null = "gh vers
 }
 
 describe("nightlyReport", () => {
+  it("exports the two verified reasons; a verified entry without a caller reason gets the alive one", () => {
+    expect(VERIFIED_REASON_ALIVE).toBe("Replay identical and attestations verified.");
+    expect(VERIFIED_REASON_NOT_ALIVE).toBe("Replay identical; no attestation expected.");
+    expect(build([entry({})]).entries[0]!.reason).toBe(VERIFIED_REASON_ALIVE);
+  });
+
   it("writes one line per package in code point order with results, reason and both Tool_Versions", () => {
     const report = build([entry({ package: "ip" }), entry({ package: "Zed" }), entry({ package: "lodash.set" })]);
     expect(report.entries.map((e) => e.package)).toEqual(["Zed", "ip", "lodash.set"]);

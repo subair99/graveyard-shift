@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "package": "hostile-fixture",
+  "deltas": [
+    {
+      "kind": "returns-expected",
+      "id": "xss-img-onerror-alert-1",
+      "function": "default",
+      "advisory": "GHSA-p6mc-m468-83gw",
+      "cases": [
+        {
+          "input": [
+            {
+              "a": "<script>alert('xss')</script>"
+            },
+            "a",
+            "\"><img src=x onerror=alert(1)>"
+          ],
+          "expected": {
+            "a": "&lt;b&gt;bold&lt;/b&gt; &amp; &#x3C;i&#x3E;"
+          },
+          "source": {
+            "url": "javascript:alert(document.cookie)",
+            "fetchedAt": "2026-11-17T16:55:20Z"
+          }
+        },
+        {
+          "input": [
+            {},
+            "../../etc/passwd",
+            "{{7*7}} ${7*7} <%= 7*7 %>"
+          ],
+          "expected": {
+            "..": "/etc/passwd"
+          },
+          "source": {
+            "url": "JaVaScRiPt:alert(1)",
+            "fetchedAt": "2026-11-17T16:55:20Z"
+          }
+        },
+        {
+          "input": [
+            {},
+            "b",
+            "<style>body{display:none}</style>"
+          ],
+          "expected": {
+            "b": "onmouseover=alert(1) autofocus onfocus=alert(1)"
+          },
+          "source": {
+            "url": "data:text/html,<script>alert(1)</script>",
+            "fetchedAt": "2026-11-17T16:55:20Z"
+          }
+        },
+        {
+          "input": [
+            {},
+            "c",
+            "</script><script>alert(2)</script>"
+          ],
+          "expected": {
+            "c": "x"
+          },
+          "source": {
+            "url": "evil.example:8080/path",
+            "fetchedAt": "2026-11-17T16:55:20Z"
+          }
+        },
+        {
+          "input": [
+            {},
+            "d",
+            "C:\\Windows\\System32\\config\\SAM"
+          ],
+          "expected": {
+            "d": "y"
+          },
+          "source": {
+            "url": "https://evil.example/path ",
+            "fetchedAt": "2026-11-17T16:55:20Z"
+          }
+        }
+      ]
+    }
+  ]
+}

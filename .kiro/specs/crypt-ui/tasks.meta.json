@@ -1,0 +1,457 @@
+{
+  "pbtResults": {
+    "2.3 Write property test for the Safe_Link filter": {
+      "status": "passed",
+      "lastRunTimestamp": 1794945612503
+    },
+    "3.2 Write property test for the view values": {
+      "status": "passed",
+      "lastRunTimestamp": 1794946283444
+    },
+    "3.3 Write property test for outcome and verification fields": {
+      "status": "passed",
+      "lastRunTimestamp": 1794946516705
+    },
+    "3.4 Write property test for the stub flag": {
+      "status": "passed",
+      "lastRunTimestamp": 1794946626689
+    },
+    "3.5 Write property test for the nightly view": {
+      "status": "passed",
+      "lastRunTimestamp": 1794946701758
+    }
+  },
+  "executionHistory": {
+    "1.1 Give `verified` an alive and a not-alive reason (spec (a) modules `nightlyReport.ts` and `nightly.ts`)": [
+      {
+        "executionId": "aad89867-acb2-4da7-876a-c8086e78d7c7",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794944771559
+      },
+      {
+        "executionId": "aad89867-acb2-4da7-876a-c8086e78d7c7",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794944892623
+      }
+    ],
+    "1.2 Add `StubMarkerSchema` and `NightlyReportSchema` next to their types": [
+      {
+        "executionId": "aad89867-acb2-4da7-876a-c8086e78d7c7",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794944893211
+      },
+      {
+        "executionId": "aad89867-acb2-4da7-876a-c8086e78d7c7",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794945143132
+      }
+    ],
+    "2.1 Add the vitest project `ui`, its budget target and the lint scope": [
+      {
+        "executionId": "aad89867-acb2-4da7-876a-c8086e78d7c7",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794945014217
+      },
+      {
+        "executionId": "99090051-678b-48d3-b518-535b867cdf95",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794945441716
+      }
+    ],
+    "1. Spec (a) changes: the `verified` reason and the two schemas (design Component 3)": [
+      {
+        "executionId": "aad89867-acb2-4da7-876a-c8086e78d7c7",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794945143282
+      }
+    ],
+    "2.2 Implement link builders and the link filter": [
+      {
+        "executionId": "99090051-678b-48d3-b518-535b867cdf95",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794945442216
+      },
+      {
+        "executionId": "99090051-678b-48d3-b518-535b867cdf95",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794945526861
+      }
+    ],
+    "2.3 Write property test for the Safe_Link filter": [
+      {
+        "executionId": "99090051-678b-48d3-b518-535b867cdf95",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794945527297
+      },
+      {
+        "executionId": "99090051-678b-48d3-b518-535b867cdf95",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794945646459
+      }
+    ],
+    "2.5 Implement the label tables, the file-name check, the run record schema and the version reader": [
+      {
+        "executionId": "99090051-678b-48d3-b518-535b867cdf95",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794945646838
+      },
+      {
+        "executionId": "99090051-678b-48d3-b518-535b867cdf95",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794945799158
+      }
+    ],
+    "2.7 Implement the fixed texts and the theme data": [
+      {
+        "executionId": "99090051-678b-48d3-b518-535b867cdf95",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794945799525
+      },
+      {
+        "executionId": "99090051-678b-48d3-b518-535b867cdf95",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794945976211
+      }
+    ],
+    "2. Test project, lint scope and core primitives (design Components 2 and 9)": [
+      {
+        "executionId": "99090051-678b-48d3-b518-535b867cdf95",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794945976352
+      }
+    ],
+    "3.1 Implement `src/ui/core/viewModel.ts`": [
+      {
+        "executionId": "99090051-678b-48d3-b518-535b867cdf95",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794945976767
+      },
+      {
+        "executionId": "99090051-678b-48d3-b518-535b867cdf95",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794946153808
+      }
+    ],
+    "3.2 Write property test for the view values": [
+      {
+        "executionId": "99090051-678b-48d3-b518-535b867cdf95",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794946154168
+      },
+      {
+        "executionId": "99090051-678b-48d3-b518-535b867cdf95",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794946462106
+      }
+    ],
+    "3.3 Write property test for outcome and verification fields": [
+      {
+        "executionId": "99090051-678b-48d3-b518-535b867cdf95",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794946462676
+      },
+      {
+        "executionId": "99090051-678b-48d3-b518-535b867cdf95",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794946566298
+      }
+    ],
+    "3.4 Write property test for the stub flag": [
+      {
+        "executionId": "99090051-678b-48d3-b518-535b867cdf95",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794946566669
+      },
+      {
+        "executionId": "99090051-678b-48d3-b518-535b867cdf95",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794946641312
+      }
+    ],
+    "3.5 Write property test for the nightly view": [
+      {
+        "executionId": "99090051-678b-48d3-b518-535b867cdf95",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794946641703
+      },
+      {
+        "executionId": "99090051-678b-48d3-b518-535b867cdf95",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794946734968
+      }
+    ],
+    "3. View model `buildSiteView` (design Component 2, Data Models)": [
+      {
+        "executionId": "99090051-678b-48d3-b518-535b867cdf95",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794946735116
+      }
+    ],
+    "4. Checkpoint: spec (a) change and pure core": [
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794946957377
+      },
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794947026499
+      }
+    ],
+    "5.1 Write the Fixture_Graveyard": [
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794947026951
+      },
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794947355485
+      }
+    ],
+    "5.2 Write the Hostile_Fixture": [
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794947355945
+      },
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794947660592
+      }
+    ],
+    "5. Fixture_Graveyard and Hostile_Fixture (design Data Models)": [
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794947660810
+      }
+    ],
+    "6.1 Implement `src/ui/shell/tarballVersion.ts`": [
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794947661158
+      },
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794947730308
+      }
+    ],
+    "6.3 Implement `src/ui/shell/readSite.ts` and `src/ui/shell/loadSite.ts`": [
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794947730651
+      },
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794948788561
+      },
+      {
+        "executionId": "34cafcba-6d47-4e10-8e59-f5af4e9267c9",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794951836877
+      },
+      {
+        "executionId": "34cafcba-6d47-4e10-8e59-f5af4e9267c9",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794955365963
+      }
+    ],
+    "6.4 Write property test for reader order and determinism": [
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794948788979
+      },
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794948925986
+      }
+    ],
+    "6.6 Implement `src/ui/shell/copyEntryFiles.ts`": [
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794948926603
+      },
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794949452589
+      }
+    ],
+    "6.7 Write property test for the copy step": [
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794949453099
+      },
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794949672756
+      },
+      {
+        "executionId": "34cafcba-6d47-4e10-8e59-f5af4e9267c9",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794955366582
+      },
+      {
+        "executionId": "34cafcba-6d47-4e10-8e59-f5af4e9267c9",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794955448521
+      }
+    ],
+    "6. Shell: reader, tarball version, wiring and copy step (design Component 4)": [
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794949672904
+      }
+    ],
+    "7.1 Implement the components under `src/ui/components/`": [
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794949673146
+      },
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794950522950
+      }
+    ],
+    "7.2 Write property test for inert rendering and complete Property 1": [
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794950523622
+      },
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794950637692
+      }
+    ],
+    "7.3 Write page markup tests": [
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794950638414
+      },
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794950885949
+      }
+    ],
+    "7.4 Write the hostile-fixture and source-scan tests": [
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794950885433
+      },
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794951293629
+      }
+    ],
+    "7. Server components (design Component 6)": [
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794951293755
+      }
+    ],
+    "8.1 Implement `src/app/layout.tsx`, `src/app/page.tsx`, `src/app/crypt/page.tsx`, `src/app/crypt/[name]/page.tsx` and `src/app/globals.css`": [
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794951294641
+      },
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794951435725
+      }
+    ],
+    "8.2 Write the theme test": [
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794951436548
+      },
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794951571344
+      }
+    ],
+    "8. App Router pages, layout and stylesheet": [
+      {
+        "executionId": "31253669-56ca-4a35-ab1a-e8b83d1a869c",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794951571766
+      }
+    ],
+    "9.1 Change the build configuration and scripts": [
+      {
+        "executionId": "34cafcba-6d47-4e10-8e59-f5af4e9267c9",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794955449015
+      },
+      {
+        "executionId": "34cafcba-6d47-4e10-8e59-f5af4e9267c9",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794955699607
+      }
+    ],
+    "9.2 Implement `scripts/ui/writeNightlyRun.mjs`": [
+      {
+        "executionId": "34cafcba-6d47-4e10-8e59-f5af4e9267c9",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794955700352
+      },
+      {
+        "executionId": "34cafcba-6d47-4e10-8e59-f5af4e9267c9",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794955934753
+      }
+    ],
+    "9.4 Implement `scripts/ui/checkSite.mjs`": [
+      {
+        "executionId": "34cafcba-6d47-4e10-8e59-f5af4e9267c9",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794955935477
+      },
+      {
+        "executionId": "34cafcba-6d47-4e10-8e59-f5af4e9267c9",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794956785426
+      }
+    ],
+    "9. Configuration and scripts (design Components 1 and 5)": [
+      {
+        "executionId": "34cafcba-6d47-4e10-8e59-f5af4e9267c9",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794956785846
+      }
+    ],
+    "10. Checkpoint: build and Site_Check_Script (settles design open questions 5, 6 and 7)": [
+      {
+        "executionId": "6a600d71-d88f-489e-84ea-25c362d073d9",
+        "chatSessionId": "sess_fce32c04-e17a-4ed8-bd99-71d478d77049",
+        "timestamp": 1794957834109
+      }
+    ]
+  }
+}

@@ -1,0 +1,171 @@
+{
+  "schemaVersion": 1,
+  "package": {
+    "name": "alive-fixture",
+    "version": "1.0.0"
+  },
+  "eligible": true,
+  "integrity": {
+    "expected": "sha512-4hNPN5jlm/N/HLMCO43v8BXKq9Z7QdAGc/VGrRD61w8gN9g/6jF9A4L1pbUgBLCffi0w9VsXfTOij5x8iTyFvg==",
+    "computed": "sha512-4hNPN5jlm/N/HLMCO43v8BXKq9Z7QdAGc/VGrRD61w8gN9g/6jF9A4L1pbUgBLCffi0w9VsXfTOij5x8iTyFvg==",
+    "matches": true
+  },
+  "rules": [
+    {
+      "rule": "license",
+      "holds": true,
+      "observed": "MIT"
+    },
+    {
+      "rule": "dependencies",
+      "holds": true,
+      "observed": 0
+    },
+    {
+      "rule": "module-type",
+      "holds": true,
+      "observed": null
+    },
+    {
+      "rule": "line-count",
+      "holds": true,
+      "observed": 1072
+    },
+    {
+      "rule": "status",
+      "holds": true,
+      "observed": "dead"
+    },
+    {
+      "rule": "causes",
+      "holds": true,
+      "observed": 1
+    },
+    {
+      "rule": "open-vulnerability",
+      "holds": true,
+      "observed": 1
+    }
+  ],
+  "failedRules": [],
+  "facts": [
+    {
+      "key": "integrity.computed",
+      "value": "sha512-4hNPN5jlm/N/HLMCO43v8BXKq9Z7QdAGc/VGrRD61w8gN9g/6jF9A4L1pbUgBLCffi0w9VsXfTOij5x8iTyFvg==",
+      "provenance": [
+        {
+          "sourceUrl": "https://registry.npmjs.org/lodash.set/-/lodash.set-4.3.2.tgz",
+          "fetchedAt": "2026-11-17T16:55:20Z"
+        }
+      ]
+    },
+    {
+      "key": "integrity.expected",
+      "value": "sha512-4hNPN5jlm/N/HLMCO43v8BXKq9Z7QdAGc/VGrRD61w8gN9g/6jF9A4L1pbUgBLCffi0w9VsXfTOij5x8iTyFvg==",
+      "provenance": [
+        {
+          "sourceUrl": "https://registry.npmjs.org/lodash.set",
+          "fetchedAt": "2026-11-17T16:55:20Z"
+        }
+      ]
+    },
+    {
+      "key": "rule.causes",
+      "value": 1,
+      "provenance": [
+        {
+          "sourceUrl": "https://api.github.com/repos/lodash/lodash",
+          "fetchedAt": "2026-11-17T16:55:20Z"
+        },
+        {
+          "sourceUrl": "https://api.osv.dev/v1/query",
+          "fetchedAt": "2026-11-17T16:55:19Z"
+        },
+        {
+          "sourceUrl": "https://registry.npmjs.org/lodash.set",
+          "fetchedAt": "2026-11-17T16:55:19Z"
+        }
+      ]
+    },
+    {
+      "key": "rule.dependencies",
+      "value": 0,
+      "provenance": [
+        {
+          "sourceUrl": "https://registry.npmjs.org/lodash.set/-/lodash.set-4.3.2.tgz",
+          "fetchedAt": "2026-11-17T16:55:20Z"
+        }
+      ]
+    },
+    {
+      "key": "rule.license",
+      "value": "MIT",
+      "provenance": [
+        {
+          "sourceUrl": "https://registry.npmjs.org/lodash.set/-/lodash.set-4.3.2.tgz",
+          "fetchedAt": "2026-11-17T16:55:20Z"
+        }
+      ]
+    },
+    {
+      "key": "rule.line-count",
+      "value": 1072,
+      "provenance": [
+        {
+          "sourceUrl": "https://registry.npmjs.org/lodash.set/-/lodash.set-4.3.2.tgz",
+          "fetchedAt": "2026-11-17T16:55:20Z"
+        }
+      ]
+    },
+    {
+      "key": "rule.module-type",
+      "value": null,
+      "provenance": [
+        {
+          "sourceUrl": "https://registry.npmjs.org/lodash.set/-/lodash.set-4.3.2.tgz",
+          "fetchedAt": "2026-11-17T16:55:20Z"
+        }
+      ]
+    },
+    {
+      "key": "rule.open-vulnerability",
+      "value": 1,
+      "provenance": [
+        {
+          "sourceUrl": "https://api.osv.dev/v1/query",
+          "fetchedAt": "2026-11-17T16:55:19Z"
+        }
+      ]
+    },
+    {
+      "key": "rule.status",
+      "value": "dead",
+      "provenance": [
+        {
+          "sourceUrl": "https://api.deps.dev/v3/projects/github.com%2Flodash%2Flodash",
+          "fetchedAt": "2026-11-17T16:55:19Z"
+        },
+        {
+          "sourceUrl": "https://api.deps.dev/v3alpha/systems/npm/packages/lodash.set/versions/4.3.2:dependents",
+          "fetchedAt": "2026-11-17T16:55:19Z"
+        },
+        {
+          "sourceUrl": "https://api.github.com/repos/lodash/lodash",
+          "fetchedAt": "2026-11-17T16:55:20Z"
+        },
+        {
+          "sourceUrl": "https://api.npmjs.org/downloads/point/last-week/lodash.set",
+          "fetchedAt": "2026-11-17T16:55:19Z"
+        },
+        {
+          "sourceUrl": "https://api.osv.dev/v1/query",
+          "fetchedAt": "2026-11-17T16:55:19Z"
+        },
+        {
+          "sourceUrl": "https://registry.npmjs.org/lodash.set",
+          "fetchedAt": "2026-11-17T16:55:19Z"
+        }
+      ]
+    }
+  ]
+}

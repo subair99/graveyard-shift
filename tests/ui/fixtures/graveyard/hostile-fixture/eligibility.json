@@ -1,0 +1,171 @@
+{
+  "schemaVersion": 1,
+  "package": {
+    "name": "hostile-fixture",
+    "version": "5.0.0"
+  },
+  "eligible": true,
+  "integrity": {
+    "expected": "sha512-4hNPN5jlm/N/HLMCO43v8BXKq9Z7QdAGc/VGrRD61w8gN9g/6jF9A4L1pbUgBLCffi0w9VsXfTOij5x8iTyFvg==",
+    "computed": "sha512-4hNPN5jlm/N/HLMCO43v8BXKq9Z7QdAGc/VGrRD61w8gN9g/6jF9A4L1pbUgBLCffi0w9VsXfTOij5x8iTyFvg==",
+    "matches": true
+  },
+  "rules": [
+    {
+      "rule": "license",
+      "holds": true,
+      "observed": "MIT <script>alert('xss')</script>"
+    },
+    {
+      "rule": "dependencies",
+      "holds": true,
+      "observed": 0
+    },
+    {
+      "rule": "module-type",
+      "holds": true,
+      "observed": "C:\\Windows\\System32\\config\\SAM"
+    },
+    {
+      "rule": "line-count",
+      "holds": true,
+      "observed": 1072
+    },
+    {
+      "rule": "status",
+      "holds": true,
+      "observed": "dead \"><img src=x onerror=alert(1)>"
+    },
+    {
+      "rule": "causes",
+      "holds": true,
+      "observed": "onmouseover=alert(1) autofocus onfocus=alert(1)"
+    },
+    {
+      "rule": "open-vulnerability",
+      "holds": true,
+      "observed": 1
+    }
+  ],
+  "failedRules": [],
+  "facts": [
+    {
+      "key": "integrity.computed",
+      "value": "sha512-4hNPN5jlm/N/HLMCO43v8BXKq9Z7QdAGc/VGrRD61w8gN9g/6jF9A4L1pbUgBLCffi0w9VsXfTOij5x8iTyFvg==",
+      "provenance": [
+        {
+          "sourceUrl": "BLOB:https://evil.example/x",
+          "fetchedAt": "2026-11-17T16:55:20Z"
+        }
+      ]
+    },
+    {
+      "key": "integrity.expected",
+      "value": "sha512-4hNPN5jlm/N/HLMCO43v8BXKq9Z7QdAGc/VGrRD61w8gN9g/6jF9A4L1pbUgBLCffi0w9VsXfTOij5x8iTyFvg==",
+      "provenance": [
+        {
+          "sourceUrl": "http://evil.example/a?x=<script>alert(1)</script>&y=\"onmouseover=alert(1)",
+          "fetchedAt": "2026-11-17T16:55:20Z"
+        }
+      ]
+    },
+    {
+      "key": "rule.causes",
+      "value": "onmouseover=alert(1) autofocus onfocus=alert(1)",
+      "provenance": [
+        {
+          "sourceUrl": "javascript:alert(document.cookie)",
+          "fetchedAt": "2026-11-17T16:55:20Z"
+        },
+        {
+          "sourceUrl": "data:text/html,<script>alert(1)</script>",
+          "fetchedAt": "2026-11-17T16:55:19Z"
+        },
+        {
+          "sourceUrl": "JaVaScRiPt:alert(1)",
+          "fetchedAt": "2026-11-17T16:55:19Z"
+        }
+      ]
+    },
+    {
+      "key": "rule.dependencies",
+      "value": 0,
+      "provenance": [
+        {
+          "sourceUrl": "https://evil.example/path ",
+          "fetchedAt": "2026-11-17T16:55:20Z"
+        }
+      ]
+    },
+    {
+      "key": "rule.license",
+      "value": "MIT <script>alert('xss')</script>",
+      "provenance": [
+        {
+          "sourceUrl": "evil.example:8080/path",
+          "fetchedAt": "2026-11-17T16:55:20Z"
+        }
+      ]
+    },
+    {
+      "key": "rule.line-count",
+      "value": 1072,
+      "provenance": [
+        {
+          "sourceUrl": "vbscript:msgbox(1)",
+          "fetchedAt": "2026-11-17T16:55:20Z"
+        }
+      ]
+    },
+    {
+      "key": "rule.module-type",
+      "value": "C:\\Windows\\System32\\config\\SAM",
+      "provenance": [
+        {
+          "sourceUrl": "file:///etc/passwd",
+          "fetchedAt": "2026-11-17T16:55:20Z"
+        }
+      ]
+    },
+    {
+      "key": "rule.open-vulnerability",
+      "value": 1,
+      "provenance": [
+        {
+          "sourceUrl": "BLOB:https://evil.example/x",
+          "fetchedAt": "2026-11-17T16:55:19Z"
+        }
+      ]
+    },
+    {
+      "key": "rule.status",
+      "value": "dead \"><img src=x onerror=alert(1)>",
+      "provenance": [
+        {
+          "sourceUrl": "http://evil.example/a?x=<script>alert(1)</script>&y=\"onmouseover=alert(1)",
+          "fetchedAt": "2026-11-17T16:55:19Z"
+        },
+        {
+          "sourceUrl": "javascript:alert(document.cookie)",
+          "fetchedAt": "2026-11-17T16:55:19Z"
+        },
+        {
+          "sourceUrl": "data:text/html,<script>alert(1)</script>",
+          "fetchedAt": "2026-11-17T16:55:20Z"
+        },
+        {
+          "sourceUrl": "JaVaScRiPt:alert(1)",
+          "fetchedAt": "2026-11-17T16:55:19Z"
+        },
+        {
+          "sourceUrl": "https://evil.example/path ",
+          "fetchedAt": "2026-11-17T16:55:19Z"
+        },
+        {
+          "sourceUrl": "evil.example:8080/path",
+          "fetchedAt": "2026-11-17T16:55:19Z"
+        }
+      ]
+    }
+  ]
+}

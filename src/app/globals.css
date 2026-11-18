@@ -1,0 +1,168 @@
+/* Crypt_Site stylesheet: one dark theme. The :root values repeat PALETTE of src/ui/core/theme.ts exactly. */
+:root {
+  --background: #0d0b12;
+  --surface: #17131f;
+  --text: #e8e4f0;
+  --muted: #b4adc4;
+  --link: #ff9a3c;
+  --border: #8a7fa3;
+  --focus: #ffd166;
+  --alive: #7bd88f;
+  --restless: #ff8a8a;
+  --inconclusive: #ffd166;
+  --not-resurrected: #b4adc4;
+  --package-status: #8ec5ff;
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.5;
+}
+
+header,
+main,
+footer {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+header {
+  border-bottom: 1px solid var(--border);
+}
+
+footer {
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+}
+
+a {
+  color: var(--link);
+}
+
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: 0.5rem;
+  top: -4rem;
+  padding: 0.5rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.skip-link:focus,
+.skip-link:focus-visible {
+  top: 0.5rem;
+}
+
+nav a {
+  margin-right: 1rem;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.25;
+}
+
+section {
+  margin: 1.5rem 0;
+  padding: 0.5rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+}
+
+caption {
+  text-align: left;
+  color: var(--muted);
+  padding: 0.5rem 0;
+}
+
+th,
+td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  overflow-wrap: anywhere;
+}
+
+pre,
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+pre {
+  overflow-x: auto;
+  padding: 0.75rem;
+  background: var(--background);
+  border: 1px solid var(--border);
+}
+
+.label {
+  display: inline-block;
+  padding: 0 0.5rem;
+  border: 1px solid currentColor;
+  background: var(--surface);
+  font-size: 0.9em;
+  font-weight: 600;
+}
+
+.outcome-alive {
+  color: var(--alive);
+}
+
+.outcome-restless {
+  color: var(--restless);
+}
+
+.outcome-inconclusive {
+  color: var(--inconclusive);
+}
+
+.outcome-not-resurrected {
+  color: var(--not-resurrected);
+}
+
+.package-status {
+  color: var(--package-status);
+  border-style: dashed;
+}
+
+.stub-run {
+  color: var(--muted);
+  border-style: dotted;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

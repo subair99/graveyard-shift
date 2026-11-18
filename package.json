@@ -6,8 +6,8 @@
   "description": "Finds abandoned npm packages, issues cited Death Certificates, and resurrects them with Kiro agents.",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "build": "next build && tsx scripts/ui/copyEntryFiles.ts",
+    "start": "node scripts/ui/startNotice.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest --run",
     "lint": "eslint src tests scripts",
