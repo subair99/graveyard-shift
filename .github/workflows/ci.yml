@@ -89,3 +89,22 @@ jobs:
           node-version: 26
       - run: npm ci
       - run: npm test
+
+  # Build check of the Crypt_Site (crypt-ui Requirement 10.5). Builds the static site and runs the
+  # Site_Check_Script over it. Uses the exact pinned Node version (PINNED_NODE_VERSION) so that it builds
+  # what pages.yml builds. No Nightly_Input here. No secrets. The empty-graveyard case is not run in CI.
+  site:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26.13.1
+      - name: Check Node version
+        run: '[ "$(node --version)" = "v26.13.1" ] || { echo "unexpected Node version: $(node --version)"; exit 1; }'
+      - run: npm ci
+      - run: npm run build
+      - run: node scripts/ui/checkSite.mjs

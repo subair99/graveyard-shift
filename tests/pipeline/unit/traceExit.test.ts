@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { runTrace, type TraceContext } from "../../../scripts/trace";
+import { parseCriteria, runTrace, type TraceContext } from "../../../scripts/trace";
 
 // A temp fixture: one spec with criteria 1.1, 1.2 and 1.3; the test file cites 1.1 only.
 const REQUIREMENTS = [
@@ -70,5 +70,38 @@ describe("trace exit code (R21.7)", () => {
     const r = runTrace(setup([gap("1.2"), gap("1.3"), gap("9.9")]));
     expect(r.exitCode).toBe(1);
     expect(r.output).toContain("classified criteria that do not exist: 9.9");
+  });
+});
+
+describe("parseCriteria", () => {
+  it("stops a requirement at the next heading of the same or a higher level", () => {
+    const text = [
+      "## Requirements",
+      "",
+      "### Requirement 1: Demo",
+      "",
+      "#### Acceptance Criteria",
+      "",
+      "1. THE demo SHALL do A.",
+      "2. THE demo SHALL do B.",
+      "",
+      "### Requirement 2: Other",
+      "",
+      "#### Acceptance Criteria",
+      "",
+      "1. THE other SHALL do C.",
+      "",
+      "## Decisions",
+      "",
+      "1. A decision, not a criterion.",
+      "2. Another decision.",
+      "",
+      "### Decisions, second round",
+      "",
+      "1. A round item.",
+      "2. Another round item.",
+      "",
+    ].join("\n");
+    expect(parseCriteria(text)).toEqual(["1.1", "1.2", "2.1"]);
   });
 });

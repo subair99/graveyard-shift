@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "package": {
+    "name": "hostile-fixture",
+    "version": "5.0.0"
+  },
+  "original": {
+    "integrity": "sha512-4hNPN5jlm/N/HLMCO43v8BXKq9Z7QdAGc/VGrRD61w8gN9g/6jF9A4L1pbUgBLCffi0w9VsXfTOij5x8iTyFvg==",
+    "verified": true
+  },
+  "resurrection": {
+    "source": "tarball",
+    "treeHash": "sha512-Yxy/bpNj71VxUwTLuSEjZRP/oMlEnJBGMWjKu5tduJIhYm+nwvaT6ddfLMe5ijniRPDVt7+/orbNt0QgfJgsXA=="
+  },
+  "sandbox": {
+    "mechanism": "node-permission",
+    "restartEvents": {
+      "original": 0,
+      "resurrection": 0
+    },
+    "otherRestarts": {
+      "original": 0,
+      "resurrection": 0
+    },
+    "limits": {
+      "callTimeoutMs": 1000,
+      "heapLimitMb": 256,
+      "outputLimitBytes": 1048576,
+      "maxRestarts": 20,
+      "casesRequested": 100,
+      "shrinkBudget": 500
+    }
+  },
+  "functionsTested": [
+    "default"
+  ],
+  "casesPerFunction": [
+    {
+      "function": "default",
+      "cases": 211
+    }
+  ],
+  "unencodableValues": [
+    {
+      "function": "default",
+      "cases": 211,
+      "casesWithUnencodable": 0,
+      "total": 0,
+      "reasons": {
+        "cycle": 0,
+        "depth": 0,
+        "getter": 0,
+        "proxy": 0
+      }
+    }
+  ],
+  "excludedFunctions": [],
+  "nonDeterministicFunctions": [],
+  "divergences": [
+    {
+      "function": "default",
+      "kind": "unexplained",
+      "args": [
+        {
+          "t": "str",
+          "v": "<script>alert('xss')</script>"
+        },
+        {
+          "t": "str",
+          "v": "/etc/passwd"
+        },
+        {
+          "t": "str",
+          "v": "javascript:alert(document.cookie)"
+        }
+      ],
+      "replay": {
+        "phase": "generated",
+        "seed": 1,
+        "path": "1:0"
+      },
+      "differences": [
+        {
+          "part": "value",
+          "path": "$.\"><img src=x onerror=alert(1)>"
+        },
+        {
+          "part": "args",
+          "path": "$[0]</script><script>alert(2)</script>"
+        }
+      ],
+      "original": {
+        "kind": "returned",
+        "async": false,
+        "value": {
+          "t": "str",
+          "v": "<script>alert('xss')</script><style>body{display:none}</style>"
+        },
+        "args": [
+          {
+            "t": "str",
+            "v": "../../etc/passwd"
+          }
+        ],
+        "prototypeDelta": []
+      },
+      "resurrection": {
+        "kind": "returned",
+        "async": false,
+        "value": {
+          "t": "str",
+          "v": "\"><img src=x onerror=alert(1)>&lt;b&gt;bold&lt;/b&gt; &amp; &#x3C;i&#x3E;"
+        },
+        "args": [
+          {
+            "t": "str",
+            "v": "C:\\Windows\\System32\\config\\SAM"
+          }
+        ],
+        "prototypeDelta": []
+      },
+      "shrink": {
+        "attempts": 3,
+        "budgetExhausted": false
+      },
+      "redactionMaskedDifference": false
+    }
+  ],
+  "deltas": [
+    {
+      "id": "xss-img-onerror-alert-1",
+      "function": "default",
+      "status": "demonstrated",
+      "predicateCasesChecked": 103,
+      "demonstration": {
+        "args": [
+          {
+            "t": "object",
+            "ctor": "Object",
+            "props": []
+          },
+          {
+            "t": "str",
+            "v": "<script>alert('xss')</script>"
+          },
+          {
+            "t": "str",
+            "v": "\"><img src=x onerror=alert(1)>"
+          }
+        ],
+        "original": {
+          "ok": false,
+          "detail": {
+            "t": "array",
+            "length": 1,
+            "items": [
+              {
+                "i": 0,
+                "n": {
+                  "t": "str",
+                  "v": "<script>alert('xss')</script> added /etc/passwd"
+                }
+              }
+            ],
+            "props": []
+          }
+        },
+        "resurrection": {
+          "ok": true
+        }
+      }
+    }
+  ],
+  "harnessErrors": [
+    {
+      "kind": "no-functions-tested",
+      "function": "default",
+      "message": "<script>alert('xss')</script> javascript:alert(document.cookie) C:\\Windows\\System32\\config\\SAM"
+    }
+  ],
+  "verdict": "restless",
+  "seed": 340701121,
+  "toolVersions": {
+    "node": "v26.13.1",
+    "fastCheck": "4.10.2",
+    "reportSchema": 1
+  }
+}

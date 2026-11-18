@@ -2,10 +2,12 @@
 // One line per package. Every text passes redactText. The module reads no clock and states no number
 // that was not measured: dates and versions come from the caller.
 
+import { z } from "zod";
+import { SourceUrlSchema, UtcTimestampSchema } from "../../../engine/types";
 import { REPO, GH_MIN_VERSION } from "../../common/constants";
 import { canonicalJsonText, redactText } from "../../common/canonical";
 import type { IdentityValues, Platform } from "../../common/canonical";
-import { differingToolFields, nightlyOrder } from "./nightlyClassify";
+import { differingToolFields, nightlyOrder, NIGHTLY_RESULT_ORDER } from "./nightlyClassify";
 import type { NightlyResult, ToolVersionField, ToolVersions } from "./nightlyClassify";
 
 /** A fact about the registry or an advisory; it always carries its Source_URL and Fetch_Date. */
@@ -67,6 +69,40 @@ export interface NightlyReport {
   readonly entries: NightlyReportEntry[];
 }
 
+const NonNegativeInt = z.number().int().nonnegative();
+const ToolVersionsSchema = z
+  .object({ node: z.string(), fastCheck: z.string(), reportSchema: z.number().int() })
+  .strict();
+
+/** Schema of `nightly-report.json` (strict at every level); parses what `renderNightlyReportJson` writes. */
+export const NightlyReportSchema = z
+  .object({
+    repo: z.string(),
+    ghVersion: z.string().nullable(),
+    ghMinVersion: z.string(),
+    counts: z
+      .object({ total: NonNegativeInt, checkable: NonNegativeInt, notChecked: NonNegativeInt })
+      .strict(),
+    entries: z.array(
+      z
+        .object({
+          package: z.string(),
+          results: z.array(z.enum(NIGHTLY_RESULT_ORDER)).min(1),
+          reason: z.string(),
+          stub: z.boolean(),
+          committedTools: ToolVersionsSchema.nullable(),
+          runningTools: ToolVersionsSchema,
+          differingToolFields: z.array(z.enum(["node", "fastCheck", "reportSchema"])),
+          firstDiffPath: z.string().nullable(),
+          facts: z.array(
+            z.object({ text: z.string(), sourceUrl: SourceUrlSchema, fetchedAt: UtcTimestampSchema }).strict(),
+          ),
+        })
+        .strict(),
+    ),
+  })
+  .strict();
+
 /** Counts of a list of entries (pure). */
 export function countNightlyEntries(entries: readonly { readonly results: readonly string[] }[]): NightlyCounts {
   const notChecked = entries.filter((e) => e.results.includes("not-checked")).length;
@@ -107,8 +143,13 @@ export function renderNoEntriesNotice(identity: IdentityValues, platform: Platfo
   return `::notice::${escapeWorkflowCommandData(redactText(NO_ENTRIES_TEXT, identity, platform))}`;
 }
 
+/** Reason of a `verified` entry whose committed Verdict is alive (R16.14, amended for crypt-ui). */
+export const VERIFIED_REASON_ALIVE = "Replay identical and attestations verified.";
+/** Reason of a `verified` entry whose committed Verdict is not alive: no attestation is expected. */
+export const VERIFIED_REASON_NOT_ALIVE = "Replay identical; no attestation expected.";
+
 const DEFAULT_REASONS: Readonly<Record<NightlyResult, string>> = {
-  verified: "Replay identical and attestations verified.",
+  verified: VERIFIED_REASON_ALIVE,
   "replay-mismatch": "The Replay produced a report that differs from the committed one.",
   "tool-versions-changed": "The running Tool_Versions differ from the committed ones; the Replay was not run.",
   "attestation-failed": "An attestation did not verify or fewer than three results were found.",

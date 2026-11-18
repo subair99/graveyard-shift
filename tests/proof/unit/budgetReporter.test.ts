@@ -11,7 +11,7 @@ const spanAt = (project: string, spanSeconds: number, mode?: string) =>
 
 describe("budget check on the span", () => {
   it("has the targets 60 s, 90 s, 120 s, 90 s (pipeline) and 120 s (pipeline-integration)", () => {
-    expect(BUDGET_SECONDS).toEqual({ "proof-property": 60, "proof-heavy": 90, "proof-integration": 120, pipeline: 90, "pipeline-integration": 120 });
+    expect(BUDGET_SECONDS).toEqual({ "proof-property": 60, "proof-heavy": 90, "proof-integration": 120, pipeline: 90, "pipeline-integration": 120, ui: 60 });
   });
 
   it("checks the span, not the whole-run wall-clock", () => {
@@ -182,6 +182,7 @@ describe("PROOF_BUDGET_SCALE (test aid)", () => {
       "proof-property": "[budget] proof-property: 0 s span, first test file start to last test file end (checked against target 30 s = 60 s x PROOF_BUDGET_SCALE 0.5; test aid)",
       pipeline: "[budget] pipeline: 0 s span, first test file start to last test file end (checked against target 45 s = 90 s x PROOF_BUDGET_SCALE 0.5; test aid)",
       "pipeline-integration": "[budget] pipeline-integration: 0 s span, first test file start to last test file end (checked against target 60 s = 120 s x PROOF_BUDGET_SCALE 0.5; test aid)",
+      ui: "[budget] ui: 0 s span, first test file start to last test file end (checked against target 30 s = 60 s x PROOF_BUDGET_SCALE 0.5; test aid)",
     });
   });
 

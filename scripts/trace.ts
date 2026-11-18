@@ -3,7 +3,7 @@
 // Citations are the `// Requirements: ...` header lines of test files. Syntax of one line:
 //   // Requirements: 1.2, 4.3                          bare list: the spec the test belongs to
 //                                                      (tests/engine -> autopsy-engine, tests/proof -> proof-of-life-engine,
-//                                                      tests/pipeline -> resurrection-pipeline, tests/medium -> medium-agent)
+//                                                      tests/pipeline -> resurrection-pipeline, tests/medium -> medium-agent, tests/ui -> crypt-ui)
 //   // Requirements: proof-of-life-engine 15.5, 15.9   list for the named spec
 //   // Requirements: 1.2, 4.3; proof-of-life-engine 15.5, 15.9   several groups, separated by semicolons
 // A citation credits the criterion in the named spec's table, which shows the citing file path.
@@ -54,6 +54,11 @@ const SPECS: readonly SpecConfig[] = [
     requirements: ".kiro/specs/medium-agent/requirements.md",
     testsDir: "tests/medium",
   },
+  {
+    name: "crypt-ui",
+    requirements: ".kiro/specs/crypt-ui/requirements.md",
+    testsDir: "tests/ui",
+  },
 ];
 
 const CLASSES = [
@@ -103,6 +108,12 @@ export function parseCriteria(markdown: string): Id[] {
     const heading = /^### Requirement (\d+):/.exec(line);
     if (heading !== null) {
       current = Number(heading[1]);
+      continue;
+    }
+    // A heading of the same or a higher level (#, ##, ###) ends the requirement: numbered lists of later
+    // sections (Deferred, Decisions, Notes) are not criteria. `####` (Acceptance Criteria) stays inside it.
+    if (/^#{1,3} /.test(line)) {
+      current = null;
       continue;
     }
     const criterion = /^(\d+)\. /.exec(line);
@@ -317,7 +328,7 @@ export function runTrace(ctx: TraceContext): { exitCode: number; output: string;
   lines.push(
     "One section per spec. Acceptance criteria come from the spec's `requirements.md`; citations are the `// Requirements:` header lines of the test files. Gap classes (class and evidence per gap) for every spec are read from `docs/traceability-gaps.json`. An unclassified gap or a stale classification entry in any spec makes `npm run trace` exit with 1.",
     "",
-    "Header syntax: `// Requirements: 1.2, 4.3` is a bare list and means the spec the test belongs to (`tests/engine` is autopsy-engine, `tests/proof` is proof-of-life-engine, `tests/pipeline` is resurrection-pipeline, `tests/medium` is medium-agent). `// Requirements: proof-of-life-engine 15.5, 15.9` cites criteria of another spec, and groups are separated by semicolons: `// Requirements: 1.2, 4.3; proof-of-life-engine 15.5, 15.9`. A citation credits the criterion in the named spec's table, which shows the citing file path. An unknown spec name or an unknown number is listed under \"Cited numbers that do not exist\" in the section of the spec the citing file belongs to.",
+    "Header syntax: `// Requirements: 1.2, 4.3` is a bare list and means the spec the test belongs to (`tests/engine` is autopsy-engine, `tests/proof` is proof-of-life-engine, `tests/pipeline` is resurrection-pipeline, `tests/medium` is medium-agent, `tests/ui` is crypt-ui). `// Requirements: proof-of-life-engine 15.5, 15.9` cites criteria of another spec, and groups are separated by semicolons: `// Requirements: 1.2, 4.3; proof-of-life-engine 15.5, 15.9`. A citation credits the criterion in the named spec's table, which shows the citing file path. An unknown spec name or an unknown number is listed under \"Cited numbers that do not exist\" in the section of the spec the citing file belongs to.",
     "",
   );
 

@@ -1,6 +1,7 @@
 // Entry layout of graveyard/<package>/: file names, kinds, the single deriveEntryKind and the plan.
 // Pure. Writer, nightly reader and tests all use this module (R14.12, R14.15).
 
+import { z } from "zod";
 import type { Verdict } from "../../../proof/types";
 import { err, ok, type Result } from "../../common/result";
 
@@ -63,6 +64,11 @@ export interface StubMarker {
   mode: "stub";
   label: "stub run";
 }
+
+/** Schema of `stub-run.json` (strict); parses exactly what `buildStubMarker` writes. */
+export const StubMarkerSchema = z
+  .object({ schemaVersion: z.literal(1), mode: z.literal("stub"), label: z.literal("stub run") })
+  .strict();
 
 export function buildStubMarker(): StubMarker {
   return { schemaVersion: 1, mode: "stub", label: "stub run" };

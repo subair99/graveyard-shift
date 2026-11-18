@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "package": "hostile-fixture",
+  "functions": {
+    "default": {
+      "preset": "lodash-set"
+    }
+  }
+}

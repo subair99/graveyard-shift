@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "package": "restless-fixture",
+  "deltas": [
+    {
+      "kind": "prototype-unchanged",
+      "id": "set-prototype-pollution",
+      "function": "default",
+      "advisory": "GHSA-p6mc-m468-83gw"
+    }
+  ]
+}

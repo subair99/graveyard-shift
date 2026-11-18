@@ -71,6 +71,13 @@ export default defineConfig({
           testTimeout: 60000,
         },
       }),
+      defineProject({
+        test: {
+          name: "ui",
+          include: ["tests/ui/**/*.test.ts"],
+          testTimeout: 60000,
+        },
+      }),
     ],
   },
 });

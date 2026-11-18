@@ -1537,3 +1537,79 @@ Comparison of the runs above with the design and requirements. No code changed.
 - CI run 44142899326: green on all three jobs.
 - The full `npm test` for task 16.4 was also run earlier by the user: 200 files, 2373 passed (no other figures given).
 - Agent-run: none. This entry is documentation only.
+## 2026-11-17: crypt-ui Pages action pins (user-run)
+- Commands (user-run, `gh` logged in, read-only), for each of the three repositories: `gh api repos/actions/<repo>/releases/latest --jq .tag_name`, then `gh api repos/actions/<repo>/commits/<tag> --jq .sha`.
+- `actions/configure-pages`: tag `v6.0.0`, commit `45bfe0192ca1faeb007ade9deae92b16b8254a0d`.
+- `actions/upload-pages-artifact`: tag `v5.0.0`, commit `fc324d3547104276b827a68afc52ff2a11cc49c9`.
+- `actions/deploy-pages`: tag `v5.0.1`, commit `368f82528645a54fb793d4d04e342629a3f51346`.
+- Also read by the user: `actions/download-artifact` `action.yml` at `9000827ccba6bdab643e8b6fd33ac0654aef8333` (v8.0.2, already pinned in `resurrect.yml`). Inputs include `name`, `path`, `github-token` (required when downloading from a different workflow run), `repository` (default `github.repository`), `run-id` (default `github.run_id`) and `digest-mismatch` (default `error`).
+- Used in `.kiro/specs/crypt-ui/design.md` (Component 7 and "Action pins"). The licenses of the three Pages actions are not recorded here; the workflow task reads each `LICENSE` at the pinned tag before writing `PREEXISTING.md`.
+- Agent-run: none. This entry is documentation only.
+
+## 2026-11-17: crypt-ui tasks 1.1, 1.2 and 2.1 checks (user-run, PowerShell, 20:54 local)
+- User-run: `npx vitest run --project ui`: 2 files, 5 tests passed (requirementsHeader.test.ts 1, schemas.test.ts 4); span 0.4 s (target 60 s).
+- User-run: `npx vitest run --project pipeline`: 91 files passed, 959 tests passed, 1 skipped; span 15.7 s (target 90 s). This confirms task 1.1 against the whole pipeline project.
+- Agent-run single-file results for tasks 1.1 and 1.2 (one run each): nightly 22 passed, nightlyReport 15 passed, p28 2 passed, p29 2 passed, schemas 4 passed.
+- Agent-run: none of the user-run figures above are agent-run. This entry is documentation only.
+## 2026-11-17: crypt-ui checkpoint 4 (user-run, PowerShell, 21:20 local)
+- User-run: `npx vitest run --project ui`: 9 files, 44 tests passed; span 1.9 s (target 60 s).
+- User-run: `npx vitest run --project pipeline`: 91 files passed, 959 tests passed, 1 skipped; span 14.8 s (target 90 s).
+- Agent-run: none. This entry is documentation only.
+## 2026-11-17: crypt-ui tasks 5 to 8 checks (user-run, PowerShell, 22:41 local)
+- User-run: `npx vitest run --project ui`: 21 files, 140 tests passed; span 16.4 s (target 60 s); p13-copy.test.ts 16357 ms.
+- Agent-run: none. This entry is documentation only.
+## 2026-11-18: crypt-ui open question 5 and audit (user-run)
+- User-run 2026-11-18, 00:20 local, PowerShell, robocopy of the working tree without `graveyard/`, `.env`, `.git`, `node_modules`; `npm ci`; `npm run build`: the build fails with `Page "/crypt/[name]" returned an empty array from "generateStaticParams()". With "output: export", at least one route must be generated. Build error: Failed to collect page data for /crypt/[name].` `node scripts/ui/checkSite.mjs` then reported the export directory missing.
+- User-run: `.env` contains no `NEXT_PUBLIC_` names (count: 0).
+- User-run 2026-11-18, 00:22 local: `npm audit --omit=dev`: found 0 vulnerabilities.
+- User-run 2026-11-18, 00:22 local: `npm audit`: 5 high, all the accepted dev-only picomatch GHSA-fc5q-39xc-vjpf chain (picomatch, fdir, tinyglobby, vite, vitest). The only fix offered is `npm audit fix --force`, which installs vitest@3.1.4 (breaking); it was not applied. `PREEXISTING.md` "Known advisory (accepted)" is unchanged.
+- Agent-run: none. This entry is documentation only.
+## 2026-11-18: crypt-ui build and checkSite, first runs (user-run, ~07:30 local, PowerShell)
+- A) Working tree: `npm run build` succeeded (routes /, /_not-found, /crypt, /crypt/inflight, /crypt/ip, /crypt/lodash.set; "Copied 20 entry files to out/graveyard/."). `node scripts/ui/checkSite.mjs` printed: "out/crypt/__next.crypt: page has no entry in graveyard/" and "Site check failed: 1 problem(s)."
+- B) Robocopy without `graveyard/` and `.env`, `npm ci`, `npm run build` succeeded (routes /, /_not-found, /crypt, /crypt/_empty; "Copied 0 entry files to out/graveyard/."). `node scripts/ui/checkSite.mjs` printed: "graveyard: directory not found", "out/crypt/__next.crypt: page has no entry in graveyard/", "Site check failed: 2 problem(s)." Confirmed: open question 5's fix builds /crypt/_empty.
+- Checkpoint 10 stays open until checkSite passes in both trees.
+- Read-only listing of `out/crypt/` in the working copy (orchestrator-read, not a run): index.html, index.txt, inflight/, ip/, lodash.set/, `__next.crypt/` (a directory whose only content is `__PAGE__.txt`, no index.html), `__next._full.txt`, `__next._tree.txt`.
+- Agent-run: none besides the read-only listing. This entry is documentation only.
+
+## 2026-11-18: crypt-ui checkpoint 10 (user-run, ~07:55-08:00 local, PowerShell)
+
+- `npx vitest run --project ui`: 25 files, 202 passed, 1 skipped; span 18.6 s (target 60 s); p13-copy.test.ts 11093 ms (test 6785 ms).
+- Working tree: `npm run build` succeeded (7 pages: /, /_not-found, /crypt, /crypt/inflight, /crypt/ip, /crypt/lodash.set); "Copied 20 entry files to out/graveyard/."; `node scripts/ui/checkSite.mjs`: "Site check passed."
+- Robocopy without `graveyard/` and `.env`, `npm ci`, `npm run build`: succeeded (/, /_not-found, /crypt, /crypt/_empty); "Copied 0 entry files to out/graveyard/."; `node scripts/ui/checkSite.mjs`: "Site check passed."
+- Decisions recorded (user): a missing or extra `*.sigstore.json` bundle stays shown on the Entry_Page, not a build failure (R5.6 unchanged); the process scan is widened to the identifier `process` in `src/ui/**` and `src/app/**`, with narrow named members for `scripts/ui/**`.
+- Settled: open question 5 (empty-array fix confirmed by build and check), 6 (names with a dot: out/crypt/lodash.set built and checked locally; CI confirms in task 12), 7 (tar under the bundler: the build succeeded without serverExternalPackages).
+- Agent-run: none. This entry is documentation only.
+## 2026-11-18: crypt-ui checkpoint 14 (user-run, 08:31 local, PowerShell)
+- User-run `npm test`: 228 files (1 failed, 227 passed); 2657 tests (2644 passed, 1 failed, 12 skipped); 110.0 s.
+- User-run spans (target in brackets): pipeline 16.2 s (90), pipeline-integration 60.1 s (120), proof-heavy 41.2 s (90), proof-integration 22.9 s (120), proof-property 32.0 s (60), ui 19.1 s (60).
+- User-run failure: `tests/pipeline/unit/sourceScan.test.ts`, "invokes no LLM and no kiro-cli from the workflows or the CI scripts (R1.2)": expected `[ '.github/workflows/pages.yml:11' ]` to deeply equal `[]`.
+- User-run `npm run trace`: crypt-ui criteria 130, cited 116, gaps 14 (needs a test 8; documentation only 2; manual 4; unknown citations 0). Other specs unchanged: autopsy-engine 107/106/1, proof-of-life-engine 165/149/16, resurrection-pipeline 307/252/55, medium-agent 110/100/10.
+- Decision (user): `process.cwd()` replaced by `resolve(".")` in `src/ui/shell/loadSite.ts` is accepted.
+- Agent fixes after the run: (1) `pages.yml` line 11 was the comment "no LLM run here" (matched by `\bllm\b` in the scan); reworded to "no language-model run here" in `pages.yml` and in design Component 7; no trigger path changed. (2) Tests for crypt-ui criteria 4.5, 4.6, 4.7, 4.9, 4.10 and 13.4 added to `tests/ui/unit/entryPage.test.ts`; their entries removed from `docs/traceability-gaps.json`. The trace's "needs a test 8" is 6 criteria, with 13.4 counted three times: `parseCriteria` in `scripts/trace.ts` keeps reading numbered lines after Requirement 13, so the numbered lists under "Decisions 2026-11-17, second round" and "third round" of requirements.md are counted as 13.1 to 13.4 two more times. (3) Citations: 7.4 removed from `p03-view-values.test.ts` and classified "optional, skipped in first pass" (Property 8, task 2.4*); 10.3 removed from `p06-order.test.ts` and classified "needs a test" (no file under `tests/ui` reads `FC_SEED`).
+- Agent-run (one run each, after the edits): `npm run typecheck` and `npm run lint` pass; `npx vitest run` on `tests/ui/unit/entryPage.test.ts` (15 tests), `tests/ui/unit/pagesWorkflow.test.ts` (34), `tests/pipeline/unit/sourceScan.test.ts` (7), `tests/ui/property/p03-view-values.test.ts` (2), `tests/ui/property/p06-order.test.ts` (1): all passed. No agent timing is recorded.
+- User-run: the `npm test` and `npm run trace` figures above. Agent-run: the fixes and the single-file runs above.
+## 2026-11-18: crypt-ui checkpoint 14, second run (user-run, 08:54 local, PowerShell)
+- User-run `npm test`: 228 files passed; 2651 tests passed, 12 skipped; 108.8 s.
+- User-run spans (all under target): pipeline 15.9 s, pipeline-integration 58.0 s, proof-heavy 41.6 s, proof-integration 21.6 s, proof-property 34.0 s, ui 19.1 s.
+- User-run `npm run trace`: crypt-ui criteria 130, cited 122, gaps 8 (needs a test 1; documentation only 2; manual 4; optional 1). Other specs unchanged.
+- User-run `npm run build`: 7 pages; "Copied 20 entry files to out/graveyard/."; `node scripts/ui/checkSite.mjs`: "Site check passed."
+- Decisions (user): the `parseCriteria` over-count is fixed; `FC_SEED` is wired for the ui property tests; criterion 12.9 gets direct tests.
+- Agent edits: (1) `parseCriteria` in `scripts/trace.ts` ends a requirement at the next heading of level `#`, `##` or `###`. By reading the five `requirements.md` files with the old and the new rule (no trace run): crypt-ui 130 numbered lines before (8 repeated ids, 122 distinct), 122 after; autopsy-engine 107, proof-of-life-engine 165, resurrection-pipeline 307, medium-agent 110: the same before and after. A test was added in `tests/pipeline/unit/traceExit.test.ts`. (2) The eight files `tests/ui/property/p*.test.ts` take their parameters from `fcParams()` of `tests/engine/helpers/fc.ts` (numRuns 100, seed from `FC_SEED`) instead of a per-file constant; `tests/ui/unit/fcSeed.test.ts` asserts criterion 10.3 and its gap entry is removed from `docs/traceability-gaps.json`. (3) Two tests for criterion 12.9 (nightly `stub`, `counts`, `ghVersion` and the run conclusion do not change the view, the outcome, the Verdict or the stub flag) in `p10-nightly-view.test.ts`; the 12.9 citation moved there from `p03-view-values.test.ts`.
+- Agent-run (one run each, after the edits): `npm run typecheck` and `npm run lint` pass; `npx vitest run` on `tests/pipeline/unit/traceExit.test.ts` (5 tests), `tests/ui/unit/fcSeed.test.ts` (4), `tests/ui/property/p01` (7), `p02` (4), `p03` (2), `p04` (1), `p05` (2), `p06` (1), `p10` (7), `p13` (1): all passed. No agent timing is recorded.
+- User-run: the `npm test`, `npm run trace`, `npm run build` and `checkSite.mjs` figures. Agent-run: the edits and the single-file runs.
+## 2026-11-18: crypt-ui checkpoint 14, third run (user-run, 09:52 local, PowerShell)
+- User-run `npm test`: 229 files passed; 2658 tests passed, 12 skipped; 118.3 s.
+- User-run spans (target in parentheses): pipeline 17.4 s (90), pipeline-integration 74.5 s (120), proof-heavy 46.1 s (90), proof-integration 23.7 s (120), proof-property 37.0 s (60), ui 20.4 s (60).
+- User-run `npm run trace`: crypt-ui criteria 122, cited 115, gaps 7 (needs a test 0; documentation only 2; manual 4; optional 1). autopsy-engine, proof-of-life-engine, resurrection-pipeline and medium-agent unchanged.
+- User-run `npm run build`: 7 pages; "Copied 20 entry files to out/graveyard/."; `node scripts/ui/checkSite.mjs`: "Site check passed."
+- git (user-reported): branch `crypt-ui`, commit 25dce88 (tasks 1-10) on top of `main` 4f11871.
+- Note: the user is committing tasks 11-14, pushing `crypt-ui`, opening a pull request and enabling Pages (task 15.1). The first CI run of the `site` job is not yet known.
+- Agent-run: none. This entry is documentation only.
+## 2026-11-18: crypt-ui first CI run on branch crypt-ui (user-run, ~10:10 local)
+- User-run (`gh run view --log-failed`): `test-linux` failed at `npm run typecheck` with `src/app/layout.tsx(2,8): error TS2882: Cannot find module or type declarations for side-effect import of './globals.css'.` `test-no-identity`, `test-windows` and `site` passed.
+- The `site` job passing on Linux settles design open question 6 in CI (a name with a dot, `lodash.set`, was built and checked). Marked in design.md "Remaining open questions" (user-run CI 2026-11-18).
+- Agent-run finding 1: `next-env.d.ts` is git-ignored (`.gitignore:11`) and not tracked (`git ls-files` empty); `tsconfig.json` lists it first in `include`. In `ci.yml`, `test-linux` runs `npm ci`, then `npm run typecheck`, with no step that generates it (only `next dev`/`next build` write it), so it is absent there. `test-windows` and `test-no-identity` run no typecheck; `site` runs `npm run build` (which generates the file) and no typecheck.
+- Agent-run finding 2 (reproduction): with `next-env.d.ts` renamed aside, `npm run typecheck` printed `src/app/layout.tsx(2,8): error TS2882: Cannot find module or type declarations for side-effect import of './globals.css'.` The file was restored (295 bytes, SHA-256 1B59D4C6...5BAD37, same as before).
+- Agent-run fix: new committed `src/types/assets.d.ts` containing `declare module "*.css";` (covered by the `**/*.ts` include; `tsconfig.json` unchanged; `noUncheckedSideEffectImports` untouched). One line added to structure.md. New test in `tests/ui/unit/config.test.ts` checks the file, the declaration and the tsconfig include (comments stripped before parsing).
+- Agent-run results (one run each): `npm run typecheck` with `next-env.d.ts` moved aside: pass; restored; `npm run typecheck` with it present: pass; `npm run lint`: pass; `npx vitest run tests/ui/unit/config.test.ts`: 7 tests passed. No agent timing is recorded.
+- User-run: the CI run and its failure text. Agent-run: findings 1 and 2, the fix and the results above. The CI result of the fix is not yet known.

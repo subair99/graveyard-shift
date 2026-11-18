@@ -31,6 +31,8 @@ import {
   renderNightlySummary,
   renderNoEntriesNotice,
   renderNotCheckedWarning,
+  VERIFIED_REASON_ALIVE,
+  VERIFIED_REASON_NOT_ALIVE,
 } from "../core/nightlyReport";
 import type { NightlyEntryInput, NightlyFact, NightlyReport } from "../core/nightlyReport";
 import { verifyCommands } from "../core/verifyCommands";
@@ -388,7 +390,11 @@ async function processEntry(deps: NightlyDeps, name: string): Promise<ProcessedE
       ? attestationProblems.join("; ")
       : primary === "not-checked" && notChecked.length > 0
         ? notChecked.join("; ")
-        : undefined;
+        : primary === "verified"
+          ? verdict === "alive"
+            ? VERIFIED_REASON_ALIVE
+            : VERIFIED_REASON_NOT_ALIVE
+          : undefined;
 
   const input: NightlyEntryInput = {
     package: certificate.package.name,

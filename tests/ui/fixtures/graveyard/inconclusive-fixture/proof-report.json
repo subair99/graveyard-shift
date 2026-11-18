@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "package": {
+    "name": "inconclusive-fixture",
+    "version": "3.0.0"
+  },
+  "original": {
+    "integrity": "sha512-4hNPN5jlm/N/HLMCO43v8BXKq9Z7QdAGc/VGrRD61w8gN9g/6jF9A4L1pbUgBLCffi0w9VsXfTOij5x8iTyFvg==",
+    "verified": true
+  },
+  "resurrection": {
+    "source": "tarball",
+    "treeHash": "sha512-Yxy/bpNj71VxUwTLuSEjZRP/oMlEnJBGMWjKu5tduJIhYm+nwvaT6ddfLMe5ijniRPDVt7+/orbNt0QgfJgsXA=="
+  },
+  "sandbox": {
+    "mechanism": "node-permission",
+    "restartEvents": {
+      "original": 0,
+      "resurrection": 0
+    },
+    "otherRestarts": {
+      "original": 0,
+      "resurrection": 0
+    },
+    "limits": {
+      "callTimeoutMs": 1000,
+      "heapLimitMb": 256,
+      "outputLimitBytes": 1048576,
+      "maxRestarts": 20,
+      "casesRequested": 100,
+      "shrinkBudget": 500
+    }
+  },
+  "functionsTested": [],
+  "casesPerFunction": [],
+  "unencodableValues": [],
+  "excludedFunctions": [],
+  "nonDeterministicFunctions": [],
+  "divergences": [],
+  "deltas": [],
+  "harnessErrors": [
+    {
+      "kind": "no-functions-tested",
+      "message": "No function could be tested."
+    }
+  ],
+  "verdict": "inconclusive",
+  "seed": 340701121,
+  "toolVersions": {
+    "node": "v26.13.1",
+    "fastCheck": "4.10.2",
+    "reportSchema": 1
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "mode": "stub",
+      "package": "stub-fixture",
+      "version": "4.0.0",
+      "date": "2026-01-02T03:04:05Z",
+      "fixture": "tests/ui/fixtures/stub-fixture"
+    },
+    {
+      "mode": "local",
+      "package": "alive-fixture",
+      "version": "1.0.0",
+      "date": "2026-01-03T10:00:00Z",
+      "creditBefore": "not provided",
+      "creditAfter": "not provided",
+      "exitCode": 0,
+      "kiroCliVersion": "kiro-cli fixture"
+    },
+    {
+      "mode": "local",
+      "package": "alive-fixture",
+      "version": "1.0.0",
+      "date": "2026-01-04T10:00:00Z",
+      "creditBefore": "100.5",
+      "creditAfter": "102",
+      "exitCode": 0,
+      "kiroCliVersion": "kiro-cli fixture"
+    },
+    {
+      "mode": "local",
+      "package": "restless-fixture",
+      "version": "2.0.0",
+      "date": "2026-01-05T10:00:00Z",
+      "creditBefore": "102",
+      "creditAfter": "103.25",
+      "exitCode": 1,
+      "kiroCliVersion": "kiro-cli fixture"
+    },
+    {
+      "mode": "stub",
+      "package": "lodash.set",
+      "version": "4.3.2",
+      "date": "2026-01-06T10:00:00Z",
+      "fixture": "tests/ui/fixtures/lodash.set"
+    },
+    {
+      "mode": "local",
+      "package": "hostile-fixture",
+      "version": "5.0.0",
+      "date": "2026-01-07T10:00:00Z",
+      "creditBefore": "<script>alert('xss')</script>",
+      "creditAfter": "\"><img src=x onerror=alert(1)>",
+      "exitCode": 0,
+      "kiroCliVersion": "kiro-cli &lt;b&gt;bold&lt;/b&gt; &amp; &#x3C;i&#x3E; /etc/passwd"
+    },
+    {
+      "mode": "stub",
+      "package": "hostile-fixture",
+      "version": "5.0.0",
+      "date": "2026-01-08T10:00:00Z",
+      "fixture": "tests/ui/fixtures/etc/passwd<img src=x onerror=alert(1)>"
+    }
+  ]
+}
