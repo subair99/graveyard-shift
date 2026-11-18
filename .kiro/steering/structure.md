@@ -4,6 +4,7 @@
 ```
 .kiro/steering/   Steering rules (product.md, tech.md, structure.md)
 src/app/          Next.js App Router of the Crypt_Site (static export): layout.tsx, page.tsx (home), globals.css, crypt/page.tsx (Crypt index), crypt/[name]/page.tsx (one page per Graveyard entry); thin pages that call src/ui
+src/types/assets.d.ts  Committed ambient declaration `declare module "*.css";` so typecheck passes without the git-ignored next-env.d.ts (covered by the `**/*.ts` include of tsconfig.json)
 src/ui/core/      Pure Site code (no file system, clock or network): view model (viewModel.ts), Cause_Label_Table (causes.ts), nightly labels and run record (nightlyLabels.ts, nightlyRun.ts), link filter (safeHref.ts), texts, theme, entry file list, static params
 src/ui/shell/     Site I/O: Entry_Reader (readSite.ts, loadSite.ts), tarball version read (tarballVersion.ts), Entry_File_Copy (copyEntryFiles.ts)
 src/ui/components/  Server components only (no client code): SafeLink, SiteLink, JsonText, Sources, Labels, HomeView, CryptIndexView, EntryView and its sections, AttemptsTable, NightlyLine, NightlySection

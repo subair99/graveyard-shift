@@ -244,7 +244,7 @@ Conventions for every task:
     - Only from the user's pasted output of task 14, as "Spans, checked against targets (user-pasted run)".
     - _Requirements: 10.10, 11.8_
 
-- [-] 14. Final checkpoint: full suite and trace, run by the user
+- [x] 14. Final checkpoint: full suite and trace, run by the user
   - Agent: run `npm run typecheck` and `npm run lint` and fix findings. Do not run `npm test`.
   - Ready for you to run: `npm test`, then `npm run trace`. Paste both outputs. The agent then adds a `docs/traceability-gaps.json` entry for each crypt-ui criterion the trace reports as unclassified, and asks the user to run `npm run trace` again until it exits with code 0. Spans of `ui` and `pipeline` in the Journal come only from the pasted `npm test` output.
   - Ensure all tests pass, ask the user if questions arise.

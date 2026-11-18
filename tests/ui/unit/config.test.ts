@@ -68,6 +68,18 @@ describe("Crypt UI configuration", () => {
     expect(r.stderr).toContain("`out/`");
   });
 
+  it("declares *.css in a committed file that tsconfig includes, so typecheck does not need next-env.d.ts", () => {
+    const decl = readFileSync(join(root, "src", "types", "assets.d.ts"), "utf8");
+    expect(decl).toMatch(/^declare module "\*\.css";$/m);
+    // tsconfig.json may carry comments; strip them outside strings before parsing.
+    const raw = readFileSync(join(root, "tsconfig.json"), "utf8");
+    const json = raw.replace(/"(?:\\.|[^"\\])*"|\/\/[^\n]*|\/\*[\s\S]*?\*\//g, (m) => (m.startsWith('"') ? m : ""));
+    const include = (JSON.parse(json) as { include: string[]; compilerOptions: Record<string, unknown> }).include;
+    expect(include).toContain("**/*.ts");
+    const parsed = JSON.parse(json) as { compilerOptions: Record<string, unknown> };
+    expect(parsed.compilerOptions.noUncheckedSideEffectImports).not.toBe(false);
+  });
+
   it("copyEntryFiles.ts does not read process.env (1.5)", () => {
     expect(readFileSync(join(root, "scripts", "ui", "copyEntryFiles.ts"), "utf8")).not.toMatch(/process\.env/);
   });
