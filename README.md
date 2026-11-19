@@ -13,7 +13,7 @@ re-verifies every committed result without an LLM and without credits.
 Built for **Kiroween 2026** · Category: **Resurrection**
 
 - Live demo: https://subair99.github.io/graveyard-shift/
-- Demo video: _coming soon_
+- Demo video: [Click](https://youtu.be/xtBkWcyfSFU)
 
 ## How it works
 1. **Exhume**: paste a public repo URL or lockfile (no login).
